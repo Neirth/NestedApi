@@ -45,6 +45,8 @@ operator@nested-host: ~$ kubectl -f *.yml
 * RabbitMQ - For made a internal bus for RPC petitions between services.
 * Spring Boot - For create RESTful interfaces and the logic inside the microservices.
 * Docker - For package the project and the dependencies inside a OCI contanier.
+* Ambassador - For centralize all microservice endpoints into single API URL using API Gateway Concept.
+* PostgreSQL - Used for provide a high-performance database.
 
 ## Contributing 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
