@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # API Gateway Service
+  gateway:
+    container_name: gateway
+    image: quay.io/datawire/ambassador:0.86.1
+    command: --port 8080
+    volumes:
+      - ./configs/gateway-config.yml:/ambassador/ambassador-config
+    environment:
+      - AMBASSADOR_NO_KUBEWATCH=no_kubewatch
+    networks:
+      - internal-network
+  
+  # Database Service
+  database:
+    container_name: database
+    image: docker.io/library/postgres:alpine
+    environments:
+      - POSTGRES_DB=nested
+      - POSTGRES_PASSWORD=6Sdp!dWj
+    networks:
+      - internal-network
+
+  # Bus Message Service
+  message-bus:
+    container_name: message-bus
+    image: docker.io/library/rabbitmq:alpine
+    environments:
+      - RABBITMQ_DEFAULT_USER=nested
+      - RABBITMQ_DEFAULT_PASS=cfS8@!MU
+    networks:
+      - internal-network
+  
+  # Specific Module Service - Users
+  users-service:
+    container_name: users-service
+    build: ./src/Users
+    # Command for key generating: openssl rand -base64 172 | tr -d '\n'
+    environments:
+      - NESTED_LOGIN_KEY=DlKEqFma2A/syiXUmnfASASpPuF+IdAeEzKum70Vymmv1bi9D9HkGXL8/4FEuEn4z7HWdiJd74vAgLwc3qT0g2YOKCPwb3x9LnWl6NiOBllnAC629c+rKpO/tAJVG4X5CrszxVhDmRbsgSFGYIcJF0YjHs4+xRX/lOnIkB4/DskJef1Z4Zgh/Lp7xSjCEIex7k0gj03AvQ0I7bMotQBOSzar6Ruk2vLtlxMlKw==
+    deploy:
+      replicas: 1
+    networks:
+      - internal-network
+
+  # Specific Module Service - Payments
+  payments-service:
+    container_name: payments-service
+    build: ./src/Payments
+    deploy:
+      replicas: 1
+    networks:
+      - internal-network
+
+  # Specific Module Service - Invoices
+  invoices-service:
+    container_name: invoices-service
+    build: ./src/Invoices
+    deploy:
+      replicas: 1
+    networks:
+      - internal-network
+
+networks:
+  # Internal Network
+  internal-network:
+    external: false
