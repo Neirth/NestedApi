@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.neirth.nestedapi</groupId>
-  <artifactId>User</artifactId>
+  <artifactId>Users</artifactId>
   <version>1.0.0</version>
 
-  <name>User</name>
+  <name>Users</name>
 
   <parent>
     <groupId>org.springframework.boot</groupId>

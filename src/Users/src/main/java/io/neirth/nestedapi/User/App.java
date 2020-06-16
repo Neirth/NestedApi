@@ -1,4 +1,4 @@
-package io.neirth.nestedapi.User;
+package io.neirth.nestedapi.Users;
 
 /**
  * Hello world!
