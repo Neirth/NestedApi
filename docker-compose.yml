@@ -6,12 +6,14 @@ services:
     container_name: gateway
     image: quay.io/datawire/ambassador:0.86.1
     command: --port 8080
-    volumes:
-      - ./configs/gateway-config.yml:/ambassador/ambassador-config
+    ports:
+      - "8080:8080"
     environment:
       - AMBASSADOR_NO_KUBEWATCH=no_kubewatch
     networks:
       - internal-network
+    volumes:
+      - ./configs/gateway-config.yml:/ambassador/ambassador-config
   
   # Database Service
   database:
@@ -22,6 +24,8 @@ services:
       - POSTGRES_PASSWORD=6Sdp!dWj
     networks:
       - internal-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   # Bus Message Service
   message-bus:
@@ -37,8 +41,9 @@ services:
   users-service:
     container_name: users-service
     build: ./src/Users
-    # Command for key generating: openssl rand -base64 172 | tr -d '\n'
-    environments:
+    ports:
+      - "8081:8081"
+    environments: # Command for key generating: openssl rand -base64 172 | tr -d '\n'
       - NESTED_LOGIN_KEY=DlKEqFma2A/syiXUmnfASASpPuF+IdAeEzKum70Vymmv1bi9D9HkGXL8/4FEuEn4z7HWdiJd74vAgLwc3qT0g2YOKCPwb3x9LnWl6NiOBllnAC629c+rKpO/tAJVG4X5CrszxVhDmRbsgSFGYIcJF0YjHs4+xRX/lOnIkB4/DskJef1Z4Zgh/Lp7xSjCEIex7k0gj03AvQ0I7bMotQBOSzar6Ruk2vLtlxMlKw==
     deploy:
       replicas: 1
@@ -49,6 +54,8 @@ services:
   payments-service:
     container_name: payments-service
     build: ./src/Payments
+    ports:
+      - "8082:8082"
     deploy:
       replicas: 1
     networks:
@@ -58,6 +65,8 @@ services:
   invoices-service:
     container_name: invoices-service
     build: ./src/Invoices
+    ports:
+      - "8083:8083"
     deploy:
       replicas: 1
     networks:
