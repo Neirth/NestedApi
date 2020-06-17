@@ -1,4 +1,3 @@
-
 # Created by https://www.toptal.com/developers/gitignore/api/intellij+iml,java,java-web,visualstudiocode,windows,linux,macos,code,code-java,eclipse
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij+iml,java,java-web,visualstudiocode,windows,linux,macos,code,code-java,eclipse
 
@@ -114,14 +113,17 @@ local.properties
 # When using Gradle or Maven with auto-import, you should exclude module files,
 # since they will be recreated, and may cause churn.  Uncomment if using
 # auto-import.
-# .idea/artifacts
-# .idea/compiler.xml
-# .idea/jarRepositories.xml
-# .idea/modules.xml
-# .idea/*.iml
-# .idea/modules
-# *.iml
-# *.ipr
+.idea/artifacts
+.idea/compiler.xml
+.idea/jarRepositories.xml
+.idea/modules.xml
+.idea/*.iml
+.idea/modules
+.idea/misc.xml
+*.iml
+*.ipr
+
+modules.xml
 
 # CMake
 cmake-build-*/
@@ -155,14 +157,6 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
-
-### Intellij+iml Patch ###
-# Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-249601023
-
-*.iml
-modules.xml
-.idea/misc.xml
-*.ipr
 
 ### Java ###
 # Compiled class file

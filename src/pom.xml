@@ -19,7 +19,7 @@
 	
 	<!-- Project submodules. -->
 	<modules>
-		<module>User</module>
+		<module>Users</module>
 		<module>Payments</module>
 		<module>Invoices</module>
 	</modules>
