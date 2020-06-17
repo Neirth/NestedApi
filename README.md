@@ -37,7 +37,7 @@ operator@nested-host : ~$ kompose convert production.yml
 And apply into your infrastructure.
 
 >``
-operator@nested-host: ~$ kubectl -f *.yml 
+operator@nested-host: ~$ kubectl apply -f *.yml 
 ``
 
 ## Built with
@@ -52,7 +52,7 @@ operator@nested-host: ~$ kubectl -f *.yml
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Sponsor the project 
-If the project has helped you deploy your service, you could leave a donation as a token of appreciation. Well, doing this job only an arduous task. The button is in the top of the page.
+If the project has helped you deploy your service, you could leave a donation as a token of appreciation. Well, doing this job only an arduous task.
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
