@@ -1,10 +1,6 @@
 package io.neirth.nestedapi.Users;
 
-/**
- * Hello world!
- *
- */
-public class App 
+public class ServiceApp 
 {
     public static void main( String[] args )
     {
