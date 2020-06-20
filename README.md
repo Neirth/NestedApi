@@ -29,17 +29,6 @@ Only you need deploy with docker compose:
 operator@nested-host: ~$ docker-compose -f production.yml up -d
 ``
 
-Or may you interest in deploy in kubernetes infrastructure, in this case, use kompose tool: 
->``
-operator@nested-host : ~$ kompose convert production.yml
-``
-
-And apply into your infrastructure.
-
->``
-operator@nested-host: ~$ kubectl apply -f *.yml 
-``
-
 ## Built with
 * Apache Avro - For serialize RPC petitions in a binary format.
 * RabbitMQ - For made a internal bus for RPC petitions between services.
