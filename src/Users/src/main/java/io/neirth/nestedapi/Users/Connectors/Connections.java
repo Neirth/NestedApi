@@ -23,13 +23,15 @@
  */
 package io.neirth.nestedapi.Users.Connectors;
 
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 
 /**
  * Class that regulates connections to the database.
@@ -43,15 +45,24 @@ import java.util.concurrent.Semaphore;
 public class Connections {
     private static Connections instance = null;
 
+    // Variable of max connections.
     private final int maxConnections = Integer.valueOf(System.getenv("NESTEDAPI_MAX_CONNECTIONS"));
 
-    private Semaphore userSemaphore = new Semaphore(maxConnections);
+    // Semaphores for connections.
+    private final Semaphore userSemaphore = new Semaphore(maxConnections);
+    private final Semaphore brokerSemaphore = new Semaphore(maxConnections);
 
-    private List<UsersConn> usersMgtList = new ArrayList<>();
+    // Lists of connections.
+    private final List<UsersConn> usersMgtList = new ArrayList<>();
+    private final List<Connection> brokenList = new ArrayList<>();
 
-    private Connections() throws SQLException {
+    private Connections() throws Exception {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setUri(System.getenv("RABBITMQ_AMQP_URL"));
+
         for (int i = 0; i < maxConnections; i++) {
             usersMgtList.add(new UsersConn(instanceConnection()));
+            brokenList.add(factory.newConnection());
         }
     }
 
@@ -97,6 +108,45 @@ public class Connections {
     }
 
     /**
+     * Method for acquire a broker connection.
+     * 
+     * Since the broker will need to operate constantly, it will need to have
+     * several connections available. So we will need to have several connections
+     * available to improve the response times of our services.
+     * 
+     * @return The broker connection.
+     * @throws InterruptedException In the case of the operation was interrupted,
+     *                              throws a exception.
+     */
+    public Connection acquireBroker() throws InterruptedException {
+        brokerSemaphore.acquire();
+
+        Connection conn = brokenList.get(0);
+        brokenList.remove(0);
+
+        return conn;
+    }
+
+    /**
+     * Method for release a broker connection.
+     * 
+     * When the thread finish the operations with the connection, they must release
+     * the connection for other threads use the connection.
+     * 
+     * If this does not happen, the server will very likely be blocked after
+     * exceeding the limit number defined in the environment variable of
+     * NESTEDAPI_MAX_CONNECTIONS, with no chance of recovering in production. Be
+     * careful with this fact.
+     * 
+     * @param conn The broker connection.
+     */
+    public void releaseBroker(Connection conn) {
+        brokenList.add(conn);
+
+        brokerSemaphore.release();
+    }
+
+    /**
      * Private method for instance a database connection.
      * 
      * This is used for instance a connection object, which previously loads the
@@ -107,7 +157,7 @@ public class Connections {
      * @throws SQLException Maybe, if the instance founds a error with the database,
      *                      he throws a exception.
      */
-    private Connection instanceConnection() throws SQLException {
+    private java.sql.Connection instanceConnection() throws Exception {
         // We try to load the database driver.
         try {
             Class.forName("org.postgresql.Driver");
@@ -116,7 +166,7 @@ public class Connections {
         }
 
         // If the database driver was loaded, try to get a connection.
-        Connection conn = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+        java.sql.Connection conn = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
 
         // When the connection was instanced, before return to the caller method, we
         // initialize the datbase squema, in this case, only initialize the user table.
@@ -124,7 +174,8 @@ public class Connections {
             st.execute("CREATE TABLE IF NOT EXISTS Users (id BIGSERIAL, name VARCHAR(50) NOT NULL, surname VARCHAR(50) NOT NULL, email VARCHAR(50) NOT NULL, password VARCHAR(32) NOT NULL, telephone TEXT, birthday DATE NOT NULL, country VARCHAR(2) NOT NULL, address TEXT, addressInformation TEXT, PRIMARY KEY(id));");
         }
 
-        // When the connection instance is prepared, is a moment to return him to the caller method.
+        // When the connection instance is prepared, is a moment to return him to the
+        // caller method.
         return conn;
     }
 
@@ -132,10 +183,9 @@ public class Connections {
      * Obtains the only instance for this class.
      * 
      * @return The class instance.
-     * @throws SQLException Maybe, if the instance founds a error with the database,
-     *                      he throws a exception.
+     * @throws Exception Any exception throwed.
      */
-    public Connections getInstance() throws SQLException {
+    public Connections getInstance() throws Exception {
         if (instance == null)
             instance = new Connections();
 
