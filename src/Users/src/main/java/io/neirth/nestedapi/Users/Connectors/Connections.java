@@ -23,7 +23,10 @@
  */
 package io.neirth.nestedapi.Users.Connectors;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -48,7 +51,7 @@ public class Connections {
 
     private Connections() throws SQLException {
         for (int i = 0; i < maxConnections; i++) {
-            usersMgtList.add(new UsersConn());
+            usersMgtList.add(new UsersConn(instanceConnection()));
         }
     }
 
@@ -56,7 +59,7 @@ public class Connections {
      * Method for acquire a user connection.
      * 
      * If the connection doesn't avaiable, the thread caller will stopped util one
-     * connection is avaible for use.
+     * connection is avaiable for use.
      * 
      * The mechanism used for know who needs the connection is FIFO (First Input,
      * First Out).
@@ -85,12 +88,44 @@ public class Connections {
      * NESTEDAPI_MAX_CONNECTIONS, with no chance of recovering in production. Be
      * careful with this fact.
      * 
-     * @param connection The user connection
+     * @param connection The user connection.
      */
     public void releaseUsers(UsersConn connection) {
         usersMgtList.add(connection);
 
         userSemaphore.release();
+    }
+
+    /**
+     * Private method for instance a database connection.
+     * 
+     * This is used for instance a connection object, which previously loads the
+     * database squema into him. It's a private method because the only point which
+     * should be used is only in the instance of UsersConn.
+     * 
+     * @return The database connection.
+     * @throws SQLException Maybe, if the instance founds a error with the database,
+     *                      he throws a exception.
+     */
+    private Connection instanceConnection() throws SQLException {
+        // We try to load the database driver.
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("Postgres driver not found " + e.toString());
+        }
+
+        // If the database driver was loaded, try to get a connection.
+        Connection conn = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+
+        // When the connection was instanced, before return to the caller method, we
+        // initialize the datbase squema, in this case, only initialize the user table.
+        try (Statement st = conn.createStatement()) {
+            st.execute("CREATE TABLE IF NOT EXISTS Users (id BIGSERIAL, name VARCHAR(50) NOT NULL, surname VARCHAR(50) NOT NULL, email VARCHAR(50) NOT NULL, password VARCHAR(32) NOT NULL, telephone TEXT, birthday DATE NOT NULL, country VARCHAR(2) NOT NULL, address TEXT, addressInformation TEXT, PRIMARY KEY(id));");
+        }
+
+        // When the connection instance is prepared, is a moment to return him to the caller method.
+        return conn;
     }
 
     /**

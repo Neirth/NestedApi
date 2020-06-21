@@ -23,6 +23,38 @@
  */
 package io.neirth.nestedapi.Users.Connectors;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import io.neirth.nestedapi.Users.Templates.User;
+
 public class UsersConn {
-    
+    private final PreparedStatement createQuery;
+    private final PreparedStatement readQuery;
+    private final PreparedStatement updateQuery;
+    private final PreparedStatement deleteQuery;
+
+    public UsersConn(Connection conn) throws SQLException {
+        this.createQuery = conn.prepareStatement("INSERT INTO Users (name, surname, email, password, telephone, birthday, country, address, addressInformation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
+        this.readQuery = conn.prepareStatement("SELECT * FROM Users WHERE id = ?;");
+        this.updateQuery = conn.prepareStatement("UPDATE Users SET name = ?, surname = ?, email = ?, password = ?, telephone = ?, birthday = ?, country = ?, address = ?, addressInformation = ? WHERE id = ?;");
+        this.deleteQuery = conn.prepareStatement("DELETE FROM Users WHERE id = ?;");
+    }
+
+    public void create(User user) throws SQLException {
+        
+    }
+
+    public User read(long id) throws SQLException {
+        return null;
+    }
+
+    public User update(User user) throws SQLException {
+        return null;
+    }
+
+    public void delete(User user) throws SQLException {
+
+    }
 }
