@@ -25,6 +25,10 @@ package io.neirth.nestedapi.Users.Templates;
 
 import java.util.Date;
 
+/**
+ * User Template Class for encapsulate inside a object the user information
+ * present in the database.
+ */
 public class User {
     private Long id;
     private String name;
@@ -37,6 +41,12 @@ public class User {
     private String address;
     private String addressInformation;
 
+    /**
+     * Builder class for made a User object within setters methods.
+     * 
+     * This above all will help us to maintain a cleaner code, since all the fields
+     * are mandatory in the constructor of the object.
+     */
     public static class Builder {
         private Long id;
         private String name;
@@ -113,7 +123,7 @@ public class User {
         }
     }
 
-    public User(Long id, String name, String surname, String email, String password, String telephone, Date birthday,
+    private User(Long id, String name, String surname, String email, String password, String telephone, Date birthday,
             Country country, String address, String addressInformation) {
         this.id = id;
         this.name = name;
