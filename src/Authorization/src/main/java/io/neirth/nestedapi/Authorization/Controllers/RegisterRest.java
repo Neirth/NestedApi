@@ -1,4 +1,4 @@
-package io.neirth.nestedapi.Authorization;
+package io.neirth.nestedapi.Authorization.Controllers;
 
 public class RegisterRest {
     

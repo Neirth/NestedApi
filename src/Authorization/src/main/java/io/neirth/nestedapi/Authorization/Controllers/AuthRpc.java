@@ -1,5 +1,5 @@
-package io.neirth.nestedapi.Authorization;
+package io.neirth.nestedapi.Authorization.Controllers;
 
-public class LoginRpc {
+public class AuthRpc {
     
 }
