@@ -21,8 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.neirth.nestedapi.Users.Managers;
+package io.neirth.nestedapi.Users.Connectors;
 
-public class UsersMgt {
+public class UsersConn {
     
 }
