@@ -1,5 +1,12 @@
 version: '3.8'
 
+# Common envoriment variables used in all service containers.
+x-common-variables: &common-variables
+  - NESTEDAPI_AMQP_BROKER=message-bus
+  - NESTEDAPI_MAX_CONNECTIONS=3
+  - JDBC_DATABASE_URL=jdbc:postgresql://database/${POSTGRES_DB}?user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD}
+  - RABBITMQ_AMQP_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@message-bus:5672/%2f
+
 services:
   # API Gateway Service
   gateway:
@@ -20,8 +27,9 @@ services:
     container_name: database
     image: docker.io/library/postgres:alpine
     environments:
-      - POSTGRES_DB=nested
-      - POSTGRES_PASSWORD=6Sdp!dWj
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     networks:
       - internal-network
     volumes:
@@ -32,19 +40,29 @@ services:
     container_name: message-bus
     image: docker.io/library/rabbitmq:alpine
     environments:
-      - RABBITMQ_DEFAULT_USER=nested
-      - RABBITMQ_DEFAULT_PASS=cfS8@!MU
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
     networks:
       - internal-network
-  
+
+  # Specific Module Service - Authorization
+  auth-service:
+    container_name: auth-service
+    build: ./src/Authorization
+    environments: # Command for key generating: openssl rand -base64 172 | tr -d '\n'
+      - NESTEDAPI_AUTH_KEY=${NESTEDAPI_AUTH_KEY}
+      - *common-variables
+    deploy:
+      replicas: 1
+    networks:
+      - internal-network
+
   # Specific Module Service - Users
   users-service:
     container_name: users-service
     build: ./src/Users
-    ports:
-      - "8081:8081"
-    environments: # Command for key generating: openssl rand -base64 172 | tr -d '\n'
-      - NESTED_LOGIN_KEY=DlKEqFma2A/syiXUmnfASASpPuF+IdAeEzKum70Vymmv1bi9D9HkGXL8/4FEuEn4z7HWdiJd74vAgLwc3qT0g2YOKCPwb3x9LnWl6NiOBllnAC629c+rKpO/tAJVG4X5CrszxVhDmRbsgSFGYIcJF0YjHs4+xRX/lOnIkB4/DskJef1Z4Zgh/Lp7xSjCEIex7k0gj03AvQ0I7bMotQBOSzar6Ruk2vLtlxMlKw==
+    environments:
+      - *common-variables
     deploy:
       replicas: 1
     networks:
@@ -54,8 +72,8 @@ services:
   payments-service:
     container_name: payments-service
     build: ./src/Payments
-    ports:
-      - "8082:8082"
+    environments:
+      - *common-variables
     deploy:
       replicas: 1
     networks:
@@ -65,8 +83,8 @@ services:
   invoices-service:
     container_name: invoices-service
     build: ./src/Invoices
-    ports:
-      - "8083:8083"
+    environments:
+      - *common-variables
     deploy:
       replicas: 1
     networks:
