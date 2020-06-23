@@ -23,6 +23,13 @@
  */
 package io.neirth.nestedapi.Users.Controllers;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Delivery;
+
 public class UsersRpc {
-    
+    // TODO: Read the tutorial for still implemeting: https://www.rabbitmq.com/tutorials/tutorial-six-java.html
+    // TODO: Maybe its is useful too: https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/java/RPCServer.java and https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/java/RPCClient.java 
+    public void parseDelivery(Channel channel, Delivery delivery) {
+
+    }
 }

@@ -23,6 +23,7 @@
  */
 package io.neirth.nestedapi.Users.Connectors;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -30,8 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
-import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DeliverCallback;
+
+import io.neirth.nestedapi.Users.Controllers.UsersRpc;
 
 /**
  * Class that regulates connections to the database.
@@ -54,15 +58,12 @@ public class Connections {
 
     // Lists of connections.
     private final List<UsersConn> usersMgtList = new ArrayList<>();
-    private final List<Connection> brokenList = new ArrayList<>();
+    private final List<Channel> brokenList = new ArrayList<>();
 
     private Connections() throws Exception {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setUri(System.getenv("RABBITMQ_AMQP_URL"));
-
         for (int i = 0; i < maxConnections; i++) {
             usersMgtList.add(new UsersConn(instanceConnection()));
-            brokenList.add(factory.newConnection());
+            brokenList.add(instanceChannel());
         }
     }
 
@@ -118,10 +119,10 @@ public class Connections {
      * @throws InterruptedException In the case of the operation was interrupted,
      *                              throws a exception.
      */
-    public Connection acquireBroker() throws InterruptedException {
+    public Channel acquireBroker() throws InterruptedException {
         brokerSemaphore.acquire();
 
-        Connection conn = brokenList.get(0);
+        Channel conn = brokenList.get(0);
         brokenList.remove(0);
 
         return conn;
@@ -140,7 +141,7 @@ public class Connections {
      * 
      * @param conn The broker connection.
      */
-    public void releaseBroker(Connection conn) {
+    public void releaseBroker(Channel conn) {
         brokenList.add(conn);
 
         brokerSemaphore.release();
@@ -157,7 +158,7 @@ public class Connections {
      * @throws SQLException Maybe, if the instance founds a error with the database,
      *                      he throws a exception.
      */
-    private java.sql.Connection instanceConnection() throws Exception {
+    private Connection instanceConnection() throws Exception {
         // We try to load the database driver.
         try {
             Class.forName("org.postgresql.Driver");
@@ -166,7 +167,7 @@ public class Connections {
         }
 
         // If the database driver was loaded, try to get a connection.
-        java.sql.Connection conn = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+        Connection conn = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
 
         // When the connection was instanced, before return to the caller method, we
         // initialize the datbase squema, in this case, only initialize the user table.
@@ -180,12 +181,46 @@ public class Connections {
     }
 
     /**
+     * Method that initialize a preconfigured instance of a RabbitMQ Channel.
+     * 
+     * Since in order to efficiently process the requests that occur in the service.
+     * Let's prepare how a channel should work and then initialize the channels that
+     * we think are necessary.
+     * 
+     * @return A channel instance.
+     */
+    private Channel instanceChannel() throws Exception {
+        // Sets the queue name.
+        String queueName = "users";
+
+        // Open the connection with the broker.
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setUri(System.getenv("RABBITMQ_AMQP_URL"));
+
+        // Open the channel and sets the callback into the channel logic.
+        Channel channel = factory.newConnection().createChannel();
+
+        // Prepare callback logic.
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            // Start a new thread with Apache Avro Parser.
+            new Thread(() -> (new UsersRpc()).parseDelivery(channel, delivery)).start();
+        };
+
+        // Configure channel.
+        channel.queueDeclare(queueName, true, false, false, null);
+        channel.basicConsume(queueName, true, deliverCallback, (consumerTag) -> {});
+
+        // Return the channel for future uses.
+        return channel;
+    }
+
+    /**
      * Obtains the only instance for this class.
      * 
      * @return The class instance.
      * @throws Exception Any exception throwed.
      */
-    public Connections getInstance() throws Exception {
+    public static Connections getInstance() throws Exception {
         if (instance == null)
             instance = new Connections();
 
