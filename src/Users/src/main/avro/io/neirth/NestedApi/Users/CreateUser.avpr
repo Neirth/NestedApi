@@ -1,0 +1,35 @@
+{
+    "namespace": "io.neirth.NestedApi.Users",
+    "protocol": "CreateUser",
+    "types": [
+        {
+            "name": "Request",
+            "type": "record",
+            "fields": [
+                { "name": "name", "type": "string" },
+                { "name": "surname", "type": "string" },
+                { "name": "email", "type": "string" },
+                { "name": "password", "type": "string" },
+                { "name": "telephone", "type": "string" },
+                { "name": "birthday", "type": "string" },
+                { "name": "country", "type": "string" },
+                { "name": "address", "type": [ "null", "string" ], "default": null },
+                { "name": "addressInformation", "type": [ "null", "string" ], "default": null }
+            ]
+        },
+        {
+            "name": "Response",
+            "type": "record",
+            "fields": [
+                { "name": "status", "type": "int"  },
+                { "name": "message", "type": [ "null", "string" ], "default": null }
+            ]
+        }
+    ],
+    "messages": {
+        "CreateUser": {
+            "request": [{ "name": "request", "type": "Request" }],
+            "response": "Response"
+        }
+    }
+}

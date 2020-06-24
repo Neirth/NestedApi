@@ -203,7 +203,7 @@ public class Connections {
         // Prepare callback logic.
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             // Start a new thread with Apache Avro Parser.
-            new Thread(() -> (new UsersRpc()).parseDelivery(channel, delivery)).start();
+            new Thread(() -> (new UsersRpc()).routeDelivery(channel, delivery)).start();
         };
 
         // Configure channel.

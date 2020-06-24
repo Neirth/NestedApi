@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.neirth.nestedapi</groupId>
@@ -14,7 +13,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.3.1.RELEASE</version>
-    <relativePath/>
+    <relativePath />
   </parent>
 
   <properties>
@@ -45,7 +44,7 @@
       <artifactId>avro</artifactId>
       <version>1.9.2</version>
     </dependency>
-    
+
     <dependency>
       <groupId>com.rabbitmq</groupId>
       <artifactId>amqp-client</artifactId>
@@ -62,7 +61,8 @@
   </dependencies>
 
   <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+    <pluginManagement>
+      <!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
       <plugins>
         <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
         <plugin>
@@ -102,6 +102,31 @@
         <plugin>
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro-maven-plugin</artifactId>
+          <version>1.5.1</version>
+          <executions>
+            <execution>
+              <id>schemas</id>
+              <phase>generate-sources</phase>
+              <goals>
+                <goal>schema</goal>
+                <goal>protocol</goal>
+                <goal>idl-protocol</goal>
+              </goals>
+              <configuration>
+                <excludes>
+                  <exclude>**/mapred/tether/**</exclude>
+                </excludes>
+                <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
+                <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+                <testSourceDirectory>${project.basedir}/src/test/avro/</testSourceDirectory>
+                <testOutputDirectory>${project.basedir}/src/test/java/</testOutputDirectory>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>
