@@ -24,6 +24,8 @@
 package io.neirth.nestedapi.Users.Controllers;
 
 // Libraries used for byte tratament.
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
@@ -42,11 +44,11 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 
 // Internal packages of the project.
@@ -130,7 +132,7 @@ public class UsersRpc {
             DatumReader<GenericRecord> consumer = new GenericDatumReader<>(protocol.getType("Request"));
 
             // Decode the binary message into a readable for the reader.
-            ByteArrayInputStream consumedByteArray = new ByteArrayInputStream(delivery.getBody());
+            InputStream consumedByteArray = new ByteArrayInputStream(delivery.getBody());
             Decoder consumedDecoder = DecoderFactory.get().binaryDecoder(consumedByteArray, null);
 
             // Convert the Decoder data to GenericRecord data.
@@ -158,8 +160,8 @@ public class UsersRpc {
             DatumWriter<GenericRecord> responser = new GenericDatumWriter<>(protocol.getType("Response"));
 
             // Prepare the output stream.
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            BinaryEncoder binaryEncoder = EncoderFactory.get().binaryEncoder(out, null);
+            OutputStream out = new ByteArrayOutputStream();
+            Encoder binaryEncoder = EncoderFactory.get().binaryEncoder(out, null);
 
             // Write the message into output stream.
             responser.write(response, binaryEncoder);
@@ -168,19 +170,19 @@ public class UsersRpc {
             binaryEncoder.flush();
 
             // Return the data into the router.
-            message = out.toByteArray();
+            message = ((ByteArrayOutputStream) out).toByteArray();
         } catch (Exception e) {
             // Prepare the return message.
             GenericRecord response = new GenericData.Record(protocol.getType("Response"));
             response.put("status", Status.INTERNAL_SERVER_ERROR.getStatusCode());
-            response.put("message", null);
+            response.put("message", e.getMessage());
 
             // Prepare the writer for generate a response.
             DatumWriter<GenericRecord> responser = new GenericDatumWriter<>(protocol.getType("Response"));
 
             // Prepare the output stream.
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            BinaryEncoder binaryEncoder = EncoderFactory.get().binaryEncoder(out, null);
+            OutputStream out = new ByteArrayOutputStream();
+            Encoder binaryEncoder = EncoderFactory.get().binaryEncoder(out, null);
 
             // Write the message into output stream.
             responser.write(response, binaryEncoder);
@@ -189,12 +191,13 @@ public class UsersRpc {
             binaryEncoder.flush();
 
             // Return the data into the router.
-            message = out.toByteArray();
+            message = ((ByteArrayOutputStream) out).toByteArray();
         } finally {
             // Release the connection with the database.
             Connections.getInstance().releaseUsers(connection);
         }
 
+        // Return the response message.
         return message;
     }
 
