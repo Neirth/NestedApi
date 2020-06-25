@@ -23,7 +23,7 @@
  */
 package io.neirth.nestedapi.Users;
 
-// Libraries used for byte tratament.
+// Libraries used for data process.
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -31,8 +31,6 @@ import java.util.NoSuchElementException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -64,11 +62,25 @@ public class ServiceUtils {
     public interface RestCallback {
         ResponseBuilder run() throws Exception;
     }
-    
+
     public interface RpcCallback {
         User run(GenericRecord consumedDatum) throws Exception;
     }
 
+    /**
+     * Method that process the request received from RESTful API and generate a response
+     * in the json format.
+     * 
+     * This method, with the corresponding RestCallback to do the specifici tasks,
+     * retrives the information from the body and executes the callback lambda, the message
+     * returnted is a HTTP response with Json Body.
+     * 
+     * @param req The headers of http request.
+     * @param paramId The paramId of the requested object.
+     * @param jsonRequest The body of http request.
+     * @param callback The lambda callback
+     * @return The response object.
+     */
     public static Response processRequest(HttpServletRequest req, long paramId, String jsonRequest, RestCallback callback) {
         // Initialize the response builder.
         ResponseBuilder response = null;
@@ -89,17 +101,17 @@ public class ServiceUtils {
     }
 
     /**
-     * Method that processes the messages received from Apache Avro and generates a
+     * Method that process the messages received from Apache Avro and generates a
      * response in the same format.
      * 
-     * This method, with the corresponding RpcCallback to do the specific tasks, retrieves 
-     * the information from the message, the RpcCallback receives it as a parameter and 
-     * this method waits for all operations to finish before encoding the response in 
-     * the Apache Avro format.
+     * This method, with the corresponding RpcCallback to do the specific tasks,
+     * retrieves the information from the message, the RpcCallback receives it as a
+     * parameter and this method waits for all operations to finish before encoding
+     * the response in the Apache Avro format.
      * 
-     * @param delivery The request message.
+     * @param delivery     The request message.
      * @param protocolName The protocol used for the process.
-     * @param RpcCallback The lambda function that use for process the data.
+     * @param RpcCallback  The lambda function that use for process the data.
      * @return The response message.
      * @throws Exception Throws any exception.
      */
@@ -143,7 +155,8 @@ public class ServiceUtils {
                 userEncoded.put("email", user.getEmail());
                 userEncoded.put("password", user.getPassword());
                 userEncoded.put("telephone", user.getTelephone());
-                userEncoded.put("birthday", (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")).format(user.getBirthday()));
+                userEncoded.put("birthday",
+                        (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")).format(user.getBirthday()));
                 userEncoded.put("country", user.getCountry().name());
                 userEncoded.put("address", user.getAddress());
                 userEncoded.put("addressInformation", user.getAddressInformation());
@@ -159,6 +172,9 @@ public class ServiceUtils {
             response.put("message", e.getMessage());
             response.put("object", null);
         } catch (Exception e) {
+            // Write the log
+            writeServerException(e);
+
             // Prepare the return message.
             response.put("status", Status.INTERNAL_SERVER_ERROR.getStatusCode());
             response.put("message", e.getMessage());
@@ -185,8 +201,15 @@ public class ServiceUtils {
         return message;
     }
 
+    /**
+     * Private method to write the exception in the logs.
+     * 
+     * It's useful for write the stack trace in debug mode or only the error in
+     * production.
+     * 
+     * @param Exception The exception catched.
+     */
     private static void writeServerException(Exception e) {
-        
         if (ServiceApp.getLoggerSystem().getLevel() == Level.DEBUG) {
             // If the log level is set to debug, write the trace stack.
             ServiceApp.getLoggerSystem().debug("An exception has occurred, getting the stacktrace of the exception: ");
@@ -201,7 +224,7 @@ public class ServiceUtils {
      * Private method to get Apache Avro protocol passed by parameter.
      * 
      * @param protocol The protocol filename
-     * @return The input stream 
+     * @return The input stream
      * @throws IOException Ocurrs if the data is unaccesible.
      */
     private static InputStream loadAvroProtocolFile(String protocol) throws IOException {

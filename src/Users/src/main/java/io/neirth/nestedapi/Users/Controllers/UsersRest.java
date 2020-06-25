@@ -59,6 +59,13 @@ import io.neirth.nestedapi.Users.Templates.User;
 @Component
 @Path("/users")
 public class UsersRest {
+    /**
+     * Method to get a user with param passed in the path.
+     * 
+     * @param req Request header
+     * @param paramId The id of the user.
+     * @return The user response.
+     */
     @GET
     @Path("{param_id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -116,6 +123,14 @@ public class UsersRest {
         });
     }
 
+    /**
+     * Method to update a user with param passed in the path.
+     * 
+     * @param req Request header
+     * @param paramId The id of the user.
+     * @param jsonRequest The request body.
+     * @return The user response.
+     */
     @PUT
     @Path("{param_id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -168,7 +183,13 @@ public class UsersRest {
         });
     }
 
-
+    /**
+     * Method to delete a user with param passed in the path.
+     * 
+     * @param req Request header
+     * @param paramId The id of the user.
+     * @return The user response.
+     */
     @DELETE
     @Path("{param_id}")
     @Produces(MediaType.APPLICATION_JSON)
