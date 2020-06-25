@@ -1,5 +1,5 @@
 {
-    "namespace": "io.neirth.NestedApi.Users",
+    "namespace": "io.neirth.nestedapi.Users",
     "protocol": "CreateUser",
     "types": [
         {

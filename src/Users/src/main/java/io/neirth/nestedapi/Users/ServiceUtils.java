@@ -232,6 +232,6 @@ public class ServiceUtils {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
         // Return the protocol as the stream.
-        return loader.getResourceAsStream(protocol + ".avpr");
+        return loader.getResourceAsStream("/io/neirth/nestedapi/Users/Schemas/" + protocol + ".avpr");
     }
 }
