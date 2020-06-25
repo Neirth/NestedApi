@@ -202,14 +202,14 @@ public class ServiceUtils {
     }
 
     /**
-     * Private method to write the exception in the logs.
+     * Method to write the exception in the logs.
      * 
      * It's useful for write the stack trace in debug mode or only the error in
      * production.
      * 
      * @param Exception The exception catched.
      */
-    private static void writeServerException(Exception e) {
+    public static void writeServerException(Exception e) {
         if (ServiceApp.getLoggerSystem().getLevel() == Level.DEBUG) {
             // If the log level is set to debug, write the trace stack.
             ServiceApp.getLoggerSystem().debug("An exception has occurred, getting the stacktrace of the exception: ");
