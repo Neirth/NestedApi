@@ -23,10 +23,17 @@
  */
 package io.neirth.nestedapi.Users;
 
-public class ServiceApp 
-{
-    public static void main( String[] args )
-    {
-        System.out.println( "Hello World!" );
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class ServiceApp {
+    private static Logger loggerSystem = LogManager.getLogger(ServiceApp.class);
+
+    public static void main(String[] args) {
+        System.out.println("Hello World!");
+    }
+
+    public static Logger getLoggerSystem() {
+        return loggerSystem;
     }
 }

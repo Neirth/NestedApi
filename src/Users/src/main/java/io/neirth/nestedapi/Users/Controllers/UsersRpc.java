@@ -178,34 +178,16 @@ public class UsersRpc {
 
                 // Updates only the columns with new data.
                 User user = new User.Builder((long) consumedDatum.get("id"))
-                        .setName(consumedDatum.get("name") != null 
-                                ? (String) consumedDatum.get("name")
-                                : auxUser.getName())
-                        .setSurname(consumedDatum.get("surname") != null 
-                                ? (String) consumedDatum.get("surname")
-                                : auxUser.getSurname())
-                        .setEmail(consumedDatum.get("email") != null 
-                                ? (String) consumedDatum.get("email")
-                                : auxUser.getEmail())
-                        .setPassword(consumedDatum.get("password") != null 
-                                ? (String) consumedDatum.get("password")
-                                : auxUser.getPassword())
-                        .setTelephone(consumedDatum.get("telephone") != null 
-                                ? (String) consumedDatum.get("telephone")
-                                : auxUser.getTelephone())
-                        .setBirthday(consumedDatum.get("birthday") != null
-                                ? DatatypeConverter.parseDateTime((String) consumedDatum.get("birthday")).getTime()
-                                : auxUser.getBirthday())
-                        .setCountry(consumedDatum.get("country") != null
-                                ? Enum.valueOf(Country.class, (String) consumedDatum.get("country"))
-                                : auxUser.getCountry())
-                        .setAddress(consumedDatum.get("address") != null 
-                                ? (String) consumedDatum.get("address")
-                                : auxUser.getAddress())
-                        .setAddressInformation(consumedDatum.get("addressInformation") != null
-                                ? (String) consumedDatum.get("addressInformation")
-                                : auxUser.getAddressInformation())
-                        .build();
+                    .setName(consumedDatum.get("name") != null ? (String) consumedDatum.get("name") : auxUser.getName())
+                    .setSurname(consumedDatum.get("surname") != null ? (String) consumedDatum.get("surname") : auxUser.getSurname())
+                    .setEmail(consumedDatum.get("email") != null  ? (String) consumedDatum.get("email") : auxUser.getEmail())
+                    .setPassword(consumedDatum.get("password") != null ? (String) consumedDatum.get("password") : auxUser.getPassword())
+                    .setTelephone(consumedDatum.get("telephone") != null  ? (String) consumedDatum.get("telephone") : auxUser.getTelephone())
+                    .setBirthday(consumedDatum.get("birthday") != null ? DatatypeConverter.parseDateTime((String) consumedDatum.get("birthday")).getTime() : auxUser.getBirthday())
+                    .setCountry(consumedDatum.get("country") != null ? Enum.valueOf(Country.class, (String) consumedDatum.get("country")) : auxUser.getCountry())
+                    .setAddress(consumedDatum.get("address") != null  ? (String) consumedDatum.get("address") : auxUser.getAddress())
+                    .setAddressInformation(consumedDatum.get("addressInformation") != null ? (String) consumedDatum.get("addressInformation") : auxUser.getAddressInformation())
+                    .build();
 
                 // Try to update the user from the database.
                 connection.update(user);
