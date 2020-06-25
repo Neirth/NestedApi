@@ -22,7 +22,8 @@
             "type": "record",
             "fields": [
                 { "name": "status", "type": "int"  },
-                { "name": "message", "type": [ "null", "string" ], "default": null }
+                { "name": "message", "type": [ "null", "string" ], "default": null },
+                { "name": "object", "type": "null" }
             ]
         }
     ],

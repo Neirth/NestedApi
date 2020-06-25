@@ -23,14 +23,7 @@
  */
 package io.neirth.nestedapi.Users.Controllers;
 
-// Libraries used for byte tratament.
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-
 // Libraries used from Java Enterprise.
-import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
 
 // Libraries used for AMQP operations.
@@ -38,20 +31,8 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
-// Libraries used in Apache Avro Serialice and Deserialice.
-import org.apache.avro.Protocol;
-import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericDatumReader;
-import org.apache.avro.generic.GenericDatumWriter;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.DatumReader;
-import org.apache.avro.io.DatumWriter;
-import org.apache.avro.io.Decoder;
-import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.io.Encoder;
-import org.apache.avro.io.EncoderFactory;
-
 // Internal packages of the project.
+import io.neirth.nestedapi.Users.ServiceUtils;
 import io.neirth.nestedapi.Users.Connectors.Connections;
 import io.neirth.nestedapi.Users.Connectors.UsersConn;
 import io.neirth.nestedapi.Users.Templates.Country;
@@ -72,7 +53,7 @@ public class UsersRpc {
      */
     public void routeDelivery(Channel channel, Delivery delivery) {
         // Obtain a called method.
-        String type = (String) delivery.getProperties().getHeaders().get("remote-method-call");
+        String type = (String) delivery.getProperties().getHeaders().get("x-remote-method");
 
         // Prepare the response.
         byte[] response = null;
@@ -113,104 +94,160 @@ public class UsersRpc {
      * Normally this situation can occur when a user is registering in our service,
      * therefore this method will be important for our operations.
      * 
-     * @param delivery The rpc petition.
+     * @param delivery The RPC petition.
      * @return The response message.
      * @throws Exception If an exception occurs.
      */
-    public byte[] createUser(Delivery delivery) throws Exception {
-        // Prepare the database connection.
-        UsersConn connection = Connections.getInstance().acquireUsers();
+    private byte[] createUser(Delivery delivery) throws Exception {
+        return ServiceUtils.processMessage(delivery, "CreateUser", (consumedDatum) -> {
+            // Prepare the database connection.
+            UsersConn connection = Connections.getInstance().acquireUsers();
 
-        // Prepare the return message.
-        byte[] message = null;
+            try {
+                // Create a user handled by RPC interface.
+                User user = new User.Builder(null).setName((String) consumedDatum.get("name"))
+                        .setSurname((String) consumedDatum.get("surname")).setEmail((String) consumedDatum.get("email"))
+                        .setPassword((String) consumedDatum.get("password"))
+                        .setTelephone((String) consumedDatum.get("telephone"))
+                        .setBirthday(DatatypeConverter.parseDateTime((String) consumedDatum.get("birthday")).getTime())
+                        .setCountry(Enum.valueOf(Country.class, (String) consumedDatum.get("country")))
+                        .setAddress((String) consumedDatum.get("address"))
+                        .setAddressInformation((String) consumedDatum.get("addressInformation")).build();
 
-        // Obtain a Protocol Schemas
-        Protocol protocol = Protocol.parse(this.getClass().getResourceAsStream("CreateUser.avpr"));
+                // Set the user in the database.
+                connection.create(user);
+            } catch (Exception e) {
+                // Print the stacktrace if crash.
+                e.printStackTrace();
+            } finally {
+                // Release the connection with the database.
+                Connections.getInstance().releaseUsers(connection);
+            }
 
-        try {
-            // Prepare the generic schema reader.
-            DatumReader<GenericRecord> consumer = new GenericDatumReader<>(protocol.getType("Request"));
-
-            // Decode the binary message into a readable for the reader.
-            InputStream consumedByteArray = new ByteArrayInputStream(delivery.getBody());
-            Decoder consumedDecoder = DecoderFactory.get().binaryDecoder(consumedByteArray, null);
-
-            // Convert the Decoder data to GenericRecord data.
-            GenericRecord consumedDatum = consumer.read(null, consumedDecoder);
-
-            // Create a user handled by RPC interface.
-            User user = new User.Builder(null).setName((String) consumedDatum.get("name"))
-                    .setSurname((String) consumedDatum.get("surname")).setEmail((String) consumedDatum.get("email"))
-                    .setPassword((String) consumedDatum.get("password"))
-                    .setTelephone((String) consumedDatum.get("telephone"))
-                    .setBirthday(DatatypeConverter.parseDateTime((String) consumedDatum.get("birthday")).getTime())
-                    .setCountry(Enum.valueOf(Country.class, (String) consumedDatum.get("country")))
-                    .setAddress((String) consumedDatum.get("address"))
-                    .setAddressInformation((String) consumedDatum.get("addressInformation")).build();
-
-            // Set the user in the database.
-            connection.create(user);
-
-            // Prepare the return message.
-            GenericRecord response = new GenericData.Record(protocol.getType("Response"));
-            response.put("status", Status.OK.getStatusCode());
-            response.put("message", null);
-
-            // Prepare the writer for generate a response.
-            DatumWriter<GenericRecord> responser = new GenericDatumWriter<>(protocol.getType("Response"));
-
-            // Prepare the output stream.
-            OutputStream out = new ByteArrayOutputStream();
-            Encoder binaryEncoder = EncoderFactory.get().binaryEncoder(out, null);
-
-            // Write the message into output stream.
-            responser.write(response, binaryEncoder);
-
-            // Flush the encoder buffer.
-            binaryEncoder.flush();
-
-            // Return the data into the router.
-            message = ((ByteArrayOutputStream) out).toByteArray();
-        } catch (Exception e) {
-            // Prepare the return message.
-            GenericRecord response = new GenericData.Record(protocol.getType("Response"));
-            response.put("status", Status.INTERNAL_SERVER_ERROR.getStatusCode());
-            response.put("message", e.getMessage());
-
-            // Prepare the writer for generate a response.
-            DatumWriter<GenericRecord> responser = new GenericDatumWriter<>(protocol.getType("Response"));
-
-            // Prepare the output stream.
-            OutputStream out = new ByteArrayOutputStream();
-            Encoder binaryEncoder = EncoderFactory.get().binaryEncoder(out, null);
-
-            // Write the message into output stream.
-            responser.write(response, binaryEncoder);
-
-            // Flush the encoder buffer.
-            binaryEncoder.flush();
-
-            // Return the data into the router.
-            message = ((ByteArrayOutputStream) out).toByteArray();
-        } finally {
-            // Release the connection with the database.
-            Connections.getInstance().releaseUsers(connection);
-        }
-
-        // Return the response message.
-        return message;
+            // Return null because the operation no generates a response.
+            return null;
+        });
     }
 
-    public byte[] readUser(Delivery delivery) {
-        return null;
+    /**
+     * This method is used for read a user throught RPC channel.
+     * 
+     * When user is trying to login, other service module will try to read the user
+     * information, creating a RPC message to this server.
+     * 
+     * @param delivery The RPC petition.
+     * @return The response message.
+     * @throws Exception If an exception occurs.
+     */
+    private byte[] readUser(Delivery delivery) throws Exception {
+        return ServiceUtils.processMessage(delivery, "ReadUser", (consumedDatum) -> {
+            // Prepare the database connection.
+            UsersConn connection = Connections.getInstance().acquireUsers();
+            User user = null;
+
+            try {
+                // Try to recover the user from database.
+                user = connection.read((long) consumedDatum.get("id"));
+            } finally {
+                // Release the connection with the database.
+                Connections.getInstance().releaseUsers(connection);
+            }
+
+            return user;
+        });
     }
 
-    public byte[] updateUser(Delivery delivery) {
-        return null;
+    /**
+     * This method is used for update a user throught RPC channel.
+     * 
+     * Some modules needs update the user information, such as specific job module
+     * which works with user module.
+     * 
+     * @param delivery The RPC petition.
+     * @return The response message.
+     * @throws Exception If an exception occurs.
+     */
+    private byte[] updateUser(Delivery delivery) throws Exception {
+        return ServiceUtils.processMessage(delivery, "UpdateUser", (consumedDatum) -> {
+            // Prepare the database connection.
+            UsersConn connection = Connections.getInstance().acquireUsers();
+
+            try {
+                // Get the old user.
+                User auxUser = connection.read((long) consumedDatum.get("id"));
+
+                // Updates only the columns with new data.
+                User user = new User.Builder((long) consumedDatum.get("id"))
+                        .setName(consumedDatum.get("name") != null 
+                                ? (String) consumedDatum.get("name")
+                                : auxUser.getName())
+                        .setSurname(consumedDatum.get("surname") != null 
+                                ? (String) consumedDatum.get("surname")
+                                : auxUser.getSurname())
+                        .setEmail(consumedDatum.get("email") != null 
+                                ? (String) consumedDatum.get("email")
+                                : auxUser.getEmail())
+                        .setPassword(consumedDatum.get("password") != null 
+                                ? (String) consumedDatum.get("password")
+                                : auxUser.getPassword())
+                        .setTelephone(consumedDatum.get("telephone") != null 
+                                ? (String) consumedDatum.get("telephone")
+                                : auxUser.getTelephone())
+                        .setBirthday(consumedDatum.get("birthday") != null
+                                ? DatatypeConverter.parseDateTime((String) consumedDatum.get("birthday")).getTime()
+                                : auxUser.getBirthday())
+                        .setCountry(consumedDatum.get("country") != null
+                                ? Enum.valueOf(Country.class, (String) consumedDatum.get("country"))
+                                : auxUser.getCountry())
+                        .setAddress(consumedDatum.get("address") != null 
+                                ? (String) consumedDatum.get("address")
+                                : auxUser.getAddress())
+                        .setAddressInformation(consumedDatum.get("addressInformation") != null
+                                ? (String) consumedDatum.get("addressInformation")
+                                : auxUser.getAddressInformation())
+                        .build();
+
+                // Try to update the user from the database.
+                connection.update(user);
+            } finally {
+                // Release the connection with the database.
+                Connections.getInstance().releaseUsers(connection);
+            }
+
+            // Return null because the operation no generates a response.
+            return null;
+        });
     }
 
-    public byte[] deleteUser(Delivery delivery) {
-        return null;
+    /**
+     * This method is used for delete a user throught RPC channel.
+     * 
+     * In some cases, the modules need delete a user, which maybe is banned from the 
+     * service or another thing.
+     * 
+     * @param delivery The RPC petition.
+     * @return The response message.
+     * @throws Exception If an exception occurs.
+     */
+    private byte[] deleteUser(Delivery delivery) throws Exception {
+        return ServiceUtils.processMessage(delivery, "DeleteUser", (consumedDatum) -> {
+            // Prepare the database connection.
+            UsersConn connection = Connections.getInstance().acquireUsers();
+
+            try {
+                // Create a dummy user object with the id only.
+                User user = new User.Builder((long) consumedDatum.get("id")).build();
+
+                // Try to delete the user from the database.
+                connection.delete(user);
+            } finally {
+                // Release the connection with the database.
+                Connections.getInstance().releaseUsers(connection);
+            }
+
+            // Return null because the operation no generates a response.
+            return null;
+        });
     }
 
 }

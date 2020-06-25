@@ -6,7 +6,7 @@
             "name": "Request",
             "type": "record",
             "fields": [
-                { "name": "userId", "type": [ "long" ]}
+                { "name": "id", "type": [ "long" ]}
             ]
         },
         {
@@ -14,7 +14,8 @@
             "type": "record",
             "fields": [
                 { "name": "status", "type": [ "int" ] },
-                { "name": "message", "type": [ "null", "string" ], "default": null }
+                { "name": "message", "type": [ "null", "string" ], "default": null },
+                { "name": "object", "type": "null" }
             ]
         }
     ],

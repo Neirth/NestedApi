@@ -21,7 +21,7 @@
             "name": "Request",
             "type": "record",
             "fields": [
-                { "name": "userId", "type": [ "long" ] }
+                { "name": "id", "type": [ "long" ] }
             ]
         },
         {
