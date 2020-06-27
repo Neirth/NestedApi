@@ -26,7 +26,7 @@ You need a host with Linux and Docker support, also need the utility docker-comp
 ### Installing
 Only you need deploy with docker compose:
 > ``
-operator@nested-host: ~$ docker-compose -f production.yml up -d
+operator@nested-host: ~$ docker-compose -f docker-compose.yml up -d
 ``
 
 ## Built with
@@ -39,6 +39,11 @@ operator@nested-host: ~$ docker-compose -f production.yml up -d
 
 ## Contributing 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+
+## Join us into the community!
+This project not only stays in this repository, but also that there is a community behind willing to support it. Join and enjoy a good time with us!
+
+[![Discord](https://img.shields.io/discord/726426880823001248?label=Community&logo=discord&logoColor=ffffff&color=grey&labelColor=6A7EC2&style=for-the-badge)](https://discord.gg/t5D7PHz)
 
 ## Sponsor the project 
 If the project has helped you deploy your service, you could leave a donation as a token of appreciation. Well, doing this job only an arduous task.
