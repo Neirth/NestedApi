@@ -11,12 +11,15 @@ Please note we have a code of conduct, please follow it in all your interactions
    build.
 2. Update the README.md and Documentation with details of changes to the interface, this includes 
    new environment variables, exposed ports, useful file locations and container parameters.
-3. Request to migrate the changes through a Pull Request, the members who are contributing to the 
+3. For a better organization of the changes that occur in the repository. We will use the format of
+   [ Module ] - [ Commit message ] also counting as a module all the files that are not source code 
+   as "General".
+4. Request to migrate the changes through a Pull Request, the members who are contributing to the 
    repository, will be able to evaluate the quality of the Pull Request.
-4. If your Pull Request has a good quality of code (Well documented, code with some efficiency, 
+5. If your Pull Request has a good quality of code (Well documented, code with some efficiency, 
    etc ...) it will be integrated on the develop branch, combining with other community commits 
    that may be related.
-5. Commits migrated to the develop branch, after passing unit tests, will be integrated into the 
+6. Commits migrated to the develop branch, after passing unit tests, will be integrated into the 
    master branch with a new version. The versioning scheme we use is [SemVer](http://semver.org/). 
 
 ## Code of Conduct

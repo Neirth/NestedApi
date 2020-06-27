@@ -19,6 +19,7 @@
 	
 	<!-- Project submodules. -->
 	<modules>
+		<module>Authorization</module>
 		<module>Users</module>
 		<module>Payments</module>
 		<module>Invoices</module>
