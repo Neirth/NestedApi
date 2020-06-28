@@ -15,7 +15,7 @@ This project converts the endpoints of a RESTful API into components dedicated t
 
 Next, we will explain graphically how this project is composed:
 
-![NestedApiDiagram](./docs/assets/NestedApi-Diagram.png?raw=true)
+![NestedApiDiagram](./docs/assets/NestedApi-Diagram.svg?raw=true)
 
 In the diagram we can see how the services would be structured. Each service can have replicas and work with each other in a coordinated way. This is due to our api gateway, which also acts as a load balancer and the messaging service, which is based on RabbitMQ and the pub/sub model. Each module will be in charge of a particular task, in case another module needs to access the information of the original module, it will produce a message that will be later consumed by the module that provides that service. 
 
