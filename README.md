@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./docs/assets/NestedApi-logo.png?raw=true">
+  <img src="./docs/assets/NestedApi-logo.svg?raw=true">
 </p>
 
 Microservices based framework to create a backend services for the real world.
