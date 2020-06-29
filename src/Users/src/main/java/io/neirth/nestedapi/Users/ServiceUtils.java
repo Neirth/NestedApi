@@ -53,12 +53,14 @@ import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
-import org.apache.logging.log4j.Level;
+import org.jboss.logging.Logger;
 
 // Internal packages of the project.
 import io.neirth.nestedapi.Users.Templates.User;
 
 public class ServiceUtils {
+    private static Logger loggerSystem = Logger.getLogger(ServiceApp.class);
+    
     public interface RestCallback {
         ResponseBuilder run() throws Exception;
     }
@@ -155,8 +157,7 @@ public class ServiceUtils {
                 userEncoded.put("email", user.getEmail());
                 userEncoded.put("password", user.getPassword());
                 userEncoded.put("telephone", user.getTelephone());
-                userEncoded.put("birthday",
-                        (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")).format(user.getBirthday()));
+                userEncoded.put("birthday", (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")).format(user.getBirthday()));
                 userEncoded.put("country", user.getCountry().name());
                 userEncoded.put("address", user.getAddress());
                 userEncoded.put("addressInformation", user.getAddressInformation());
@@ -210,13 +211,13 @@ public class ServiceUtils {
      * @param Exception The exception catched.
      */
     public static void writeServerException(Exception e) {
-        if (ServiceApp.getLoggerSystem().getLevel() == Level.DEBUG) {
+        if (ServiceUtils.getLoggerSystem().isDebugEnabled()) {
             // If the log level is set to debug, write the trace stack.
-            ServiceApp.getLoggerSystem().debug("An exception has occurred, getting the stacktrace of the exception: ");
+            ServiceUtils.getLoggerSystem().debug("An exception has occurred, getting the stacktrace of the exception: ");
             e.printStackTrace();
         } else {
             // Information for production log.
-            ServiceApp.getLoggerSystem().error("An exception has occurred, " + e.toString());
+            ServiceUtils.getLoggerSystem().error("An exception has occurred, " + e.toString());
         }
     }
 
@@ -233,5 +234,14 @@ public class ServiceUtils {
 
         // Return the protocol as the stream.
         return loader.getResourceAsStream("/io/neirth/nestedapi/Users/Schemas/" + protocol + ".avpr");
+    }
+
+    /**
+     * Method to access the event log of this module.
+     * 
+     * @return The logger instance.
+     */
+    public static Logger getLoggerSystem() {
+        return loggerSystem;
     }
 }

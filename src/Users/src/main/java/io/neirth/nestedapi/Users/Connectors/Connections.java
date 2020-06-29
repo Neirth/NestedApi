@@ -214,6 +214,14 @@ public class Connections {
         return channel;
     }
 
+
+    /**
+     * Dummy method to initialize the components inside Connections class constructor.
+     */
+    public void init() {
+        return;
+    }
+
     /**
      * Obtains the only instance for this class.
      * 

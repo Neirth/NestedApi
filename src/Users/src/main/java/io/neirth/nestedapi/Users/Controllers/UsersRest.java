@@ -42,7 +42,6 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
 import javax.servlet.http.HttpServletRequest;
-import org.springframework.stereotype.Component;
 
 // Utilities used from Java Standard Framework
 import java.io.StringReader;
@@ -56,7 +55,6 @@ import io.neirth.nestedapi.Users.Connectors.UsersConn;
 import io.neirth.nestedapi.Users.Templates.Country;
 import io.neirth.nestedapi.Users.Templates.User;
 
-@Component
 @Path("/users")
 public class UsersRest {
     /**
