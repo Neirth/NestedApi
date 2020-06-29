@@ -5,12 +5,12 @@
 Microservices based framework to create a backend services for the real world.
 
 ## Deployment 
-This project is a Github Template, is to say, you can use this project for create a real backend service, only you need write the modules that you need. The modules they can use other programming language than Java, as long as it is compatible with Apache Avro, HTTP Request and the AMQP Protocol.
+This project is a Github Template, is to say, you can use this project for create a real backend service, only you need write the modules that you need. The modules they can use other programming language than Java, as long as it is compatible with the technologies that use the modules already available. Consult the documentation for more information.
 
 ## Why is project?
-The need comes from being able to focus the software production resources on the modules that will integrate the logic of our service, while a common base is reused, as for example happens with the payment or authentication endpoints, it is something recurring in the projects that I deploy, and the cost of maintaining all that code is quite expensive.
+This project aims to facilitate the times throughout the development cycle, allowing you to focus on the components that you really need to develop with your team. For this, despite the fact that this project is part of its modules written in Java 8, there is complete freedom to write your own modules in the programming language you want, as well as using your own components per module. We will focus on improving our modules so that they fulfill their objective correctly.
 
-## Who works this project?
+## How works this project?
 This project converts the endpoints of a RESTful API into components dedicated to a single purpose, thus allowing us to scale the components of our service to support large workloads.
 
 Next, we will explain graphically how this project is composed:
