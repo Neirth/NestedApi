@@ -4,7 +4,6 @@ version: '3.8'
 x-common-variables: &common-variables
   - NESTEDAPI_AMQP_BROKER=message-bus
   - NESTEDAPI_MAX_CONNECTIONS=3
-  - JDBC_DATABASE_URL=jdbc:postgresql://database/${POSTGRES_DB}?user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD}
   - RABBITMQ_AMQP_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@message-bus:5672/%2f
 
 services:
@@ -22,19 +21,6 @@ services:
     volumes:
       - ./configs/gateway-config.yml:/ambassador/ambassador-config
   
-  # Database Service
-  database:
-    container_name: database
-    image: docker.io/library/postgres:alpine
-    environments:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    networks:
-      - internal-network
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   # Bus Message Service
   message-bus:
     container_name: message-bus
@@ -51,44 +37,96 @@ services:
     build: ./src/Authorization
     environments: # Command for key generating: openssl rand -base64 172 | tr -d '\n'
       - NESTEDAPI_AUTH_KEY=${NESTEDAPI_AUTH_KEY}
+      - JDBC_DATABASE_URL=jdbc:postgresql://auth-database/${POSTGRES_DB}?user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD}
       - *common-variables
     deploy:
       replicas: 1
     networks:
       - internal-network
+
+  auth-database:
+    container_name: auth-database
+    image: docker.io/library/postgres:alpine
+    environments:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - internal-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   # Specific Module Service - Users
   users-service:
     container_name: users-service
     build: ./src/Users
     environments:
+      - JDBC_DATABASE_URL=jdbc:postgresql://users-database/${POSTGRES_DB}?user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD}
       - *common-variables
     deploy:
       replicas: 1
     networks:
       - internal-network
+
+  users-database:
+    container_name: users-database
+    image: docker.io/library/postgres:alpine
+    environments:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - internal-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   # Specific Module Service - Payments
   payments-service:
     container_name: payments-service
     build: ./src/Payments
     environments:
+      - JDBC_DATABASE_URL=jdbc:postgresql://payments-database/${POSTGRES_DB}?user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD}
       - *common-variables
     deploy:
       replicas: 1
     networks:
       - internal-network
 
+  payments-database:
+    container_name: payments-database
+    image: docker.io/library/postgres:alpine
+    environments:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - internal-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   # Specific Module Service - Invoices
   invoices-service:
     container_name: invoices-service
     build: ./src/Invoices
     environments:
+      - JDBC_DATABASE_URL=jdbc:postgresql://invoices-database/${POSTGRES_DB}?user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD}
       - *common-variables
     deploy:
       replicas: 1
     networks:
       - internal-network
+
+  invoices-database:
+    container_name: invoices-database
+    image: docker.io/library/postgres:alpine
+    environments:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - internal-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
 networks:
   # Internal Network
