@@ -25,11 +25,23 @@ public class ServiceApp {
         @Override
         public int run(String... args) throws Exception {
             try {
+                // Notify in the logs that the connectios are being initialized.
                 ServiceUtils.getLoggerSystem().info("Loading the connections...");
-                Connections.getInstance().init();
-                ServiceUtils.getLoggerSystem().info("Loaded the connections!!!");
 
+                // Initialize the instance of Connections, setting up the connections...
+                Connections.getInstance().init();
+                
+                // Notify in the logs that the server is ready.
+                ServiceUtils.getLoggerSystem().info("Ready for receive requests!");
+
+                // Wait when quarkus app shutdowns the application.
                 Quarkus.waitForExit();
+
+                // Notify in the log that the connections are being closed.
+                ServiceUtils.getLoggerSystem().info("Closing the connections...");
+
+                // Close all external connections.
+                Connections.getInstance().close();
             } catch(Exception e) {
                 ServiceUtils.writeServerException(e);
             } 

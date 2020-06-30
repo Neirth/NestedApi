@@ -1,26 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>io.neirth.nestedapi</groupId>
   <artifactId>Users</artifactId>
   <version>1.0.0</version>
-
   <name>Users</name>
 
   <properties>
+    <!-- Maven properties -->
+    <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.compiler.parameters>true</maven.compiler.parameters>
-    <surefire-plugin.version>2.22.1</surefire-plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <surefire-plugin.version>2.22.1</surefire-plugin.version>
 
+    <!-- Quarkus framework properties -->
     <quarkus-plugin.version>1.5.2.Final</quarkus-plugin.version>
     <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
     <quarkus.platform.version>1.5.2.Final</quarkus.platform.version>
-    <surefire-plugin.version>2.22.1</surefire-plugin.version>
+
+
+    <!-- Native Image properties -->
+    <quarkus.native.additional-build-args>--report-unsupported-elements-at-runtime</quarkus.native.additional-build-args>
+    <quarkus.package.type>native</quarkus.package.type>
   </properties>
 
   <dependencyManagement>
@@ -36,23 +40,41 @@
   </dependencyManagement>
 
   <dependencies>
-    <!-- Dependencies for Runtime & Compile Scopes -->
+    <!-- Quarkus dependencies -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-jsonb</artifactId>
     </dependency>
 
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jdbc-postgresql</artifactId>
+    </dependency>
+
+    <!-- JNA Dependencies -->
+    <dependency>
+      <groupId>jakarta.security.jacc</groupId>
+      <artifactId>jakarta.security.jacc-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+    </dependency>
+
+    <!-- Java Enterprise Dependencies -->
+    <dependency>
       <groupId>javax</groupId>
       <artifactId>javaee-api</artifactId>
       <version>8.0</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-    </dependency>
-
+    <!-- Service Message Dependencies -->
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
@@ -65,7 +87,7 @@
       <version>5.9.0</version>
     </dependency>
 
-    <!-- Dependencies for Unit Test Scoped -->
+    <!-- Quarkus-dependent JUnit Testing -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
@@ -76,21 +98,22 @@
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
     <pluginManagement>
-      <!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
       <plugins>
-        <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.1.0</version>
         </plugin>
+
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.0.2</version>
         </plugin>
+
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.0</version>
         </plugin>
+
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${surefire-plugin.version}</version>
@@ -101,18 +124,7 @@
             </systemPropertyVariables>
           </configuration>
         </plugin>
-        <plugin>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-maven-plugin</artifactId>
-          <version>${quarkus-plugin.version}</version>
-          <executions>
-            <execution>
-              <goals>
-                <goal>build</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
+
         <plugin>
           <groupId>org.apache.avro</groupId>
           <artifactId>avro-maven-plugin</artifactId>
@@ -153,6 +165,22 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-maven-plugin</artifactId>
+            <version>${quarkus-plugin.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>native-image</goal>
+                </goals>
+                <configuration>
+                  <enableHttpUrlHandler>true</enableHttpUrlHandler>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          
+          <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
             <version>${surefire-plugin.version}</version>
             <executions>
@@ -162,9 +190,11 @@
                   <goal>verify</goal>
                 </goals>
                 <configuration>
-                  <systemProperties>
+                  <systemPropertyVariables>
                     <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
-                  </systemProperties>
+                    <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                    <maven.home>${maven.home}</maven.home>
+                  </systemPropertyVariables>
                 </configuration>
               </execution>
             </executions>
@@ -172,6 +202,7 @@
         </plugins>
       </build>
       <properties>
+        <quarkus.native.additional-build-args>--report-unsupported-elements-at-runtime</quarkus.native.additional-build-args>
         <quarkus.package.type>native</quarkus.package.type>
       </properties>
     </profile>

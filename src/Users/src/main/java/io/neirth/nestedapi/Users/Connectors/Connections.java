@@ -23,6 +23,7 @@
  */
 package io.neirth.nestedapi.Users.Connectors;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -46,7 +47,7 @@ import io.neirth.nestedapi.Users.Controllers.UsersRpc;
  * speed up actions with the database. Thus avoiding the collapse of all threads
  * attacking the same connection.
  */
-public class Connections {
+public class Connections implements Closeable {
     private static Connections instance = null;
 
     // Variable of max connections.
@@ -172,7 +173,8 @@ public class Connections {
         // When the connection was instanced, before return to the caller method, we
         // initialize the datbase squema, in this case, only initialize the user table.
         try (Statement st = conn.createStatement()) {
-            st.execute("CREATE TABLE IF NOT EXISTS Users (id BIGSERIAL, name VARCHAR(50) NOT NULL, surname VARCHAR(50) NOT NULL, email VARCHAR(50) NOT NULL, password VARCHAR(32) NOT NULL, telephone TEXT, birthday DATE NOT NULL, country VARCHAR(2) NOT NULL, address TEXT, addressInformation TEXT, PRIMARY KEY(id));");
+            st.execute(
+                    "CREATE TABLE IF NOT EXISTS Users (id BIGSERIAL, name VARCHAR(50) NOT NULL, surname VARCHAR(50) NOT NULL, email VARCHAR(50) NOT NULL, password VARCHAR(32) NOT NULL, telephone TEXT, birthday DATE NOT NULL, country VARCHAR(2) NOT NULL, address TEXT, addressInformation TEXT, PRIMARY KEY(id));");
         }
 
         // When the connection instance is prepared, is a moment to return him to the
@@ -208,15 +210,16 @@ public class Connections {
 
         // Configure channel.
         channel.queueDeclare(queueName, true, false, false, null);
-        channel.basicConsume(queueName, true, deliverCallback, (consumerTag) -> {});
+        channel.basicConsume(queueName, true, deliverCallback, (consumerTag) -> {
+        });
 
         // Return the channel for future uses.
         return channel;
     }
 
-
     /**
-     * Dummy method to initialize the components inside Connections class constructor.
+     * Dummy method to initialize the components inside Connections class
+     * constructor.
      */
     public void init() {
         return;
@@ -233,5 +236,17 @@ public class Connections {
             instance = new Connections();
 
         return instance;
+    }
+
+    @Override
+    public void close() {
+        try {
+            for (int i = 0; i < maxConnections; i++) {
+                usersMgtList.get(i).close();
+                brokenList.get(i).close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
