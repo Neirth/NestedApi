@@ -28,8 +28,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.Semaphore;
 
 import com.rabbitmq.client.Channel;
@@ -58,13 +57,13 @@ public class Connections implements Closeable {
     private final Semaphore brokerSemaphore = new Semaphore(maxConnections);
 
     // Lists of connections.
-    private final List<UsersConn> usersMgtList = new ArrayList<>();
-    private final List<Channel> brokenList = new ArrayList<>();
+    private final Stack<UsersConn> usersMgtStack = new Stack<>();
+    private final Stack<Channel> brokerStack = new Stack<>();
 
     private Connections() throws Exception {
         for (int i = 0; i < maxConnections; i++) {
-            usersMgtList.add(new UsersConn(instanceConnection()));
-            brokenList.add(instanceChannel());
+            usersMgtStack.push(instanceConnection());
+            brokerStack.push(instanceChannel());
         }
     }
 
@@ -83,11 +82,7 @@ public class Connections implements Closeable {
      */
     public UsersConn acquireUsers() throws InterruptedException {
         userSemaphore.acquire();
-
-        UsersConn connection = usersMgtList.get(0);
-        usersMgtList.remove(0);
-
-        return connection;
+        return usersMgtStack.pop();
     }
 
     /**
@@ -103,9 +98,8 @@ public class Connections implements Closeable {
      * 
      * @param connection The user connection.
      */
-    public void releaseUsers(UsersConn connection) {
-        usersMgtList.add(connection);
-
+    public void releaseUsers(UsersConn conn) {
+        usersMgtStack.push(conn);
         userSemaphore.release();
     }
 
@@ -122,11 +116,7 @@ public class Connections implements Closeable {
      */
     public Channel acquireBroker() throws InterruptedException {
         brokerSemaphore.acquire();
-
-        Channel conn = brokenList.get(0);
-        brokenList.remove(0);
-
-        return conn;
+        return brokerStack.pop();
     }
 
     /**
@@ -143,8 +133,7 @@ public class Connections implements Closeable {
      * @param conn The broker connection.
      */
     public void releaseBroker(Channel conn) {
-        brokenList.add(conn);
-
+        brokerStack.push(conn);
         brokerSemaphore.release();
     }
 
@@ -159,7 +148,7 @@ public class Connections implements Closeable {
      * @throws SQLException Maybe, if the instance founds a error with the database,
      *                      he throws a exception.
      */
-    private Connection instanceConnection() throws Exception {
+    private UsersConn instanceConnection() throws Exception {
         // We try to load the database driver.
         try {
             Class.forName("org.postgresql.Driver");
@@ -173,13 +162,12 @@ public class Connections implements Closeable {
         // When the connection was instanced, before return to the caller method, we
         // initialize the datbase squema, in this case, only initialize the user table.
         try (Statement st = conn.createStatement()) {
-            st.execute(
-                    "CREATE TABLE IF NOT EXISTS Users (id BIGSERIAL, name VARCHAR(50) NOT NULL, surname VARCHAR(50) NOT NULL, email VARCHAR(50) NOT NULL, password VARCHAR(32) NOT NULL, telephone TEXT, birthday DATE NOT NULL, country VARCHAR(2) NOT NULL, address TEXT, addressInformation TEXT, PRIMARY KEY(id));");
+            st.execute("CREATE TABLE IF NOT EXISTS Users (id BIGSERIAL, name VARCHAR(50) NOT NULL, surname VARCHAR(50) NOT NULL, email VARCHAR(50) NOT NULL, password VARCHAR(32) NOT NULL, telephone TEXT, birthday DATE NOT NULL, country VARCHAR(2) NOT NULL, address TEXT, addressInformation TEXT, PRIMARY KEY(id));");
         }
 
         // When the connection instance is prepared, is a moment to return him to the
         // caller method.
-        return conn;
+        return new UsersConn(conn);
     }
 
     /**
@@ -241,10 +229,14 @@ public class Connections implements Closeable {
     @Override
     public void close() {
         try {
+            // Close all connections from this class.
             for (int i = 0; i < maxConnections; i++) {
-                usersMgtList.get(i).close();
-                brokenList.get(i).close();
+                usersMgtStack.pop().close();
+                brokerStack.pop().close();
             }
+            
+            // Set the instance variable equals a null.
+            instance = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
