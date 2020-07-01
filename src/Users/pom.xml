@@ -20,11 +20,6 @@
     <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
     <quarkus.platform.version>1.5.2.Final</quarkus.platform.version>
-
-
-    <!-- Native Image properties -->
-    <quarkus.native.additional-build-args>--report-unsupported-elements-at-runtime</quarkus.native.additional-build-args>
-    <quarkus.package.type>native</quarkus.package.type>
   </properties>
 
   <dependencyManagement>
