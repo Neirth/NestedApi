@@ -26,10 +26,10 @@
 
 	<!-- Project submodules. -->
 	<modules>
-		<!-- <module>Authorization</module> -->
+		<module>Authentication</module>
 		<module>Users</module>
-		<!-- <module>Payments</module> -->
-		<!-- <module>Invoices</module> -->
+		<module>Payments</module>
+		<module>Invoices</module>
 	</modules>
 
 	<!-- Project Dependencies. -->
