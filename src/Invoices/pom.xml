@@ -49,7 +49,7 @@
 
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-jdbc-postgresql</artifactId>
+      <artifactId>quarkus-mongodb-client</artifactId>
     </dependency>
 
     <!-- JNA Dependencies -->
