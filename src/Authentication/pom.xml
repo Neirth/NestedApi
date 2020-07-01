@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.neirth.nestedapi</groupId>
-  <artifactId>Authorization</artifactId>
+  <artifactId>Authentication</artifactId>
   <version>1.0.0</version>
 
-  <name>Authorization</name>
+  <name>Authentication</name>
 
   <properties>
     <!-- Maven properties -->
