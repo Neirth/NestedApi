@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.neirth.nestedapi.Authorization;
+package io.neirth.nestedapi.Authentication;
 
 public class ServiceApp {
     public static void main(String args[]) {
