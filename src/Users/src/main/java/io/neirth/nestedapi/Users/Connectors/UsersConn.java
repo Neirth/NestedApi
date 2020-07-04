@@ -65,8 +65,7 @@ public class UsersConn implements Closeable {
      * 
      * @param user The user to insert.
      * @return The new id of the user row.
-     * @throws NoSuchElementException The exception in the case that the desired
-     *                                object is not available.
+     * @throws SQLException The exception in case of problems with the database.
      */
     public long create(User user) throws SQLException {
         // Instance the new id.
@@ -195,7 +194,7 @@ public class UsersConn implements Closeable {
             readQuery.close();
             updateQuery.close();
             deleteQuery.close();
-    
+
             conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
