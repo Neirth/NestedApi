@@ -14,11 +14,9 @@ graph LR
 	end
 
   subgraph "Per-service Databases"
-  C <--> D([Specific Database])
   E <--> F([Specific Database])
   G <--> H([Specific Database])
-  I <--> J([Specific Database])
-  end  
+  end 
 
 	L(Cache Service) --- C
   L(Cache Service) --- E
