@@ -26,7 +26,12 @@ package io.neirth.nestedapi.Invoices.Connectors;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Currency;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -35,6 +40,7 @@ import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 
+import io.neirth.nestedapi.Invoices.Templates.Country;
 import io.neirth.nestedapi.Invoices.Templates.Invoice;
 
 public class InvoicesConn implements Closeable {
@@ -64,8 +70,7 @@ public class InvoicesConn implements Closeable {
 
         // Put all data from Map into a list.
         invoice.getProducts().forEach((key, value) -> {
-            products.add(new Document().append("productName", key).append("productPrize", value.getKey())
-                    .append("productCount", value.getValue()));
+            products.add(new Document().append("productName", key).append("productPrize", value.getKey()).append("productCount", value.getValue()));
         });
 
         // Generate a new bson document with invoice properties.
@@ -89,16 +94,41 @@ public class InvoicesConn implements Closeable {
 
     public Invoice read(String hexString) {
         Invoice invoice = null;
+        
+        // Recover the document from database.
+        Document document = collection.find(new Document("_id", hexString)).first();
 
+        if (document != null) {
+            // We build a new user object with the database information.
+            Map<String, Map.Entry<Float, Integer>> products = new HashMap<>();
+            // TODO: We retrieve the emblematic documents within the invoice document.
+
+            // Build the Invoice object.
+            invoice = new Invoice.Builder(hexString)
+                                 .setUserId(document.getLong("userId"))
+                                 .setCreationDate(document.getDate("creationDate"))
+                                 .setDeliveryAddress(document.getString("deliveryAddress"))
+                                 .setDeliveryPostcode(document.getString("deliveryPostcode"))
+                                 .setDeliveryCountry(Enum.valueOf(Country.class, document.getString("deliveryCountry")))
+                                 .setDeliveryCurrency(Currency.getInstance(document.getString("deliveryCurrency")))
+                                 .setProducts(products)
+                                 .build();
+        } else {
+            // If the case where the item doesn't exist, throws a exception warning for this
+            // situation.
+            throw new NoSuchElementException("The element " + hexString + " is not available in the database.");
+        }
+
+        // Return the object.
         return invoice;
     }
 
     public void update(Invoice invoice) {
-
+        throw new UnsupportedOperationException("This operation is not supported in the module.");
     }
 
     public void delete(Invoice invoice) {
-
+        throw new UnsupportedOperationException("This operation is not supported in the module.");
     }
 
     @Override

@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class Invoice {
-    private Long id;
+    private String id;
     private Long userId;
     private Date creationDate;
     private String deliveryAddress;
@@ -41,7 +41,7 @@ public class Invoice {
     private Map<String, Map.Entry<Float, Integer>> products;
 
     public static class Builder {
-        private Long id;
+        private String id;
         private Long userId;
         private Date creationDate;
         private String deliveryAddress;
@@ -51,15 +51,9 @@ public class Invoice {
         private String deliveryAddressInformation;
         private Map<String, Map.Entry<Float, Integer>> products;
 
-        public Builder(Long id) {
+        public Builder(String id) {
             this.id = id;
             this.products = new HashMap<>();
-        }
-
-        public Builder setId(Long id) {
-            this.id = id;
-
-            return this;
         }
 
         public Builder setUserId(Long userId) {
@@ -92,8 +86,10 @@ public class Invoice {
             return this;
         }
 
-        public void setDeliveryCurrency(Currency deliveryCurrency) {
+        public Builder setDeliveryCurrency(Currency deliveryCurrency) {
             this.deliveryCurrency = deliveryCurrency;
+
+            return this;
         }
 
         public Builder setDeliveryAddressInformation(String deliveryAddressInformation) {
@@ -102,8 +98,8 @@ public class Invoice {
             return this;
         }
 
-        public Builder addProduct(String productName, Map.Entry<Float, Integer> productProperties) {
-            products.put(productName, productProperties);
+        public Builder setProducts(Map<String, Map.Entry<Float, Integer>> products) {
+            this.products = products;
 
             return this;
         }
@@ -113,7 +109,7 @@ public class Invoice {
         }
     }
 
-    private Invoice(Long id, Long userId, Date creationDate, String deliveryAddress, String deliveryPostcode,
+    private Invoice(String id, Long userId, Date creationDate, String deliveryAddress, String deliveryPostcode,
                     Country deliveryCountry, Currency deliveryCurrency, String deliveryAddressInformation, Map<String, Entry<Float, Integer>> products) {
         this.id = id;
         this.userId = userId;
@@ -126,7 +122,7 @@ public class Invoice {
         this.products = products;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 

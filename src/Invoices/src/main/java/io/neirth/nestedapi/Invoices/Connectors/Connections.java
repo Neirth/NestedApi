@@ -24,7 +24,6 @@
 package io.neirth.nestedapi.Invoices.Connectors;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.Stack;
 import java.util.concurrent.Semaphore;
 
@@ -32,9 +31,10 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
-import io.neirth.nestedapi.Invoices.Controllers.InvoicesRpc;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+
+import io.neirth.nestedapi.Invoices.Controllers.InvoicesRpc;
 
 public class Connections implements Closeable {
     private static Connections instance = null;
@@ -50,8 +50,11 @@ public class Connections implements Closeable {
     private final Stack<InvoicesConn> invoicesConnStack = new Stack<>();
     private final Stack<Channel> brokerStack = new Stack<>();
 
-    private Connections() {
-
+    private Connections() throws Exception {
+        for (int i = 0; i < maxConnections; i++) {
+            invoicesConnStack.push(instanceConnection());
+            brokerStack.push(instanceChannel());
+        }
     }
 
     public InvoicesConn acquireInvoice() throws InterruptedException {
@@ -115,7 +118,7 @@ public class Connections implements Closeable {
         return;
     }
 
-    public static Connections getInstance() {
+    public static Connections getInstance() throws Exception {
         if (instance == null)
             instance = new Connections();
 
@@ -123,8 +126,16 @@ public class Connections implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
-        // TODO Auto-generated method stub
+    public void close() {
+        try {
+            for (int i = 0; i < maxConnections; i++) {
+                invoicesConnStack.pop().close();
+                brokerStack.pop().close();
+            }
 
+            instance = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
