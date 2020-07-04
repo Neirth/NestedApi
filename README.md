@@ -39,7 +39,8 @@ operator@nested-host: ~$ docker-compose -f docker-compose.yml up -d
 * Quarkus Framework - Used for run the code from the module project, and gets the native build.
 * Docker - For package the project and the dependencies inside a OCI contanier.
 * Ambassador - For centralize all microservice endpoints into single API URL using API Gateway Concept.
-* PostgreSQL - Used for provide a high-performance database.
+* PostgreSQL - Used for provide a high-performance database for users module.
+* MongoDB - Used for provide a high-performance database for invoices module.
 
 ## Contributing 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
