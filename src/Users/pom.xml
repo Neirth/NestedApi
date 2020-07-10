@@ -20,6 +20,9 @@
     <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
     <quarkus.platform.version>1.5.2.Final</quarkus.platform.version>
+
+    <!-- Avro libraries properties -->
+    <avro.version>1.10.0</avro.version>
   </properties>
 
   <dependencyManagement>
@@ -73,13 +76,13 @@
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
-      <version>1.9.2</version>
+      <version>${avro.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.avro</groupId>
-      <artifactId>avro-tools</artifactId>
-      <version>1.9.2</version>
+      <artifactId>avro-ipc</artifactId>
+      <version>${avro.version}</version>
     </dependency>
   
     <dependency>
