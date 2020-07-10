@@ -27,9 +27,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Currency;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -42,6 +39,7 @@ import com.mongodb.client.MongoCollection;
 
 import io.neirth.nestedapi.Invoices.Templates.Country;
 import io.neirth.nestedapi.Invoices.Templates.Invoice;
+import io.neirth.nestedapi.Invoices.Templates.Product;
 
 public class InvoicesConn implements Closeable {
     private final MongoClient conn;
@@ -57,10 +55,10 @@ public class InvoicesConn implements Closeable {
     }
 
     /**
-     * Method to insert in the database a row with user information.
+     * Method to insert in the database a row with invoice information.
      * 
-     * @param invoice The user to insert.
-     * @return The new id of the user row.
+     * @param invoice The invoice to insert.
+     * @return The new id of the invoice document.
      * @throws MongoWriteException The exception in case of problems with the
      *                             database.
      */
@@ -69,8 +67,8 @@ public class InvoicesConn implements Closeable {
         List<Document> products = new ArrayList<>();
 
         // Put all data from Map into a list.
-        invoice.getProducts().forEach((key, value) -> {
-            products.add(new Document().append("productName", key).append("productPrize", value.getKey()).append("productCount", value.getValue()));
+        invoice.getProducts().forEach((value) -> {
+            products.add(new Document().append("productName", value.getProductName()).append("productPrice", value.getProductPrice()).append("productAmount", value.getProductAmount()));
         });
 
         // Generate a new bson document with invoice properties.
@@ -99,10 +97,6 @@ public class InvoicesConn implements Closeable {
         Document document = collection.find(new Document("_id", hexString)).first();
 
         if (document != null) {
-            // We build a new user object with the database information.
-            Map<String, Map.Entry<Float, Integer>> products = new HashMap<>();
-            // TODO: We retrieve the emblematic documents within the invoice document.
-
             // Build the Invoice object.
             invoice = new Invoice.Builder(hexString)
                                  .setUserId(document.getLong("userId"))
@@ -111,7 +105,7 @@ public class InvoicesConn implements Closeable {
                                  .setDeliveryPostcode(document.getString("deliveryPostcode"))
                                  .setDeliveryCountry(Enum.valueOf(Country.class, document.getString("deliveryCountry")))
                                  .setDeliveryCurrency(Currency.getInstance(document.getString("deliveryCurrency")))
-                                 .setProducts(products)
+                                 .setProducts(document.getList("products", Product.class))
                                  .build();
         } else {
             // If the case where the item doesn't exist, throws a exception warning for this

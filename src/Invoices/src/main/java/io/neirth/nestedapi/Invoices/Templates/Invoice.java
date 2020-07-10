@@ -23,11 +23,10 @@
  */
 package io.neirth.nestedapi.Invoices.Templates;
 
+import java.util.ArrayList;
 import java.util.Currency;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 
 public class Invoice {
     private String id;
@@ -38,7 +37,7 @@ public class Invoice {
     private Country deliveryCountry;
     private Currency deliveryCurrency;
     private String deliveryAddressInformation;
-    private Map<String, Map.Entry<Float, Integer>> products;
+    private List<Product> products;
 
     public static class Builder {
         private String id;
@@ -49,11 +48,11 @@ public class Invoice {
         private Country deliveryCountry;
         private Currency deliveryCurrency;
         private String deliveryAddressInformation;
-        private Map<String, Map.Entry<Float, Integer>> products;
+        private List<Product> products;
 
         public Builder(String id) {
             this.id = id;
-            this.products = new HashMap<>();
+            this.products = new ArrayList<>();
         }
 
         public Builder setUserId(Long userId) {
@@ -98,7 +97,7 @@ public class Invoice {
             return this;
         }
 
-        public Builder setProducts(Map<String, Map.Entry<Float, Integer>> products) {
+        public Builder setProducts(List<Product> products) {
             this.products = products;
 
             return this;
@@ -110,7 +109,7 @@ public class Invoice {
     }
 
     private Invoice(String id, Long userId, Date creationDate, String deliveryAddress, String deliveryPostcode,
-                    Country deliveryCountry, Currency deliveryCurrency, String deliveryAddressInformation, Map<String, Entry<Float, Integer>> products) {
+                    Country deliveryCountry, Currency deliveryCurrency, String deliveryAddressInformation, List<Product> products) {
         this.id = id;
         this.userId = userId;
         this.creationDate = creationDate;
@@ -142,7 +141,7 @@ public class Invoice {
         return deliveryAddressInformation;
     }
 
-    public Map<String, Map.Entry<Float, Integer>> getProducts() {
+    public List<Product> getProducts() {
         return products;
     }
 
