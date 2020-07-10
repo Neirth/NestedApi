@@ -77,6 +77,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro-tools</artifactId>
+      <version>1.9.2</version>
+    </dependency>
+  
+    <dependency>
       <groupId>com.rabbitmq</groupId>
       <artifactId>amqp-client</artifactId>
       <version>5.9.0</version>
@@ -129,18 +135,14 @@
               <id>schemas</id>
               <phase>generate-sources</phase>
               <goals>
-                <goal>schema</goal>
                 <goal>protocol</goal>
-                <goal>idl-protocol</goal>
               </goals>
               <configuration>
-                <excludes>
-                  <exclude>**/mapred/tether/**</exclude>
-                </excludes>
+                <includes>
+                  <include>*.avpr</include>
+                </includes>
                 <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
-                <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
-                <testSourceDirectory>${project.basedir}/src/test/avro/</testSourceDirectory>
-                <testOutputDirectory>${project.basedir}/src/test/java/</testOutputDirectory>
+                <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
               </configuration>
             </execution>
           </executions>
