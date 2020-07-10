@@ -26,6 +26,7 @@ version: '3.8'
 # Common envoriment variables used in all service containers.
 x-common-variables: &common-variables
   - NESTEDAPI_MAX_CONNECTIONS=3
+  - NESTEDAPI_AUTH_KEY=${NESTEDAPI_AUTH_KEY}
   - RABBITMQ_AMQP_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@message-bus:5672/%2f
 
 services:
@@ -58,8 +59,6 @@ services:
     container_name: auth-service
     build: ./src/Authentication
     environments: # Command for key generating: openssl rand -base64 172 | tr -d '\n'
-      - NESTEDAPI_AUTH_KEY=${NESTEDAPI_AUTH_KEY}
-      - JDBC_DATABASE_URL=jdbc:postgresql://auth-database/${POSTGRES_DB}?user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD}
       - *common-variables
     deploy:
       replicas: 1
