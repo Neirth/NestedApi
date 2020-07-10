@@ -23,10 +23,11 @@
  */
 package io.neirth.nestedapi.Invoices.Controllers;
 
+// Used libraries from Java Standard.
 import java.text.SimpleDateFormat;
-
 import java.util.NoSuchElementException;
 
+// Used libraries from Java Enterprise.
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -41,6 +42,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
+// Internal packages of the project.
 import io.neirth.nestedapi.Invoices.ServiceUtils;
 import io.neirth.nestedapi.Invoices.Connectors.Connections;
 import io.neirth.nestedapi.Invoices.Connectors.InvoicesConn;
