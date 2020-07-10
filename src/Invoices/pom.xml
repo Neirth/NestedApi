@@ -21,6 +21,9 @@
     <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
     <quarkus.platform.version>1.5.2.Final</quarkus.platform.version>
+
+    <!-- Avro libraries properties -->
+    <avro.version>1.10.0</avro.version>
   </properties>
 
   <dependencyManagement>
@@ -74,7 +77,13 @@
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
-      <version>1.9.2</version>
+      <version>${avro.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro-ipc</artifactId>
+      <version>${avro.version}</version>
     </dependency>
 
     <dependency>
@@ -130,18 +139,14 @@
               <id>schemas</id>
               <phase>generate-sources</phase>
               <goals>
-                <goal>schema</goal>
                 <goal>protocol</goal>
-                <goal>idl-protocol</goal>
               </goals>
               <configuration>
-                <excludes>
-                  <exclude>**/mapred/tether/**</exclude>
-                </excludes>
+                <includes>
+                  <include>*.avpr</include>
+                </includes>
                 <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
-                <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
-                <testSourceDirectory>${project.basedir}/src/test/avro/</testSourceDirectory>
-                <testOutputDirectory>${project.basedir}/src/test/java/</testOutputDirectory>
+                <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
               </configuration>
             </execution>
           </executions>
