@@ -219,9 +219,13 @@ public class Connections implements Closeable {
      * @return The class instance.
      * @throws Exception Any exception throwed.
      */
-    public static Connections getInstance() throws Exception {
+    public static Connections getInstance() {
         if (instance == null)
-            instance = new Connections();
+            try {
+                instance = new Connections();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         return instance;
     }

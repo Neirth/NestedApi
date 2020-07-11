@@ -4,7 +4,7 @@
     "types": [
         {
             "type": "record",
-            "name": "User",
+            "name": "UserObj",
             "fields": [
                 { "name": "id", "type": [ "null", "long" ], "default": null },
                 { "name": "name", "type": [ "null", "string" ], "default": null },
@@ -23,7 +23,7 @@
             "type": "record",
             "fields": [
                 { "name": "id", "type": [ "null", "long" ], "default": null },
-                { "name": "user", "type": [ "null", "User" ], "default": null }
+                { "name": "user", "type": [ "null", "UserObj" ], "default": null }
             ]
         },
         {
@@ -31,7 +31,7 @@
             "name": "Response",
             "fields": [
                 { "name": "status", "type": [ "int" ] },
-                { "name": "object", "type": [ "null", "User" ], "default": null  },
+                { "name": "object", "type": [ "null", "UserObj" ], "default": null  },
                 { "name": "object_id", "type": [ "null", "long" ], "default": null },
                 { "name": "message", "type": [ "null", "string" ], "default": null }
             ]
