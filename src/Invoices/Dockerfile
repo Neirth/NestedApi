@@ -28,12 +28,15 @@ RUN yum install --installroot /mnt/rootfs --releasever 8 --setopt install_weak_d
 RUN rm -rf /mnt/rootfs/var/cache/*
 RUN rm -rf /mnt/rootfs/var/lib/rpm
 RUN mkdir /mnt/rootfs/app
+RUN chown daemon:daemon /mnt/rootfs/app
 
 ## Stage 3 : create the docker final image
 FROM scratch AS runner
 
 COPY --from=ubi-micro-build /mnt/rootfs/ /
 COPY --from=build /usr/src/app/target/*-runner /app/worker
+
+USER daemon
 
 ENV PORT 8080
 EXPOSE 8080
