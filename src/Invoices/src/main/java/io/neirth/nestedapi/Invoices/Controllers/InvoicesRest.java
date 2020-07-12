@@ -99,6 +99,9 @@ public class InvoicesRest {
             } catch (NoSuchElementException e) {
                 // If the user was not found, write a not found response.
                 response = Response.status(Status.NOT_FOUND);
+            } catch (IllegalArgumentException e) {
+                // If the hex id is not valid, write a bad request response.
+                response = Response.status(Status.BAD_REQUEST);
             } finally {
                 // Return the invoices connection.
                 Connections.getInstance().releaseInvoice(conn);
