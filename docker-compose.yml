@@ -106,7 +106,8 @@ services:
     container_name: invoices-service
     build: ./src/Invoices
     environments:
-      - MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}:invoices-database:27017/
+      - MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@invoices-database:27017/
+      - MONGODB_DATABASE=invoices
       - *common-variables
     deploy:
       replicas: 1
