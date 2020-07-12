@@ -2,12 +2,12 @@ package io.neirth.nestedapi.Invoices.Templates;
 
 public class Product {
     private String productName;
-    private Float productPrice;
+    private Double productPrice;
     private Integer productAmount;
 
     public static class Builder {
         private String productName;
-        private Float productPrice;
+        private Double productPrice;
         private Integer productAmount;
 
         public Builder setProductName(String productName) {
@@ -16,7 +16,7 @@ public class Product {
             return this;
         }
     
-        public Builder setProductPrice(Float productPrice) {
+        public Builder setProductPrice(Double productPrice) {
             this.productPrice = productPrice;
 
             return this;
@@ -33,7 +33,7 @@ public class Product {
         }
     }
 
-    private Product(String productName, Float productPrice, Integer productAmount) {
+    private Product(String productName, Double productPrice, Integer productAmount) {
         this.productName = productName;
         this.productPrice = productPrice;
         this.productAmount = productAmount;
@@ -43,7 +43,7 @@ public class Product {
         return productName;
     }
 
-    public Float getProductPrice() {
+    public Double getProductPrice() {
         return productPrice;
     }
 

@@ -26,13 +26,16 @@ package io.neirth.nestedapi.Invoices.Connectors;
 import java.io.Closeable;
 import java.util.Stack;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
-
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import com.mongodb.connection.SocketSettings;
 
 import io.neirth.nestedapi.Invoices.Controllers.InvoicesRpc;
 
@@ -51,6 +54,7 @@ public class Connections implements Closeable {
     private final Stack<Channel> brokerStack = new Stack<>();
 
     private Connections() throws Exception {
+        // Open the rest of connections.
         for (int i = 0; i < maxConnections; i++) {
             invoicesConnStack.push(instanceConnection());
             brokerStack.push(instanceChannel());
@@ -78,11 +82,19 @@ public class Connections implements Closeable {
     }
 
     private InvoicesConn instanceConnection() throws Exception {
-        // Connect the Server into MongoDB.
-        MongoClient conn = MongoClients.create(System.getenv("MONGODB_URI"));
+        // Set the application timeout to connect with the database.
+        // FIXME: Quarkus mongodb ignores the next line.
+        SocketSettings socketSettings = SocketSettings.builder().connectTimeout(3000, TimeUnit.MILLISECONDS).build();
 
-        // We initialize the collection in the database if it is not initialized.
-        conn.getDatabase("invoices").createCollection("invoices");
+        // Connect the Server into MongoDB.
+        MongoClient conn = MongoClients.create(MongoClientSettings.builder()
+                                              .retryReads(true).retryWrites(true)
+                                              .applyConnectionString(new ConnectionString(System.getenv("MONGODB_URI")))
+                                              .applyToSocketSettings(block -> block.applySettings(socketSettings))
+                                              .build());
+        
+        // Forces check of the connection with simple documents count.
+        conn.getDatabase(System.getenv("MONGODB_DATABASE")).getCollection("invoices").countDocuments();
 
         // Return the InvoicesConn with connection set.
         return new InvoicesConn(conn);
@@ -107,9 +119,8 @@ public class Connections implements Closeable {
 
         // Configure channel.
         channel.queueDeclare(queueName, true, false, false, null);
-        channel.basicConsume(queueName, true, deliverCallback, (consumerTag) -> {
-        });
-
+        channel.basicConsume(queueName, true, deliverCallback, (consumerTag) -> { });
+        
         // Return the channel for future uses.
         return channel;
     }
@@ -118,9 +129,13 @@ public class Connections implements Closeable {
         return;
     }
 
-    public static Connections getInstance() throws Exception {
+    public static Connections getInstance() {
         if (instance == null)
-            instance = new Connections();
+            try {
+                instance = new Connections();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         return instance;
     }

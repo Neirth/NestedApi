@@ -24,11 +24,8 @@
 package io.neirth.nestedapi.Users.Controllers;
 
 // Used libraries from Java Standard.
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.NoSuchElementException;
 
@@ -73,8 +70,7 @@ public class UsersRpc implements CreateUser, ReadUser, UpdateUser, DeleteUser {
             String type = (String) delivery.getProperties().getHeaders().get("x-remote-method");
 
             // Read the request.
-            Request request = new Request();
-            request.readExternal(new ObjectInputStream(new ByteArrayInputStream(delivery.getBody())));
+            Request request = Request.fromByteBuffer(ByteBuffer.wrap(delivery.getBody()));
 
             // Prepare the response.
             Response response = null;
@@ -95,19 +91,12 @@ public class UsersRpc implements CreateUser, ReadUser, UpdateUser, DeleteUser {
                     break;
             }
 
-            // Write response into bytearray
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            response.writeExternal(new ObjectOutputStream(out));
-
-            // We ensure the bytes are written.
-            out.flush();
-
             // Prepare the properties of the response.
             BasicProperties replyProps = new BasicProperties.Builder()
                     .correlationId(delivery.getProperties().getCorrelationId()).build();
 
             // Publish the response into the private queue and sets the acknowledge.
-            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, out.toByteArray());
+            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.toByteBuffer().array());
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         } catch (Exception e) {
             // In the case of crash, print the stack trace.

@@ -24,11 +24,16 @@
 package io.neirth.nestedapi.Invoices.Controllers;
 
 // Used libraries from Java Standard.
+import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 // Used libraries from Java Enterprise.
+import javax.persistence.EnumType;
+import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
 
 // Used libraries for AMQP operations.
@@ -37,29 +42,36 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
 // Internal packages of the project.
-import io.neirth.nestedapi.Invoices.ServiceUtils;
 import io.neirth.nestedapi.Invoices.Connectors.Connections;
 import io.neirth.nestedapi.Invoices.Connectors.InvoicesConn;
+import io.neirth.nestedapi.Invoices.Schemas.CreateInvoice;
+import io.neirth.nestedapi.Invoices.Schemas.InvoiceObj;
+import io.neirth.nestedapi.Invoices.Schemas.ProductObj;
+import io.neirth.nestedapi.Invoices.Schemas.ReadInvoice;
+import io.neirth.nestedapi.Invoices.Schemas.Request;
+import io.neirth.nestedapi.Invoices.Schemas.Response;
 import io.neirth.nestedapi.Invoices.Templates.Country;
 import io.neirth.nestedapi.Invoices.Templates.Invoice;
-import io.neirth.nestedapi.Invoices.Templates.Product;
 
-public class InvoicesRpc {
+public class InvoicesRpc implements CreateInvoice, ReadInvoice {
     public void routeDelivery(Channel channel, Delivery delivery) {
-        // Obtain a called method.
-        String type = (String) delivery.getProperties().getHeaders().get("x-remote-method");
-
-        // Prepare the response.
-        byte[] response = null;
-
         try {
+            // Obtain a called method.
+            String type = (String) delivery.getProperties().getHeaders().get("x-remote-method");
+
+            // Read the request.
+            Request request = Request.fromByteBuffer(ByteBuffer.wrap(delivery.getBody()));
+
+            // Prepare the response.
+            Response response = null;
+
             // Depending of the method called, we route the petition into the real method.
             switch (type) {
                 case "CreateInvoice":
-                    response = createInvoice(delivery);
+                    response = CreateInvoice(request);
                     break;
                 case "ReadInvoice":
-                    response = readInvoice(delivery);
+                    response = ReadInvoice(request);
                     break;
             }
 
@@ -68,7 +80,7 @@ public class InvoicesRpc {
                     .correlationId(delivery.getProperties().getCorrelationId()).build();
 
             // Publish the response into the private queue and sets the acknowledge.
-            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response);
+            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.toByteBuffer().array());
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         } catch (Exception e) {
             // In the case of crash, print the stack trace.
@@ -76,49 +88,103 @@ public class InvoicesRpc {
         }
     }
 
-    private byte[] createInvoice(Delivery delivery) throws Exception {
-        return ServiceUtils.processMessage(delivery, "CreateInvoice", (consumedDatum) -> {
-            InvoicesConn conn = Connections.getInstance().acquireInvoice();
+    @Override
+    public Response ReadInvoice(Request request) {
+        // Prepare the conn and response variable
+        InvoicesConn conn = null;
+        Response response = new Response();
 
-            try {
-                List<Product> products = new ArrayList<>();
-                // TODO: Recover the products list from invoice.
+        try {
+            // Prepare the database connection.
+            conn = Connections.getInstance().acquireInvoice();
 
-                Invoice invoice = new Invoice.Builder(null)
-                            .setUserId((Long) consumedDatum.get("userId"))
-                            .setCreationDate(DatatypeConverter.parseDateTime((String) consumedDatum.get("creationDate")).getTime())
-                            .setDeliveryAddress((String) consumedDatum.get("deliveryAddress"))
-                            .setDeliveryCountry(Enum.valueOf(Country.class, (String) consumedDatum.get("deliveryCountry")))
-                            .setDeliveryCurrency(Currency.getInstance((String) consumedDatum.get("deliveryCurrency")))
-                            .setDeliveryPostcode((String) consumedDatum.get("deliveryPostcode"))
-                            .setDeliveryAddressInformation((String) consumedDatum.get("deliveryAddressInformation"))
-                            .setProducts(products)
-                            .build();
+            // Read the invoice object.
+            Invoice invoice = conn.read(request.getId().toString());
 
-                conn.create(invoice);           
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                Connections.getInstance().releaseInvoice(conn);
-            }
+            // Insert properties from object into message.
+            InvoiceObj invoiceObj = new InvoiceObj();
+            invoiceObj.setId(invoice.getId());
+            invoiceObj.setUserId(invoice.getUserId());
+            invoiceObj.setCreationDate((new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")).format(invoice.getCreationDate()));
+            invoiceObj.setDeliveryAddress(invoice.getDeliveryAddress());
+            invoiceObj.setDeliveryPostcode(invoice.getDeliveryPostcode());
+            invoiceObj.setDeliveryCountry(invoice.getDeliveryCountry().getCountryName());
+            invoiceObj.setDeliveryCurrency(invoice.getDeliveryCurrency().getCurrencyCode());
+            invoiceObj.setDeliveryAddressInformation(invoice.getDeliveryAddressInformation());
 
-            return null;
-        });
+            // We create the products array.
+            List<ProductObj> productsArray = new ArrayList<>();
+
+            // Insert the products inside array.
+            invoice.getProducts().forEach((value) -> {
+                ProductObj productObj = new ProductObj();
+                productObj.setProductName(value.getProductName());
+                productObj.setProductPrice(value.getProductPrice());
+                productObj.setProductAmount(value.getProductAmount());
+
+                productsArray.add(productObj);
+            });
+
+            // Set the products list into message.
+            invoiceObj.setProducts(productsArray);
+
+            // Set the ok status code
+            response.put("status", Status.OK.getStatusCode());
+            response.put("object", invoiceObj);
+        } catch (NoSuchElementException e) {
+            response.put("status", Status.NOT_FOUND.getStatusCode());
+            response.put("message", e.getMessage());
+        } catch (Exception e) {
+            response.put("status", Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            response.put("message", e.getMessage());
+        } finally {
+            // Release the connection with the database.
+            Connections.getInstance().releaseInvoice(conn);
+        }
+
+        // Return the response.
+        return response;
     }
 
-    private byte[] readInvoice(Delivery delivery) throws Exception {
-        return ServiceUtils.processMessage(delivery, "ReadInvoice", (consumedDatum) -> {
-            InvoicesConn conn = Connections.getInstance().acquireInvoice();
+    @Override
+    public Response CreateInvoice(Request request) {
+        // Prepare the conn and response variable
+        InvoicesConn conn = null;
+        Response response = new Response();
 
-            Invoice invoice = null;
+        try {
+            // Prepare the database connection.
+            conn = Connections.getInstance().acquireInvoice();
 
-            try {
-                invoice = conn.read((String) consumedDatum.get("id"));
-            } finally {
-                Connections.getInstance().releaseInvoice(conn);
-            }
+            // Build the invoice object.
+            Invoice invoice = new Invoice.Builder(null)
+                    .setUserId(request.getInvoice().getUserId())
+                    .setCreationDate(DatatypeConverter.parseDateTime(request.getInvoice().getCreationDate().toString()).getTime())
+                    .setDeliveryAddress(request.getInvoice().getDeliveryAddress().toString())
+                    .setDeliveryAddressInformation(request.getInvoice().getDeliveryAddressInformation().toString())
+                    .setDeliveryCountry(EnumType.valueOf(Country.class, request.getInvoice().getDeliveryCountry().toString()))
+                    .setDeliveryCurrency(Currency.getInstance(request.getInvoice().getDeliveryCurrency().toString()))
+                    .setDeliveryPostcode(request.getInvoice().getDeliveryPostcode().toString())
+                    .build();
 
-            return invoice;
-        });
+            // Insert the invoice into database.
+            String id = conn.create(invoice);
+
+            // Set the ok status code
+            response.put("status", Status.OK.getStatusCode());
+            response.put("object_id", id);
+        } catch (NoSuchElementException e) {
+            response.put("status", Status.NOT_FOUND.getStatusCode());
+            response.put("message", e.getMessage());
+        } catch (Exception e) {
+            response.put("status", Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            response.put("message", e.getMessage());
+        } finally {
+            // Release the connection with the database.
+            Connections.getInstance().releaseInvoice(conn);
+        }
+
+        // Return the response.
+        return response;
     }
 }

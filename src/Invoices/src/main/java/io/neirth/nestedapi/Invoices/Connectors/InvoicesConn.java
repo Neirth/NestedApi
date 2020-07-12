@@ -51,7 +51,7 @@ public class InvoicesConn implements Closeable {
      */
     InvoicesConn(MongoClient conn) {
         this.conn = conn;
-        this.collection = conn.getDatabase("invoices").getCollection("invoices");
+        this.collection = conn.getDatabase(System.getenv("MONGODB_DATABASE")).getCollection("invoices");
     }
 
     /**
@@ -75,7 +75,8 @@ public class InvoicesConn implements Closeable {
         Document invoiceDoc = new Document("_id", new ObjectId());
 
         // Put the invoice properties.
-        invoiceDoc.append("userId", invoice.getUserId()).append("creationDate", invoice.getCreationDate())
+        invoiceDoc.append("userId", invoice.getUserId())
+                .append("creationDate", invoice.getCreationDate())
                 .append("deliveryAddress", invoice.getDeliveryAddress())
                 .append("deliveryPostcode", invoice.getDeliveryPostcode())
                 .append("deliveryCountry", invoice.getDeliveryCountry().name())
@@ -94,9 +95,24 @@ public class InvoicesConn implements Closeable {
         Invoice invoice = null;
         
         // Recover the document from database.
-        Document document = collection.find(new Document("_id", hexString)).first();
+        Document document = collection.find(new Document("_id", new ObjectId(hexString))).first();
 
         if (document != null) {
+            // Build the Products list.
+            List<Product> products = new ArrayList<>();
+            List<Document> productDocuments = document.getList("products", Document.class);
+
+            // Foreach the product documents.
+            for (Document productDoc : productDocuments) {
+                // Encapsulate the document values inside to product values.
+                Product product = new Product.Builder().setProductName(productDoc.getString("productName"))
+                                                       .setProductAmount(productDoc.getInteger("productAmount"))
+                                                       .setProductPrice(productDoc.getDouble("productPrice"))
+                                                       .bulid();
+                // Add the product into list.
+                products.add(product);                 
+            }
+
             // Build the Invoice object.
             invoice = new Invoice.Builder(hexString)
                                  .setUserId(document.getLong("userId"))
@@ -105,7 +121,8 @@ public class InvoicesConn implements Closeable {
                                  .setDeliveryPostcode(document.getString("deliveryPostcode"))
                                  .setDeliveryCountry(Enum.valueOf(Country.class, document.getString("deliveryCountry")))
                                  .setDeliveryCurrency(Currency.getInstance(document.getString("deliveryCurrency")))
-                                 .setProducts(document.getList("products", Product.class))
+                                 .setDeliveryAddressInformation(document.getString("deliveryAddressInformation"))
+                                 .setProducts(products)
                                  .build();
         } else {
             // If the case where the item doesn't exist, throws a exception warning for this
@@ -118,11 +135,11 @@ public class InvoicesConn implements Closeable {
     }
 
     public void update(Invoice invoice) {
-        throw new UnsupportedOperationException("This operation is not supported in the module.");
+        throw new UnsupportedOperationException("This operation is not supported in this service.");
     }
 
     public void delete(Invoice invoice) {
-        throw new UnsupportedOperationException("This operation is not supported in the module.");
+        throw new UnsupportedOperationException("This operation is not supported in this service.");
     }
 
     @Override

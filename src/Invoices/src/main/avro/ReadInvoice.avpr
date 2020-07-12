@@ -3,17 +3,17 @@
     "protocol": "ReadInvoice",
     "types": [
         {
-            "name": "Product",
+            "name": "ProductObj",
             "type": "record",
             "fields": [
                 { "name": "productName", "type": [ "null", "string" ], "default": null },
-                { "name": "productPrice", "type": [ "null", "float" ], "default": null },
+                { "name": "productPrice", "type": [ "null", "double" ], "default": null },
                 { "name": "productAmount", "type": [ "null", "int" ], "default": null }
                 
             ]
         },
         {
-            "name": "Invoice",
+            "name": "InvoiceObj",
             "type": "record",
             "fields": [
                 { "name": "id", "type": [ "null", "string" ], "default": null },
@@ -24,7 +24,7 @@
                 { "name": "deliveryCountry", "type": [ "null", "string" ], "default": null },
                 { "name": "deliveryCurrency", "type": [ "null", "string" ], "default": null },
                 { "name": "deliveryAddressInformation", "type": [ "null", "string" ], "default": null },
-                { "name": "products", "type": [ "null", { "type": "array", "items" : "Product" } ], "default": null }
+                { "name": "products", "type": [ "null", { "type": "array", "items" : "ProductObj" } ], "default": null }
             ]
         },
         {
@@ -32,7 +32,7 @@
             "type": "record",
             "fields": [
                 { "name": "id", "type": [ "null", "string" ], "default": null },
-                { "name": "invoice", "type": [ "null", "Invoice" ], "default": null }
+                { "name": "invoice", "type": [ "null", "InvoiceObj" ], "default": null }
             ]
         },
         {
@@ -40,7 +40,7 @@
             "type": "record",
             "fields": [
                 { "name": "status", "type": [ "int" ] },
-                { "name": "object", "type": [ "null", "Invoice" ], "default": null  },
+                { "name": "object", "type": [ "null", "InvoiceObj" ], "default": null  },
                 { "name": "object_id", "type": [ "null", "string" ], "default": null },
                 { "name": "message", "type": [ "null", "string" ], "default": null }
             ]
