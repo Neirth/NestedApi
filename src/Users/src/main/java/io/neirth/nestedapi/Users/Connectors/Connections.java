@@ -23,12 +23,12 @@
  */
 package io.neirth.nestedapi.Users.Connectors;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.Semaphore;
 
 import com.rabbitmq.client.Channel;
@@ -46,7 +46,7 @@ import io.neirth.nestedapi.Users.Controllers.UsersRpc;
  * speed up actions with the database. Thus avoiding the collapse of all threads
  * attacking the same connection.
  */
-public class Connections {
+public class Connections implements Closeable {
     private static Connections instance = null;
 
     // Variable of max connections.
@@ -57,13 +57,13 @@ public class Connections {
     private final Semaphore brokerSemaphore = new Semaphore(maxConnections);
 
     // Lists of connections.
-    private final List<UsersConn> usersMgtList = new ArrayList<>();
-    private final List<Channel> brokenList = new ArrayList<>();
+    private final Stack<UsersConn> usersMgtStack = new Stack<>();
+    private final Stack<Channel> brokerStack = new Stack<>();
 
     private Connections() throws Exception {
         for (int i = 0; i < maxConnections; i++) {
-            usersMgtList.add(new UsersConn(instanceConnection()));
-            brokenList.add(instanceChannel());
+            usersMgtStack.push(instanceConnection());
+            brokerStack.push(instanceChannel());
         }
     }
 
@@ -82,11 +82,7 @@ public class Connections {
      */
     public UsersConn acquireUsers() throws InterruptedException {
         userSemaphore.acquire();
-
-        UsersConn connection = usersMgtList.get(0);
-        usersMgtList.remove(0);
-
-        return connection;
+        return usersMgtStack.pop();
     }
 
     /**
@@ -102,9 +98,8 @@ public class Connections {
      * 
      * @param connection The user connection.
      */
-    public void releaseUsers(UsersConn connection) {
-        usersMgtList.add(connection);
-
+    public void releaseUsers(UsersConn conn) {
+        usersMgtStack.push(conn);
         userSemaphore.release();
     }
 
@@ -121,11 +116,7 @@ public class Connections {
      */
     public Channel acquireBroker() throws InterruptedException {
         brokerSemaphore.acquire();
-
-        Channel conn = brokenList.get(0);
-        brokenList.remove(0);
-
-        return conn;
+        return brokerStack.pop();
     }
 
     /**
@@ -142,8 +133,7 @@ public class Connections {
      * @param conn The broker connection.
      */
     public void releaseBroker(Channel conn) {
-        brokenList.add(conn);
-
+        brokerStack.push(conn);
         brokerSemaphore.release();
     }
 
@@ -158,7 +148,7 @@ public class Connections {
      * @throws SQLException Maybe, if the instance founds a error with the database,
      *                      he throws a exception.
      */
-    private Connection instanceConnection() throws Exception {
+    private UsersConn instanceConnection() throws Exception {
         // We try to load the database driver.
         try {
             Class.forName("org.postgresql.Driver");
@@ -177,7 +167,7 @@ public class Connections {
 
         // When the connection instance is prepared, is a moment to return him to the
         // caller method.
-        return conn;
+        return new UsersConn(conn);
     }
 
     /**
@@ -208,10 +198,19 @@ public class Connections {
 
         // Configure channel.
         channel.queueDeclare(queueName, true, false, false, null);
-        channel.basicConsume(queueName, true, deliverCallback, (consumerTag) -> {});
+        channel.basicConsume(queueName, true, deliverCallback, (consumerTag) -> {
+        });
 
         // Return the channel for future uses.
         return channel;
+    }
+
+    /**
+     * Dummy method to initialize the components inside Connections class
+     * constructor.
+     */
+    public void init() {
+        return;
     }
 
     /**
@@ -220,10 +219,30 @@ public class Connections {
      * @return The class instance.
      * @throws Exception Any exception throwed.
      */
-    public static Connections getInstance() throws Exception {
+    public static Connections getInstance() {
         if (instance == null)
-            instance = new Connections();
+            try {
+                instance = new Connections();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         return instance;
+    }
+
+    @Override
+    public void close() {
+        try {
+            // Close all connections from this class.
+            for (int i = 0; i < maxConnections; i++) {
+                usersMgtStack.pop().close();
+                brokerStack.pop().close();
+            }
+            
+            // Set the instance variable equals a null.
+            instance = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

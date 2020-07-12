@@ -1,0 +1,46 @@
+{
+    "namespace": "io.neirth.nestedapi.Users.Schemas",
+    "protocol": "UpdateUser",
+    "types": [
+        {
+            "type": "record",
+            "name": "UserObj",
+            "fields": [
+                { "name": "id", "type": [ "null", "long" ], "default": null },
+                { "name": "name", "type": [ "null", "string" ], "default": null },
+                { "name": "surname", "type": [ "null", "string" ], "default": null },
+                { "name": "email", "type": [ "null", "string" ], "default": null },
+                { "name": "password", "type": [ "null", "string" ], "default": null },
+                { "name": "telephone", "type": [ "null", "string" ], "default": null },
+                { "name": "birthday", "type": [ "null", "string" ], "default": null },
+                { "name": "country", "type": [ "null", "string" ], "default": null },
+                { "name": "address", "type": [ "null", "string" ], "default": null },
+                { "name": "addressInformation", "type": [ "null", "string" ], "default": null }
+            ]
+        },
+        {
+            "name": "Request",
+            "type": "record",
+            "fields": [
+                { "name": "id", "type": [ "null", "long" ], "default": null },
+                { "name": "user", "type": [ "null", "UserObj" ], "default": null }
+            ]
+        },
+        {
+            "type": "record",
+            "name": "Response",
+            "fields": [
+                { "name": "status", "type": [ "int" ] },
+                { "name": "object", "type": [ "null", "UserObj" ], "default": null  },
+                { "name": "object_id", "type": [ "null", "long" ], "default": null },
+                { "name": "message", "type": [ "null", "string" ], "default": null }
+            ]
+        }
+    ],
+    "messages": {
+        "UpdateUser": {
+            "request": [{ "name": "request", "type": "Request" }],
+            "response": "Response"
+        }
+    }
+}

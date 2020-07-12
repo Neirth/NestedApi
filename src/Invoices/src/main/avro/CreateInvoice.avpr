@@ -1,0 +1,55 @@
+{
+    "namespace": "io.neirth.nestedapi.Invoices.Schemas",
+    "protocol": "CreateInvoice",
+    "types": [
+        {
+            "name": "ProductObj",
+            "type": "record",
+            "fields": [
+                { "name": "productName", "type": [ "null", "string" ], "default": null },
+                { "name": "productPrice", "type": [ "null", "double" ], "default": null },
+                { "name": "productAmount", "type": [ "null", "int" ], "default": null }
+                
+            ]
+        },
+        {
+            "name": "InvoiceObj",
+            "type": "record",
+            "fields": [
+                { "name": "id", "type": [ "null", "string" ], "default": null },
+                { "name": "userId", "type": [ "null", "long" ], "default": null },
+                { "name": "creationDate", "type": [ "null", "string" ], "default": null },
+                { "name": "deliveryAddress", "type": [ "null", "string" ], "default": null },
+                { "name": "deliveryPostcode", "type": [ "null", "string" ], "default": null },
+                { "name": "deliveryCountry", "type": [ "null", "string" ], "default": null },
+                { "name": "deliveryCurrency", "type": [ "null", "string" ], "default": null },
+                { "name": "deliveryAddressInformation", "type": [ "null", "string" ], "default": null },
+                { "name": "products", "type": [ "null", { "type": "array", "items" : "ProductObj" } ], "default": null }
+            ]
+        },
+        {
+            "name": "Request",
+            "type": "record",
+            "fields": [
+                { "name": "id", "type": [ "null", "string" ], "default": null },
+                { "name": "invoice", "type": [ "null", "InvoiceObj" ], "default": null }
+            ]
+        },
+        {
+            "name": "Response",
+            "type": "record",
+            "fields": [
+                { "name": "status", "type": [ "int" ] },
+                { "name": "object", "type": [ "null", "InvoiceObj" ], "default": null  },
+                { "name": "object_id", "type": [ "null", "string" ], "default": null },
+                { "name": "message", "type": [ "null", "string" ], "default": null }
+            ]
+        }
+    ],
+    "messages": {
+        "CreateInvoice": {
+            "request": [ { "name": "request", "type": "Request" } ],
+            "response": "Response"
+        }
+    }
+}

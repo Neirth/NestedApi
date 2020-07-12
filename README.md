@@ -2,7 +2,7 @@
   <img src="./docs/assets/NestedApi-logo.svg?raw=true">
 </p>
 
-Microservices based framework to create a backend services for the real world.
+Microservices based framework to create a backend services for the real world. (Under Heavy Development)
 
 ## Deployment 
 This project is a Github Template, is to say, you can use this project for create a real backend service, only you need write the modules that you need. The modules they can use other programming language than Java, as long as it is compatible with the technologies that use the modules already available. Consult the documentation for more information.
@@ -36,10 +36,11 @@ operator@nested-host: ~$ docker-compose -f docker-compose.yml up -d
 ## Built with
 * Apache Avro - For serialize RPC petitions in a binary format.
 * RabbitMQ - For made a internal bus for RPC petitions between services.
-* Spring Boot - For create RESTful interfaces and the logic inside the microservices.
+* Quarkus Framework - Used for run the code from the module project, and gets the native build.
 * Docker - For package the project and the dependencies inside a OCI contanier.
 * Ambassador - For centralize all microservice endpoints into single API URL using API Gateway Concept.
-* PostgreSQL - Used for provide a high-performance database.
+* PostgreSQL - Used for provide a high-performance database for users module.
+* MongoDB - Used for provide a high-performance database for invoices module.
 
 ## Contributing 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.

@@ -24,6 +24,7 @@
 package io.neirth.nestedapi.Users.Connectors;
 
 // The sql and exceptions packages used in this class
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -38,7 +39,8 @@ import io.neirth.nestedapi.Users.Templates.User;
 /**
  * Class that manages all operations with the users table in the database.
  */
-public class UsersConn {
+public class UsersConn implements Closeable {
+    private final Connection conn;
     private final PreparedStatement createQuery;
     private final PreparedStatement readQuery;
     private final PreparedStatement updateQuery;
@@ -49,9 +51,12 @@ public class UsersConn {
      * instantiated by the connections class.
      */
     UsersConn(Connection conn) throws SQLException {
-        this.createQuery = conn.prepareStatement("INSERT INTO Users (name, surname, email, password, telephone, birthday, country, address, addressInformation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id;");
+        this.conn = conn;
+        this.createQuery = conn.prepareStatement(
+                "INSERT INTO Users (name, surname, email, password, telephone, birthday, country, address, addressInformation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id;");
         this.readQuery = conn.prepareStatement("SELECT * FROM Users WHERE id = ?;");
-        this.updateQuery = conn.prepareStatement("UPDATE Users SET name = ?, surname = ?, email = ?, password = ?, telephone = ?, birthday = ?, country = ?, address = ?, addressInformation = ? WHERE id = ?;");
+        this.updateQuery = conn.prepareStatement(
+                "UPDATE Users SET name = ?, surname = ?, email = ?, password = ?, telephone = ?, birthday = ?, country = ?, address = ?, addressInformation = ? WHERE id = ?;");
         this.deleteQuery = conn.prepareStatement("DELETE FROM Users WHERE id = ?;");
     }
 
@@ -60,8 +65,7 @@ public class UsersConn {
      * 
      * @param user The user to insert.
      * @return The new id of the user row.
-     * @throws NoSuchElementException The exception in the case that the desired
-     *                                object is not available.
+     * @throws SQLException The exception in case of problems with the database.
      */
     public long create(User user) throws SQLException {
         // Instance the new id.
@@ -176,5 +180,24 @@ public class UsersConn {
             // If the case where the item doesn't exist, throws a exception warning for this
             // situation.
             throw new NoSuchElementException("The element " + user.getId() + " is not available in the database.");
+    }
+
+    /**
+     * Method to close the connections with the database.
+     * 
+     * @param arg0
+     */
+    @Override
+    public void close() {
+        try {
+            createQuery.close();
+            readQuery.close();
+            updateQuery.close();
+            deleteQuery.close();
+
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

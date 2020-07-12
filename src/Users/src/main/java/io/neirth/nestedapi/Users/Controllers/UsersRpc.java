@@ -23,23 +23,35 @@
  */
 package io.neirth.nestedapi.Users.Controllers;
 
-// Libraries used from Java Enterprise.
-import javax.xml.bind.DatatypeConverter;
+// Used libraries from Java Standard.
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.NoSuchElementException;
 
-// Libraries used for AMQP operations.
+// Used libraries from Java Enterprise.
+import javax.xml.bind.DatatypeConverter;
+import javax.ws.rs.core.Response.Status;
+
+// Used libraries for AMQP operations.
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
 // Internal packages of the project.
-import io.neirth.nestedapi.Users.ServiceUtils;
 import io.neirth.nestedapi.Users.Connectors.Connections;
 import io.neirth.nestedapi.Users.Connectors.UsersConn;
+import io.neirth.nestedapi.Users.Schemas.CreateUser;
+import io.neirth.nestedapi.Users.Schemas.DeleteUser;
+import io.neirth.nestedapi.Users.Schemas.ReadUser;
+import io.neirth.nestedapi.Users.Schemas.Request;
+import io.neirth.nestedapi.Users.Schemas.Response;
+import io.neirth.nestedapi.Users.Schemas.UpdateUser;
+import io.neirth.nestedapi.Users.Schemas.UserObj;
 import io.neirth.nestedapi.Users.Templates.Country;
 import io.neirth.nestedapi.Users.Templates.User;
 
-public class UsersRpc {
-
+public class UsersRpc implements CreateUser, ReadUser, UpdateUser, DeleteUser {
     /**
      * Method to receive AMQP traffic and route the correct method.
      * 
@@ -50,28 +62,32 @@ public class UsersRpc {
      * 
      * @param channel  The channel where receives the petition.
      * @param delivery The petition.
+     * @throws IOException
      */
     public void routeDelivery(Channel channel, Delivery delivery) {
-        // Obtain a called method.
-        String type = (String) delivery.getProperties().getHeaders().get("x-remote-method");
-
-        // Prepare the response.
-        byte[] response = null;
-
         try {
+            // Obtain a called method.
+            String type = (String) delivery.getProperties().getHeaders().get("x-remote-method");
+
+            // Read the request.
+            Request request = Request.fromByteBuffer(ByteBuffer.wrap(delivery.getBody()));
+
+            // Prepare the response.
+            Response response = null;
+
             // Depending of the method called, we route the petition into the real method.
             switch (type) {
                 case "CreateUser":
-                    response = createUser(delivery);
+                    response = CreateUser(request);
                     break;
                 case "ReadUser":
-                    response = readUser(delivery);
+                    response = ReadUser(request);
                     break;
                 case "UpdateUser":
-                    response = updateUser(delivery);
+                    response = UpdateUser(request);
                     break;
                 case "DeleteUser":
-                    response = deleteUser(delivery);
+                    response = DeleteUser(request);
                     break;
             }
 
@@ -80,7 +96,7 @@ public class UsersRpc {
                     .correlationId(delivery.getProperties().getCorrelationId()).build();
 
             // Publish the response into the private queue and sets the acknowledge.
-            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response);
+            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.toByteBuffer().array());
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         } catch (Exception e) {
             // In the case of crash, print the stack trace.
@@ -89,72 +105,46 @@ public class UsersRpc {
     }
 
     /**
-     * This method processes the creation of a user through the RPC channel.
+     * This method is used for delete a user throught RPC channel.
      * 
-     * Normally this situation can occur when a user is registering in our service,
-     * therefore this method will be important for our operations.
+     * In some cases, the modules need delete a user, which maybe is banned from the
+     * service or another thing.
      * 
-     * @param delivery The RPC petition.
+     * @param request The RPC petition.
      * @return The response message.
      * @throws Exception If an exception occurs.
      */
-    private byte[] createUser(Delivery delivery) throws Exception {
-        return ServiceUtils.processMessage(delivery, "CreateUser", (consumedDatum) -> {
+    @Override
+    public Response DeleteUser(Request request) throws IOException {
+        // Prepare the conn and response variable
+        UsersConn conn = null;
+        Response response = new Response();
+
+        try {
             // Prepare the database connection.
-            UsersConn connection = Connections.getInstance().acquireUsers();
+            conn = Connections.getInstance().acquireUsers();
 
-            try {
-                // Create a user handled by RPC interface.
-                User user = new User.Builder(null).setName((String) consumedDatum.get("name"))
-                        .setSurname((String) consumedDatum.get("surname")).setEmail((String) consumedDatum.get("email"))
-                        .setPassword((String) consumedDatum.get("password"))
-                        .setTelephone((String) consumedDatum.get("telephone"))
-                        .setBirthday(DatatypeConverter.parseDateTime((String) consumedDatum.get("birthday")).getTime())
-                        .setCountry(Enum.valueOf(Country.class, (String) consumedDatum.get("country")))
-                        .setAddress((String) consumedDatum.get("address"))
-                        .setAddressInformation((String) consumedDatum.get("addressInformation")).build();
+            // Create a dummy user object with the id only.
+            User user = new User.Builder(request.getId()).build();
 
-                // Set the user in the database.
-                connection.create(user);
-            } catch (Exception e) {
-                // Print the stacktrace if crash.
-                e.printStackTrace();
-            } finally {
-                // Release the connection with the database.
-                Connections.getInstance().releaseUsers(connection);
-            }
+            // Try to delete the user from the database.
+            conn.delete(user);
 
-            // Return null because the operation no generates a response.
-            return null;
-        });
-    }
+            // Set the ok status code
+            response.put("status", Status.OK.getStatusCode());
+        } catch (NoSuchElementException e) {
+            response.put("status", Status.NOT_FOUND.getStatusCode());
+            response.put("message", e.getMessage());
+        } catch (Exception e) {
+            response.put("status", Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            response.put("message", e.getMessage());
+        } finally {
+            // Release the connection with the database.
+            Connections.getInstance().releaseUsers(conn);
+        }
 
-    /**
-     * This method is used for read a user throught RPC channel.
-     * 
-     * When user is trying to login, other service module will try to read the user
-     * information, creating a RPC message to this server.
-     * 
-     * @param delivery The RPC petition.
-     * @return The response message.
-     * @throws Exception If an exception occurs.
-     */
-    private byte[] readUser(Delivery delivery) throws Exception {
-        return ServiceUtils.processMessage(delivery, "ReadUser", (consumedDatum) -> {
-            // Prepare the database connection.
-            UsersConn connection = Connections.getInstance().acquireUsers();
-            User user = null;
-
-            try {
-                // Try to recover the user from database.
-                user = connection.read((long) consumedDatum.get("id"));
-            } finally {
-                // Release the connection with the database.
-                Connections.getInstance().releaseUsers(connection);
-            }
-
-            return user;
-        });
+        // Return the response.
+        return response;
     }
 
     /**
@@ -163,73 +153,159 @@ public class UsersRpc {
      * Some modules needs update the user information, such as specific job module
      * which works with user module.
      * 
-     * @param delivery The RPC petition.
+     * @param request The RPC petition.
      * @return The response message.
      * @throws Exception If an exception occurs.
      */
-    private byte[] updateUser(Delivery delivery) throws Exception {
-        return ServiceUtils.processMessage(delivery, "UpdateUser", (consumedDatum) -> {
+    @Override
+    public Response UpdateUser(Request request) throws IOException {
+        // Prepare the conn and response variable
+        UsersConn conn = null;
+        Response response = new Response();
+
+        try {
             // Prepare the database connection.
-            UsersConn connection = Connections.getInstance().acquireUsers();
+            conn = Connections.getInstance().acquireUsers();
 
-            try {
-                // Get the old user.
-                User auxUser = connection.read((long) consumedDatum.get("id"));
+            // Read the old user.
+            User auxUser = conn.read(request.getUser().getId());
 
-                // Updates only the columns with new data.
-                User user = new User.Builder((long) consumedDatum.get("id"))
-                    .setName(consumedDatum.get("name") != null ? (String) consumedDatum.get("name") : auxUser.getName())
-                    .setSurname(consumedDatum.get("surname") != null ? (String) consumedDatum.get("surname") : auxUser.getSurname())
-                    .setEmail(consumedDatum.get("email") != null  ? (String) consumedDatum.get("email") : auxUser.getEmail())
-                    .setPassword(consumedDatum.get("password") != null ? (String) consumedDatum.get("password") : auxUser.getPassword())
-                    .setTelephone(consumedDatum.get("telephone") != null  ? (String) consumedDatum.get("telephone") : auxUser.getTelephone())
-                    .setBirthday(consumedDatum.get("birthday") != null ? DatatypeConverter.parseDateTime((String) consumedDatum.get("birthday")).getTime() : auxUser.getBirthday())
-                    .setCountry(consumedDatum.get("country") != null ? Enum.valueOf(Country.class, (String) consumedDatum.get("country")) : auxUser.getCountry())
-                    .setAddress(consumedDatum.get("address") != null  ? (String) consumedDatum.get("address") : auxUser.getAddress())
-                    .setAddressInformation(consumedDatum.get("addressInformation") != null ? (String) consumedDatum.get("addressInformation") : auxUser.getAddressInformation())
+            // Create a dummy user object with the id only.
+            User user = new User.Builder(request.getUser().getId())
+                    .setName(request.getUser().getName() != null ? request.getUser().getName().toString() : auxUser.getName())
+                    .setSurname(request.getUser().getSurname() != null ? request.getUser().getSurname().toString() : auxUser.getSurname())
+                    .setEmail(request.getUser().getEmail() != null ? request.getUser().getEmail().toString() : auxUser.getEmail())
+                    .setPassword(request.getUser().getPassword() != null ? request.getUser().getPassword().toString() : auxUser.getPassword())
+                    .setTelephone(request.getUser().getTelephone() != null ? request.getUser().getTelephone().toString() : auxUser.getTelephone())
+                    .setBirthday(request.getUser().getBirthday() != null ? DatatypeConverter.parseDateTime(request.getUser().getBirthday().toString()).getTime() : auxUser.getBirthday())
+                    .setCountry(request.getUser().getCountry() != null ? Enum.valueOf(Country.class, request.getUser().getCountry().toString()) : auxUser.getCountry())
+                    .setAddress(request.getUser().getAddress() != null ? request.getUser().getAddress().toString() : auxUser.getAddress())
+                    .setAddressInformation(request.getUser().getAddressInformation() != null ? request.getUser().getAddressInformation().toString() : auxUser.getAddressInformation())
                     .build();
 
-                // Try to update the user from the database.
-                connection.update(user);
-            } finally {
-                // Release the connection with the database.
-                Connections.getInstance().releaseUsers(connection);
-            }
+            // Update the user.
+            conn.update(user);
 
-            // Return null because the operation no generates a response.
-            return null;
-        });
+            // Set the ok status code
+            response.put("status", Status.OK.getStatusCode());
+        } catch (NoSuchElementException e) {
+            response.put("status", Status.NOT_FOUND.getStatusCode());
+            response.put("message", e.getMessage());
+        } catch (Exception e) {
+            response.put("status", Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            response.put("message", e.getMessage());
+        } finally {
+            // Release the connection with the database.
+            Connections.getInstance().releaseUsers(conn);
+        }
+
+        // Return the response.
+        return response;
     }
 
     /**
-     * This method is used for delete a user throught RPC channel.
+     * This method is used for read a user throught RPC channel.
      * 
-     * In some cases, the modules need delete a user, which maybe is banned from the 
-     * service or another thing.
+     * When user is trying to login, other service module will try to read the user
+     * information, creating a RPC message to this server.
      * 
-     * @param delivery The RPC petition.
+     * @param request The RPC petition.
      * @return The response message.
      * @throws Exception If an exception occurs.
      */
-    private byte[] deleteUser(Delivery delivery) throws Exception {
-        return ServiceUtils.processMessage(delivery, "DeleteUser", (consumedDatum) -> {
+    @Override
+    public Response ReadUser(Request request) throws IOException {
+        // Prepare the conn and response variable
+        UsersConn conn = null;
+        Response response = new Response();
+
+        try {
             // Prepare the database connection.
-            UsersConn connection = Connections.getInstance().acquireUsers();
+            conn = Connections.getInstance().acquireUsers();
 
-            try {
-                // Create a dummy user object with the id only.
-                User user = new User.Builder((long) consumedDatum.get("id")).build();
+            // Create a dummy user object with the id only.
+            User user = conn.read(request.getId());
+            UserObj userObj = new UserObj();
 
-                // Try to delete the user from the database.
-                connection.delete(user);
-            } finally {
-                // Release the connection with the database.
-                Connections.getInstance().releaseUsers(connection);
-            }
+            // Add user information into RPC message.
+            userObj.setId(user.getId());
+            userObj.setName(user.getName());
+            userObj.setSurname(user.getSurname());
+            userObj.setEmail(user.getEmail());
+            userObj.setPassword(user.getPassword());
+            userObj.setTelephone(user.getTelephone());
+            userObj.setBirthday((new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")).format(user.getBirthday()));
+            userObj.setCountry(user.getCountry().getCountryName());
+            userObj.setAddress(user.getAddress());
+            userObj.setAddressInformation(user.getAddressInformation());
 
-            // Return null because the operation no generates a response.
-            return null;
-        });
+            // Set the ok status code
+            response.put("status", Status.OK.getStatusCode());
+            response.put("object", userObj);
+        } catch (NoSuchElementException e) {
+            response.put("status", Status.NOT_FOUND.getStatusCode());
+            response.put("message", e.getMessage());
+        } catch (Exception e) {
+            response.put("status", Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            response.put("message", e.getMessage());
+        } finally {
+            // Release the connection with the database.
+            Connections.getInstance().releaseUsers(conn);
+        }
+
+        // Return the response.
+        return response;
     }
 
+    /**
+     * This method processes the creation of a user through the RPC channel.
+     * 
+     * Normally this situation can occur when a user is registering in our service,
+     * therefore this method will be important for our operations.
+     * 
+     * @param request The RPC petition.
+     * @return The response message.
+     * @throws Exception If an exception occurs.
+     */
+    @Override
+    public Response CreateUser(Request request) throws IOException {
+        // Prepare the conn and response variable
+        UsersConn conn = null;
+        Response response = new Response();
+
+        try {
+            // Prepare the database connection.
+            conn = Connections.getInstance().acquireUsers();
+
+            // Create a user handled by RPC message.
+            User user = new User.Builder(request.getUser().getId()).setName(request.getUser().getName().toString())
+                    .setSurname(request.getUser().getSurname().toString())
+                    .setEmail(request.getUser().getEmail().toString())
+                    .setPassword(request.getUser().getPassword().toString())
+                    .setTelephone(request.getUser().getTelephone().toString())
+                    .setBirthday(DatatypeConverter.parseDateTime(request.getUser().getBirthday().toString()).getTime())
+                    .setCountry(Enum.valueOf(Country.class, request.getUser().getCountry().toString()))
+                    .setAddress(request.getUser().getAddress().toString())
+                    .setAddressInformation(request.getUser().getAddressInformation().toString()).build();
+
+            // Set the user in the database.
+            long id = conn.create(user);
+
+            // Set the ok status code
+            response.put("status", Status.OK.getStatusCode());
+            response.put("object_id", id);
+        } catch (NoSuchElementException e) {
+            response.put("status", Status.NOT_FOUND.getStatusCode());
+            response.put("message", e.getMessage());
+        } catch (Exception e) {
+            response.put("status", Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            response.put("message", e.getMessage());
+        } finally {
+            // Release the connection with the database.
+            Connections.getInstance().releaseUsers(conn);
+        }
+
+        // Return the response.
+        return response;
+    }
 }
