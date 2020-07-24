@@ -39,7 +39,6 @@ public class AuthRest {
         return ServiceUtils.processRequest(req, null, body, () -> {
             String jsonRequest = (String) body;
 
-
             return null;
         });
     }

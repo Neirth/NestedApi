@@ -53,16 +53,16 @@ public class Connections implements Closeable {
     private final int maxConnections = Integer.valueOf(System.getenv("NESTEDAPI_MAX_CONNECTIONS"));
 
     // Semaphores for connections.
-    private final Semaphore authSemaphore = new Semaphore(maxConnections);
+    private final Semaphore tokenSemaphore = new Semaphore(maxConnections);
     private final Semaphore brokerSemaphore = new Semaphore(maxConnections);
 
     // Lists of connections.
-    private final Stack<AuthsConn> authConnStack = new Stack<>();
+    private final Stack<TokensConn> tokensConnStack = new Stack<>();
     private final Stack<Channel> brokerStack = new Stack<>();
 
     private Connections() throws Exception {
         for (int i = 0; i < maxConnections; i++) {
-            authConnStack.push(instanceConnection());
+            tokensConnStack.push(instanceConnection());
             brokerStack.push(instanceChannel());
         }
     }
@@ -80,9 +80,9 @@ public class Connections implements Closeable {
      * @throws InterruptedException In the case of the operation was interrupted,
      *                              throws a exception.
      */
-    public AuthsConn acquireAuths() throws InterruptedException {
-        authSemaphore.acquire();
-        return authConnStack.pop();
+    public TokensConn acquireAuths() throws InterruptedException {
+        tokenSemaphore.acquire();
+        return tokensConnStack.pop();
     }
 
     /**
@@ -98,9 +98,9 @@ public class Connections implements Closeable {
      * 
      * @param connection The user connection.
      */
-    public void releaseAuths(AuthsConn conn) {
-        authConnStack.push(conn);
-        authSemaphore.release();
+    public void releaseAuths(TokensConn conn) {
+        tokensConnStack.push(conn);
+        tokenSemaphore.release();
     }
 
     /**
@@ -142,13 +142,13 @@ public class Connections implements Closeable {
      * 
      * This is used for instance a connection object, which previously loads the
      * database squema into him. It's a private method because the only point which
-     * should be used is only in the instance of AuthsConn.
+     * should be used is only in the instance of TokensConn.
      * 
      * @return The database connection.
      * @throws SQLException Maybe, if the instance founds a error with the database,
      *                      he throws a exception.
      */
-    private AuthsConn instanceConnection() throws Exception {
+    private TokensConn instanceConnection() throws Exception {
         // We try to load the database driver.
         try {
             Class.forName("org.postgresql.Driver");
@@ -162,12 +162,12 @@ public class Connections implements Closeable {
         // When the connection was instanced, before return to the caller method, we
         // initialize the datbase squema, in this case, only initialize the user table.
         try (Statement st = conn.createStatement()) {
-            st.execute("");
+            st.execute("CREATE TABLE IF NOT EXISTS Tokens (token VARCHAR(36), userId BIGINT, validFrom DATE, tokenAgent TEXT, PRIMARY KEY(token));");
         }
 
         // When the connection instance is prepared, is a moment to return him to the
         // caller method.
-        return new AuthsConn(conn);
+        return new TokensConn(conn);
     }
 
     /**
@@ -234,7 +234,7 @@ public class Connections implements Closeable {
         try {
             // Close all connections from this class.
             for (int i = 0; i < maxConnections; i++) {
-                authConnStack.pop().close();
+                tokensConnStack.pop().close();
                 brokerStack.pop().close();
             }
             

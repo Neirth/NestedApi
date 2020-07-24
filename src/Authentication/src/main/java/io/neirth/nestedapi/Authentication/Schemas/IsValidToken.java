@@ -7,7 +7,7 @@ package io.neirth.nestedapi.Authentication.Schemas;
 
 @org.apache.avro.specific.AvroGenerated
 public interface IsValidToken {
-  public static final org.apache.avro.Protocol PROTOCOL = org.apache.avro.Protocol.parse("{\"protocol\":\"IsValidToken\",\"namespace\":\"io.neirth.nestedapi.Authentication.Schemas\",\"types\":[{\"type\":\"record\",\"name\":\"Request\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"token\",\"type\":[\"null\",\"string\"],\"default\":null}]},{\"type\":\"record\",\"name\":\"Response\",\"fields\":[{\"name\":\"status\",\"type\":[\"int\"]},{\"name\":\"object\",\"type\":[\"null\",\"boolean\"],\"default\":null},{\"name\":\"message\",\"type\":[\"null\",\"string\"],\"default\":null}]}],\"messages\":{\"IsValidToken\":{\"request\":[{\"name\":\"request\",\"type\":\"Request\"}],\"response\":\"Response\"}}}");
+  public static final org.apache.avro.Protocol PROTOCOL = org.apache.avro.Protocol.parse("{\"protocol\":\"IsValidToken\",\"namespace\":\"io.neirth.nestedapi.Authentication.Schemas\",\"types\":[{\"type\":\"record\",\"name\":\"Request\",\"fields\":[{\"name\":\"token\",\"type\":[\"null\",\"string\"],\"default\":null}]},{\"type\":\"record\",\"name\":\"Response\",\"fields\":[{\"name\":\"status\",\"type\":[\"int\"]},{\"name\":\"object\",\"type\":[\"null\",\"boolean\"],\"default\":null},{\"name\":\"message\",\"type\":[\"null\",\"string\"],\"default\":null}]}],\"messages\":{\"IsValidToken\":{\"request\":[{\"name\":\"request\",\"type\":\"Request\"}],\"response\":\"Response\"}}}");
   /**
    */
   io.neirth.nestedapi.Authentication.Schemas.Response IsValidToken(io.neirth.nestedapi.Authentication.Schemas.Request request);

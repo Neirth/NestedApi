@@ -14,8 +14,8 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class Request extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -4936004235322134920L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Request\",\"namespace\":\"io.neirth.nestedapi.Authentication.Schemas\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"token\",\"type\":[\"null\",\"string\"],\"default\":null}]}");
+  private static final long serialVersionUID = 2438036220874537521L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Request\",\"namespace\":\"io.neirth.nestedapi.Authentication.Schemas\",\"fields\":[{\"name\":\"token\",\"type\":[\"null\",\"string\"],\"default\":null}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -71,7 +71,6 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
     return DECODER.decode(b);
   }
 
-   private java.lang.Long id;
    private java.lang.CharSequence token;
 
   /**
@@ -83,11 +82,9 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
 
   /**
    * All-args constructor.
-   * @param id The new value for id
    * @param token The new value for token
    */
-  public Request(java.lang.Long id, java.lang.CharSequence token) {
-    this.id = id;
+  public Request(java.lang.CharSequence token) {
     this.token = token;
   }
 
@@ -96,8 +93,7 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
   // Used by DatumWriter.  Applications should not call.
   public java.lang.Object get(int field$) {
     switch (field$) {
-    case 0: return id;
-    case 1: return token;
+    case 0: return token;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
@@ -106,27 +102,9 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
   @SuppressWarnings(value="unchecked")
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
-    case 0: id = (java.lang.Long)value$; break;
-    case 1: token = (java.lang.CharSequence)value$; break;
+    case 0: token = (java.lang.CharSequence)value$; break;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
-  }
-
-  /**
-   * Gets the value of the 'id' field.
-   * @return The value of the 'id' field.
-   */
-  public java.lang.Long getId() {
-    return id;
-  }
-
-
-  /**
-   * Sets the value of the 'id' field.
-   * @param value the value to set.
-   */
-  public void setId(java.lang.Long value) {
-    this.id = value;
   }
 
   /**
@@ -187,7 +165,6 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<Request>
     implements org.apache.avro.data.RecordBuilder<Request> {
 
-    private java.lang.Long id;
     private java.lang.CharSequence token;
 
     /** Creates a new Builder */
@@ -201,13 +178,9 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
      */
     private Builder(io.neirth.nestedapi.Authentication.Schemas.Request.Builder other) {
       super(other);
-      if (isValidValue(fields()[0], other.id)) {
-        this.id = data().deepCopy(fields()[0].schema(), other.id);
+      if (isValidValue(fields()[0], other.token)) {
+        this.token = data().deepCopy(fields()[0].schema(), other.token);
         fieldSetFlags()[0] = other.fieldSetFlags()[0];
-      }
-      if (isValidValue(fields()[1], other.token)) {
-        this.token = data().deepCopy(fields()[1].schema(), other.token);
-        fieldSetFlags()[1] = other.fieldSetFlags()[1];
       }
     }
 
@@ -217,54 +190,10 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
      */
     private Builder(io.neirth.nestedapi.Authentication.Schemas.Request other) {
       super(SCHEMA$);
-      if (isValidValue(fields()[0], other.id)) {
-        this.id = data().deepCopy(fields()[0].schema(), other.id);
+      if (isValidValue(fields()[0], other.token)) {
+        this.token = data().deepCopy(fields()[0].schema(), other.token);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.token)) {
-        this.token = data().deepCopy(fields()[1].schema(), other.token);
-        fieldSetFlags()[1] = true;
-      }
-    }
-
-    /**
-      * Gets the value of the 'id' field.
-      * @return The value.
-      */
-    public java.lang.Long getId() {
-      return id;
-    }
-
-
-    /**
-      * Sets the value of the 'id' field.
-      * @param value The value of 'id'.
-      * @return This builder.
-      */
-    public io.neirth.nestedapi.Authentication.Schemas.Request.Builder setId(java.lang.Long value) {
-      validate(fields()[0], value);
-      this.id = value;
-      fieldSetFlags()[0] = true;
-      return this;
-    }
-
-    /**
-      * Checks whether the 'id' field has been set.
-      * @return True if the 'id' field has been set, false otherwise.
-      */
-    public boolean hasId() {
-      return fieldSetFlags()[0];
-    }
-
-
-    /**
-      * Clears the value of the 'id' field.
-      * @return This builder.
-      */
-    public io.neirth.nestedapi.Authentication.Schemas.Request.Builder clearId() {
-      id = null;
-      fieldSetFlags()[0] = false;
-      return this;
     }
 
     /**
@@ -282,9 +211,9 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
       * @return This builder.
       */
     public io.neirth.nestedapi.Authentication.Schemas.Request.Builder setToken(java.lang.CharSequence value) {
-      validate(fields()[1], value);
+      validate(fields()[0], value);
       this.token = value;
-      fieldSetFlags()[1] = true;
+      fieldSetFlags()[0] = true;
       return this;
     }
 
@@ -293,7 +222,7 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
       * @return True if the 'token' field has been set, false otherwise.
       */
     public boolean hasToken() {
-      return fieldSetFlags()[1];
+      return fieldSetFlags()[0];
     }
 
 
@@ -303,7 +232,7 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
       */
     public io.neirth.nestedapi.Authentication.Schemas.Request.Builder clearToken() {
       token = null;
-      fieldSetFlags()[1] = false;
+      fieldSetFlags()[0] = false;
       return this;
     }
 
@@ -312,8 +241,7 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
     public Request build() {
       try {
         Request record = new Request();
-        record.id = fieldSetFlags()[0] ? this.id : (java.lang.Long) defaultValue(fields()[0]);
-        record.token = fieldSetFlags()[1] ? this.token : (java.lang.CharSequence) defaultValue(fields()[1]);
+        record.token = fieldSetFlags()[0] ? this.token : (java.lang.CharSequence) defaultValue(fields()[0]);
         return record;
       } catch (org.apache.avro.AvroMissingFieldException e) {
         throw e;
@@ -346,14 +274,6 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
   @Override public void customEncode(org.apache.avro.io.Encoder out)
     throws java.io.IOException
   {
-    if (this.id == null) {
-      out.writeIndex(0);
-      out.writeNull();
-    } else {
-      out.writeIndex(1);
-      out.writeLong(this.id);
-    }
-
     if (this.token == null) {
       out.writeIndex(0);
       out.writeNull();
@@ -371,31 +291,15 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
     if (fieldOrder == null) {
       if (in.readIndex() != 1) {
         in.readNull();
-        this.id = null;
-      } else {
-        this.id = in.readLong();
-      }
-
-      if (in.readIndex() != 1) {
-        in.readNull();
         this.token = null;
       } else {
         this.token = in.readString(this.token instanceof Utf8 ? (Utf8)this.token : null);
       }
 
     } else {
-      for (int i = 0; i < 2; i++) {
+      for (int i = 0; i < 1; i++) {
         switch (fieldOrder[i].pos()) {
         case 0:
-          if (in.readIndex() != 1) {
-            in.readNull();
-            this.id = null;
-          } else {
-            this.id = in.readLong();
-          }
-          break;
-
-        case 1:
           if (in.readIndex() != 1) {
             in.readNull();
             this.token = null;

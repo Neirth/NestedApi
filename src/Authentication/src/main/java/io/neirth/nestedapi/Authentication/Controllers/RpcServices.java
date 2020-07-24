@@ -37,8 +37,6 @@ import io.neirth.nestedapi.Authentication.Connectors.Connections;
 import io.neirth.nestedapi.Authentication.Schemas.IsValidToken;
 import io.neirth.nestedapi.Authentication.Schemas.Request;
 import io.neirth.nestedapi.Authentication.Schemas.Response;
-import io.neirth.nestedapi.Authentication.Templates.Country;
-import io.neirth.nestedapi.Authentication.Templates.User;
 
 public class RpcServices implements IsValidToken {
     /**
@@ -76,8 +74,7 @@ public class RpcServices implements IsValidToken {
                     .correlationId(delivery.getProperties().getCorrelationId()).build();
 
             // Publish the response into the private queue and sets the acknowledge.
-            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps,
-                    response.toByteBuffer().array());
+            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.toByteBuffer().array());
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         } catch (Exception e) {
             // In the case of crash, print the stack trace.

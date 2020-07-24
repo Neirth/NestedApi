@@ -6,7 +6,6 @@
             "name": "Request",
             "type": "record",
             "fields": [
-                { "name": "id", "type": [ "null", "long" ], "default": null },
                 { "name": "token", "type": [ "null", "string" ], "default": null }
             ]
         },
