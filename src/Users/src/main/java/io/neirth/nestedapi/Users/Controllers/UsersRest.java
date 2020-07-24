@@ -68,7 +68,7 @@ public class UsersRest {
     @Path("{param_id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(@Context final HttpServletRequest req, @PathParam("param_id") long paramId) {
-        return ServiceUtils.processRequest(req, paramId, null, () -> {
+        return ServiceUtils.processRequest(req, paramId, null, (token) -> {
             // Prepare the response
             ResponseBuilder response = null;
 
@@ -80,7 +80,7 @@ public class UsersRest {
                 JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
 
                 // Try to read the user information.
-                User user = conn.read(paramId);
+                User user = conn.read(Long.valueOf(token.getId()));
                 
                 // Add all information into the json object builder
                 jsonResponse.add("id", user.getId());
@@ -133,7 +133,7 @@ public class UsersRest {
     @Path("{param_id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response modify(@Context final HttpServletRequest req, @PathParam("param_id") long paramId, String jsonRequest) {
-        return ServiceUtils.processRequest(req, paramId, jsonRequest, () -> {
+        return ServiceUtils.processRequest(req, paramId, jsonRequest, (token) -> {
             // Prepare the bad request message.
             ResponseBuilder response = Response.status(Status.BAD_REQUEST);
 
@@ -147,10 +147,10 @@ public class UsersRest {
 
                 try {
                     // Get the old user.
-                    User auxUser = conn.read(jsonData.getJsonNumber("id").longValue());
+                    User auxUser = conn.read(Long.valueOf(token.getId()));
 
                     // Updates only the columns with new data.
-                    User user = new User.Builder(jsonData.getJsonNumber("id").longValue())
+                    User user = new User.Builder(Long.valueOf(token.getId()))
                         .setName(jsonData.isNull("name") ? jsonData.getString("name") : auxUser.getName())
                         .setSurname(jsonData.isNull("surname") ? jsonData.getString("surname") : auxUser.getSurname())
                         .setEmail(jsonData.isNull("email") ? jsonData.getString("email") : auxUser.getEmail())
@@ -192,7 +192,7 @@ public class UsersRest {
     @Path("{param_id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response delete(@Context final HttpServletRequest req, @PathParam("param_id") long paramId) {
-        return ServiceUtils.processRequest(req, paramId, null, () -> {
+        return ServiceUtils.processRequest(req, paramId, null, (token) -> {
             // Prepare the response.
             ResponseBuilder response;
 
@@ -201,7 +201,7 @@ public class UsersRest {
             
             try {
                 // Try to get the requested user.
-                User user = conn.read(paramId);
+                User user = conn.read(Long.valueOf(token.getId()));
 
                 // Try to delete the requested user.
                 conn.delete(user);

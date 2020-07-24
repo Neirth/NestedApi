@@ -22,6 +22,9 @@
 
         <!-- Avro libraries properties -->
         <avro.version>1.10.0</avro.version>
+
+        <!-- JWT libraries properties -->
+		<jwt.version>0.10.7</jwt.version>
     </properties>
 
     <dependencyManagement>
@@ -64,6 +67,25 @@
             <artifactId>jna</artifactId>
         </dependency>
 
+        <!-- JWT Dependencies -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>${jwt.version}</version>
+        </dependency>
+        
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>${jwt.version}</version>
+        </dependency>
+        
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>${jwt.version}</version>
+        </dependency>
+        
         <!-- Java Enterprise Dependencies -->
         <dependency>
             <groupId>javax</groupId>

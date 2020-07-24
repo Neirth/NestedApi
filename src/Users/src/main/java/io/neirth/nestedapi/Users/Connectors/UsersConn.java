@@ -52,11 +52,9 @@ public class UsersConn implements Closeable {
      */
     UsersConn(Connection conn) throws SQLException {
         this.conn = conn;
-        this.createQuery = conn.prepareStatement(
-                "INSERT INTO Users (name, surname, email, password, telephone, birthday, country, address, addressInformation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id;");
+        this.createQuery = conn.prepareStatement("INSERT INTO Users (name, surname, email, password, telephone, birthday, country, address, addressInformation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id;");
         this.readQuery = conn.prepareStatement("SELECT * FROM Users WHERE id = ?;");
-        this.updateQuery = conn.prepareStatement(
-                "UPDATE Users SET name = ?, surname = ?, email = ?, password = ?, telephone = ?, birthday = ?, country = ?, address = ?, addressInformation = ? WHERE id = ?;");
+        this.updateQuery = conn.prepareStatement("UPDATE Users SET name = ?, surname = ?, email = ?, password = ?, telephone = ?, birthday = ?, country = ?, address = ?, addressInformation = ? WHERE id = ?;");
         this.deleteQuery = conn.prepareStatement("DELETE FROM Users WHERE id = ?;");
     }
 
