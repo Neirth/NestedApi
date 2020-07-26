@@ -51,7 +51,7 @@ import io.neirth.nestedapi.Users.Schemas.UserObj;
 import io.neirth.nestedapi.Users.Templates.Country;
 import io.neirth.nestedapi.Users.Templates.User;
 
-public class UsersRpc implements CreateUser, ReadUser, UpdateUser, DeleteUser {
+public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser {
     /**
      * Method to receive AMQP traffic and route the correct method.
      * 
