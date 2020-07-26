@@ -27,16 +27,25 @@ package io.neirth.nestedapi.Authentication.Controllers;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+// Used libraries from Java Enterprise.
+import javax.ws.rs.core.Response.Status;
+
 // Used libraries for AMQP operations.
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
+// Used libraries for introspect the JWT token.
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.neirth.nestedapi.Authentication.ServiceUtils;
 // Internal packages of the project.
 import io.neirth.nestedapi.Authentication.Connectors.Connections;
+import io.neirth.nestedapi.Authentication.Connectors.TokensConn;
 import io.neirth.nestedapi.Authentication.Schemas.IsValidToken;
 import io.neirth.nestedapi.Authentication.Schemas.Request;
 import io.neirth.nestedapi.Authentication.Schemas.Response;
+import io.neirth.nestedapi.Authentication.Templates.Token;
 
 public class RpcServices implements IsValidToken {
     /**
@@ -74,7 +83,8 @@ public class RpcServices implements IsValidToken {
                     .correlationId(delivery.getProperties().getCorrelationId()).build();
 
             // Publish the response into the private queue and sets the acknowledge.
-            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.toByteBuffer().array());
+            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps,
+                    response.toByteBuffer().array());
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         } catch (Exception e) {
             // In the case of crash, print the stack trace.
@@ -82,9 +92,49 @@ public class RpcServices implements IsValidToken {
         }
     }
 
+    /**
+     * RPC Method for check if the token is valid or not.
+     * 
+     * This method is used by the RPC interface to check the validuty if the
+     * authentication token by reading the status of the refresh token, as well as
+     * whether it has been altered in any waym validating the security component of
+     * the token.
+     * 
+     * @param request The RPC request.
+     * @return The RPC response.
+     */
     @Override
     public Response IsValidToken(Request request) {
-        // TODO Auto-generated method stub
-        return null;
+        // Prepare conn and response variables.
+        TokensConn conn = null;
+        Response response = new Response();
+
+        try {
+            // Acquire the token connection.
+            conn = Connections.getInstance().acquireAuths();
+
+            // Obtain the User ID and Refresh Token.
+            Claims claims = Jwts.parser()
+                                .setSigningKey(ServiceUtils.getKey())
+                                .parseClaimsJws(request.getToken().toString())
+                                .getBody();
+
+            // Recover the refresh token encapsulated information.
+            Token token = conn.read(claims.getIssuer());
+
+            // Check the User ID from the Token with the User ID from the database.
+            response.setStatus(Status.ACCEPTED.getStatusCode());
+            response.setObject(token.getUserId() == Long.valueOf(claims.getSubject()));
+        } catch (Exception e) {
+            // If ocurrs any exception, the token is not valid.
+            response.setStatus(Status.FORBIDDEN.getStatusCode());
+            response.setObject(false);
+        } finally {
+            // Release the Token Connection.
+            Connections.getInstance().releaseAuths(conn);
+        }
+
+        // Return the RPC Response.
+        return response;
     }
 }

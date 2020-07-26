@@ -104,15 +104,15 @@ public class TokensConn implements Closeable {
      * @throws NoSuchElementException The exception in the case that the desired
      *                                object is not available.
      */
-    public void delete(Token token) throws SQLException {
+    public void delete(String token) throws SQLException {
         // Set the token of the row.
-        deleteQuery.setString(1, token.getToken());
+        deleteQuery.setString(1, token);
 
         // Check if the row was update correctly
         if (deleteQuery.executeUpdate() == 0)
             // If the case where the item doesn't exist, throws a exception warning for this
             // situation.
-            throw new NoSuchElementException("The element " + token.getToken() + " is not available in the database.");
+            throw new NoSuchElementException("The element " + token + " is not available in the database.");
     }
 
     @Override

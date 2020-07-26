@@ -14,8 +14,8 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class Response extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 6350204550086362819L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Response\",\"namespace\":\"io.neirth.nestedapi.Authentication.Schemas\",\"fields\":[{\"name\":\"status\",\"type\":[\"int\"]},{\"name\":\"object\",\"type\":[\"null\",\"boolean\"],\"default\":null},{\"name\":\"message\",\"type\":[\"null\",\"string\"],\"default\":null}]}");
+  private static final long serialVersionUID = 1540503084017805878L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Response\",\"namespace\":\"io.neirth.nestedapi.Authentication.Schemas\",\"fields\":[{\"name\":\"status\",\"type\":[\"int\"]},{\"name\":\"object\",\"type\":[\"null\",\"boolean\",{\"type\":\"record\",\"name\":\"UserObj\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"name\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"surname\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"email\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"password\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"telephone\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"birthday\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"country\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"address\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"addressInformation\",\"type\":[\"null\",\"string\"],\"default\":null}]}],\"default\":null},{\"name\":\"message\",\"type\":[\"null\",\"string\"],\"default\":null}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -72,7 +72,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
   }
 
    private java.lang.Object status;
-   private java.lang.Boolean object;
+   private java.lang.Object object;
    private java.lang.CharSequence message;
 
   /**
@@ -88,7 +88,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
    * @param object The new value for object
    * @param message The new value for message
    */
-  public Response(java.lang.Object status, java.lang.Boolean object, java.lang.CharSequence message) {
+  public Response(java.lang.Object status, java.lang.Object object, java.lang.CharSequence message) {
     this.status = status;
     this.object = object;
     this.message = message;
@@ -111,7 +111,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
     case 0: status = value$; break;
-    case 1: object = (java.lang.Boolean)value$; break;
+    case 1: object = value$; break;
     case 2: message = (java.lang.CharSequence)value$; break;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
@@ -138,7 +138,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
    * Gets the value of the 'object' field.
    * @return The value of the 'object' field.
    */
-  public java.lang.Boolean getObject() {
+  public java.lang.Object getObject() {
     return object;
   }
 
@@ -147,7 +147,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
    * Sets the value of the 'object' field.
    * @param value the value to set.
    */
-  public void setObject(java.lang.Boolean value) {
+  public void setObject(java.lang.Object value) {
     this.object = value;
   }
 
@@ -210,7 +210,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
     implements org.apache.avro.data.RecordBuilder<Response> {
 
     private java.lang.Object status;
-    private java.lang.Boolean object;
+    private java.lang.Object object;
     private java.lang.CharSequence message;
 
     /** Creates a new Builder */
@@ -302,7 +302,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
       * Gets the value of the 'object' field.
       * @return The value.
       */
-    public java.lang.Boolean getObject() {
+    public java.lang.Object getObject() {
       return object;
     }
 
@@ -312,7 +312,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
       * @param value The value of 'object'.
       * @return This builder.
       */
-    public io.neirth.nestedapi.Authentication.Schemas.Response.Builder setObject(java.lang.Boolean value) {
+    public io.neirth.nestedapi.Authentication.Schemas.Response.Builder setObject(java.lang.Object value) {
       validate(fields()[1], value);
       this.object = value;
       fieldSetFlags()[1] = true;
@@ -384,7 +384,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
       try {
         Response record = new Response();
         record.status = fieldSetFlags()[0] ? this.status :  defaultValue(fields()[0]);
-        record.object = fieldSetFlags()[1] ? this.object : (java.lang.Boolean) defaultValue(fields()[1]);
+        record.object = fieldSetFlags()[1] ? this.object :  defaultValue(fields()[1]);
         record.message = fieldSetFlags()[2] ? this.message : (java.lang.CharSequence) defaultValue(fields()[2]);
         return record;
       } catch (org.apache.avro.AvroMissingFieldException e) {

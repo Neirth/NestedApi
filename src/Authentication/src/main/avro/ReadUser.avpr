@@ -1,7 +1,7 @@
 {
     "namespace": "io.neirth.nestedapi.Authentication.Schemas",
-    "protocol": "IsValidToken",
-    "types": [
+    "protocol": "ReadUser",
+    "types" : [
         {
             "type": "record",
             "name": "UserObj",
@@ -38,7 +38,7 @@
         }
     ],
     "messages": {
-        "IsValidToken": {
+        "ReadUser": {
             "request": [{ "name": "request", "type": "Request" }],
             "response": "Response"
         }

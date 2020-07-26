@@ -105,6 +105,10 @@ public class ServiceUtils {
         }
     }
 
+    public static Key getKey() {
+        return privateKey;
+    }
+
     /**
      * Method to access the event log of this module.
      * 
