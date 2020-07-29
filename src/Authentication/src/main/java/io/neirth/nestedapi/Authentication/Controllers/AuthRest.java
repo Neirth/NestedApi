@@ -44,6 +44,7 @@ import javax.servlet.http.HttpServletRequest;
 
 // Used libraries for JWT Processing.
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 
@@ -81,6 +82,12 @@ public class AuthRest {
         });
     }
 
+    /**
+     * HTTP Method for log out the users.
+     * 
+     * @param req Http headers
+     * @return The response.
+     */
     @POST
     @Path("/logout")
     public Response logoutUser(@Context final HttpServletRequest req) {
@@ -112,6 +119,9 @@ public class AuthRest {
             } catch (NoSuchElementException e) {
                 // If the token was not found, write a not found response.
                 response = Response.status(Status.NOT_FOUND);
+            } catch (UnsupportedJwtException e) {
+                // If the token is a unsupported schema, write a bad request response.
+                response = Response.status(Status.BAD_REQUEST);
             } catch (ExpiredJwtException e) {
                 // If the token was expired, write a forbidden response.
                 response = Response.status(Status.FORBIDDEN);

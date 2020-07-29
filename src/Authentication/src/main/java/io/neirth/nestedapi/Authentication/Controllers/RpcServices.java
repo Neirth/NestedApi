@@ -38,7 +38,7 @@ import com.rabbitmq.client.Delivery;
 // Used libraries for introspect the JWT token.
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.neirth.nestedapi.Authentication.ServiceUtils;
+
 // Internal packages of the project.
 import io.neirth.nestedapi.Authentication.Connectors.Connections;
 import io.neirth.nestedapi.Authentication.Connectors.TokensConn;
@@ -46,6 +46,7 @@ import io.neirth.nestedapi.Authentication.Schemas.IsValidToken;
 import io.neirth.nestedapi.Authentication.Schemas.Request;
 import io.neirth.nestedapi.Authentication.Schemas.Response;
 import io.neirth.nestedapi.Authentication.Templates.Token;
+import io.neirth.nestedapi.Authentication.ServiceUtils;
 
 public class RpcServices implements IsValidToken {
     /**
