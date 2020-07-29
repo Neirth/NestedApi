@@ -23,6 +23,7 @@
  */
 package io.neirth.nestedapi.Authentication.Connectors;
 
+// Used libraries from Java Standard.
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -31,10 +32,12 @@ import java.sql.Statement;
 import java.util.Stack;
 import java.util.concurrent.Semaphore;
 
+// Used libraries for AMQP operations.
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
+// Internal packages of the project.
 import io.neirth.nestedapi.Authentication.Controllers.RpcServices;
 
 /**
@@ -60,6 +63,10 @@ public class Connections implements Closeable {
     private final Stack<TokensConn> tokensConnStack = new Stack<>();
     private final Stack<Channel> brokerStack = new Stack<>();
 
+    /**
+     * Constructor with security level in default package so that it can only be
+     * instantiated by the connections class.
+     */
     private Connections() throws Exception {
         for (int i = 0; i < maxConnections; i++) {
             tokensConnStack.push(instanceConnection());
@@ -137,7 +144,7 @@ public class Connections implements Closeable {
         brokerSemaphore.release();
     }
 
-        /**
+    /**
      * Private method for instance a database connection.
      * 
      * This is used for instance a connection object, which previously loads the
