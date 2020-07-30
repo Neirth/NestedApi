@@ -115,7 +115,7 @@ public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser
      * @throws Exception If an exception occurs.
      */
     @Override
-    public Response DeleteUser(Request request) throws IOException {
+    public Response DeleteUser(Request request) {
         // Prepare the conn and response variable
         UsersConn conn = null;
         Response response = new Response();
@@ -158,7 +158,7 @@ public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser
      * @throws Exception If an exception occurs.
      */
     @Override
-    public Response UpdateUser(Request request) throws IOException {
+    public Response UpdateUser(Request request) {
         // Prepare the conn and response variable
         UsersConn conn = null;
         Response response = new Response();
@@ -214,7 +214,7 @@ public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser
      * @throws Exception If an exception occurs.
      */
     @Override
-    public Response ReadUser(Request request) throws IOException {
+    public Response ReadUser(Request request) {
         // Prepare the conn and response variable
         UsersConn conn = null;
         Response response = new Response();
@@ -268,7 +268,7 @@ public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser
      * @throws Exception If an exception occurs.
      */
     @Override
-    public Response CreateUser(Request request) throws IOException {
+    public Response CreateUser(Request request) {
         // Prepare the conn and response variable
         UsersConn conn = null;
         Response response = new Response();

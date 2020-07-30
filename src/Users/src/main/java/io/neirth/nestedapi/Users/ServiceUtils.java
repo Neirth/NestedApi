@@ -24,18 +24,15 @@
 package io.neirth.nestedapi.Users;
 
 // Used libraries from Java Standard.
-import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 
 // Used libraries from Java Enterprise.
-import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.xml.bind.DatatypeConverter;
 
 // Used library for logging the server events.
 import org.jboss.logging.Logger;
@@ -43,19 +40,17 @@ import org.jboss.logging.Logger;
 // Used libraries for process the jwt token.
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+
+// Internal packages of the project.
+import io.neirth.nestedapi.Users.Controllers.RpcRequest;
 
 public class ServiceUtils {
     // The instance of logger.
     private static Logger loggerSystem = Logger.getLogger(ServiceApp.class);
 
-    // The token private key.
-    private static Key privateKey = new SecretKeySpec(DatatypeConverter.parseBase64Binary(System.getenv("LOGIN_KEY")),
-                                                      SignatureAlgorithm.HS512.getJcaName());
-
     // The callback with custom procedures.
     public interface RestCallback {
-        ResponseBuilder run(Claims tokenData) throws Exception;
+        ResponseBuilder run(String token, Claims tokenData) throws Exception;
     }
 
     /**
@@ -72,7 +67,40 @@ public class ServiceUtils {
      * @param callback    The lambda callback
      * @return The response object.
      */
-    public static Response processRequest(HttpServletRequest req, Long paramId, Object body, RestCallback callback) {
+    public static Response processRequest(HttpServletRequest req, Long paramId, String body, RestCallback callback) {
+        // Initialize the response builder.
+        ResponseBuilder response = null;
+
+        try {
+            // Run the callback and get the response.
+            response = callback.run(null, null);
+        } catch (Exception e) {
+            // Write the exception in the log.
+            writeServerException(e);
+
+            // Create error response.
+            response = Response.status(Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
+        }
+
+        // Throws the response.
+        return response.build();
+    }
+
+    /**
+     * Method that process the request received from RESTful API and generate a
+     * response in the json format.
+     * 
+     * This method, with the corresponding RestCallback to do the specifici tasks,
+     * retrives the information from the body and executes the callback lambda, the
+     * message returnted is a HTTP response with Json Body.
+     * 
+     * @param req         The headers of http request.
+     * @param paramId     The paramId of the requested object.
+     * @param body The body of http request.
+     * @param callback    The lambda callback
+     * @return The response object.
+     */
+    public static Response processUserRequest(HttpServletRequest req, Long paramId, Object body, RestCallback callback) {
         // Initialize the response builder.
         ResponseBuilder response = null;
 
@@ -81,16 +109,19 @@ public class ServiceUtils {
 
         // Obtains a token string and her data.
         String token = (authHeader.size() != 0) ? authHeader.get(0).substring(7).trim() : null;
-        Claims tokenData = isTokenValid(token);
 
         try {
             // Validate the token.
-            if (tokenData != null)
+            if (RpcRequest.isValidToken(token)) {
+                // Parse the token data
+                Claims tokenData = Jwts.parser().parseClaimsJws(token).getBody();
+
                 // Run the callback and get the response.
-                response = callback.run(tokenData);
-            else
+                response = callback.run(token, tokenData);
+            } else {
                 // In the case of the token is not valid, generate the response forbidden.
                 response = Response.status(Status.FORBIDDEN);
+            }
         } catch (Exception e) {
             // Write the exception in the log.
             writeServerException(e);
@@ -120,11 +151,6 @@ public class ServiceUtils {
             // Information for production log.
             ServiceUtils.getLoggerSystem().error("An exception has occurred, " + e.toString());
         }
-    }
-
-    private static Claims isTokenValid(String token) {
-        // FIXME: Implement the check with the auth server, return the claim values if is valid, in the case of no, return null.
-        return Jwts.parser().setSigningKey(privateKey).parseClaimsJws(token).getBody();
     }
 
     /**

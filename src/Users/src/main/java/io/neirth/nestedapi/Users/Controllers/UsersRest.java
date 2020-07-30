@@ -23,18 +23,24 @@
  */
 package io.neirth.nestedapi.Users.Controllers;
 
-// Libraries used for json serialize and deserialize.
+// Utilities used from Java Standard Framework
+import java.io.StringReader;
+import java.text.SimpleDateFormat;
+import java.util.NoSuchElementException;
+
+// Used libraries for json serialize and deserialize.
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-// Libraires used for http operations
+// Used libraries for http operations
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -43,10 +49,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
 import javax.servlet.http.HttpServletRequest;
 
-// Utilities used from Java Standard Framework
-import java.io.StringReader;
-import java.text.SimpleDateFormat;
-import java.util.NoSuchElementException;
+// Used libaries for AMQP Operations.
+import com.rabbitmq.client.Channel;
 
 // Internal packages of the project.
 import io.neirth.nestedapi.Users.ServiceUtils;
@@ -60,15 +64,15 @@ public class UsersRest {
     /**
      * Method to get a user with param passed in the path.
      * 
-     * @param req Request header
+     * @param req     Request header
      * @param paramId The id of the user.
      * @return The user response.
      */
     @GET
-    @Path("{param_id}")
+    @Path("/me")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(@Context final HttpServletRequest req, @PathParam("param_id") long paramId) {
-        return ServiceUtils.processRequest(req, paramId, null, (token) -> {
+    public Response get(@Context final HttpServletRequest req) {
+        return ServiceUtils.processUserRequest(req, null, null, (token, tokenData) -> {
             // Prepare the response
             ResponseBuilder response = null;
 
@@ -80,8 +84,8 @@ public class UsersRest {
                 JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
 
                 // Try to read the user information.
-                User user = conn.read(Long.valueOf(token.getId()));
-                
+                User user = conn.read(Long.valueOf(tokenData.getId()));
+
                 // Add all information into the json object builder
                 jsonResponse.add("id", user.getId());
                 jsonResponse.add("name", user.getName());
@@ -93,7 +97,7 @@ public class UsersRest {
                 jsonResponse.add("country", user.getCountry().name());
 
                 // Insert correctly the nullable information
-                if (user.getAddress() != null){
+                if (user.getAddress() != null) {
                     jsonResponse.add("address", user.getAddress());
                 } else {
                     jsonResponse.addNull("address");
@@ -105,7 +109,7 @@ public class UsersRest {
                 } else {
                     jsonResponse.addNull("addressInformation");
                 }
-                
+
                 // If the process is complete successfully, write a ok response.
                 response = Response.ok(jsonResponse.build().toString(), MediaType.APPLICATION_JSON);
             } catch (NoSuchElementException e) {
@@ -124,16 +128,16 @@ public class UsersRest {
     /**
      * Method to update a user with param passed in the path.
      * 
-     * @param req Request header
-     * @param paramId The id of the user.
+     * @param req         Request header
+     * @param paramId     The id of the user.
      * @param jsonRequest The request body.
      * @return The user response.
      */
     @PUT
-    @Path("{param_id}")
+    @Path("/me")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response modify(@Context final HttpServletRequest req, @PathParam("param_id") long paramId, String jsonRequest) {
-        return ServiceUtils.processRequest(req, paramId, jsonRequest, (token) -> {
+    public Response modify(@Context final HttpServletRequest req, String jsonRequest) {
+        return ServiceUtils.processUserRequest(req, null, jsonRequest, (token, tokenData) -> {
             // Prepare the bad request message.
             ResponseBuilder response = Response.status(Status.BAD_REQUEST);
 
@@ -147,20 +151,20 @@ public class UsersRest {
 
                 try {
                     // Get the old user.
-                    User auxUser = conn.read(Long.valueOf(token.getId()));
+                    User auxUser = conn.read(Long.valueOf(tokenData.getId()));
 
                     // Updates only the columns with new data.
-                    User user = new User.Builder(Long.valueOf(token.getId()))
-                        .setName(jsonData.isNull("name") ? jsonData.getString("name") : auxUser.getName())
-                        .setSurname(jsonData.isNull("surname") ? jsonData.getString("surname") : auxUser.getSurname())
-                        .setEmail(jsonData.isNull("email") ? jsonData.getString("email") : auxUser.getEmail())
-                        .setPassword(jsonData.isNull("password") ? jsonData.getString("password") : auxUser.getPassword())
-                        .setTelephone(jsonData.isNull("telephone") ? jsonData.getString("telephone") : auxUser.getTelephone())
-                        .setBirthday(jsonData.isNull("birthday") ? DatatypeConverter.parseDateTime(jsonData.getString("birthday")).getTime() : auxUser.getBirthday())
-                        .setCountry(jsonData.isNull("country") ? Enum.valueOf(Country.class, jsonData.getString("country")) : auxUser.getCountry())
-                        .setAddress(jsonData.isNull("address") ? jsonData.getString("address") : auxUser.getAddress())
-                        .setAddressInformation(jsonData.isNull("addressInformation") ? jsonData.getString("addressInformation") : auxUser.getAddressInformation())
-                        .build();
+                    User user = new User.Builder(Long.valueOf(tokenData.getId()))
+                            .setName(jsonData.isNull("name") ? jsonData.getString("name") : auxUser.getName())
+                            .setSurname(jsonData.isNull("surname") ? jsonData.getString("surname") : auxUser.getSurname())
+                            .setEmail(jsonData.isNull("email") ? jsonData.getString("email") : auxUser.getEmail())
+                            .setPassword(jsonData.isNull("password") ? jsonData.getString("password") : auxUser.getPassword())
+                            .setTelephone(jsonData.isNull("telephone") ? jsonData.getString("telephone") : auxUser.getTelephone())
+                            .setBirthday(jsonData.isNull("birthday") ? DatatypeConverter.parseDateTime(jsonData.getString("birthday")).getTime() : auxUser.getBirthday())
+                            .setCountry(jsonData.isNull("country") ? Enum.valueOf(Country.class, jsonData.getString("country")) : auxUser.getCountry())
+                            .setAddress(jsonData.isNull("address") ? jsonData.getString("address") : auxUser.getAddress())
+                            .setAddressInformation(jsonData.isNull("addressInformation") ? jsonData.getString("addressInformation") : auxUser.getAddressInformation())
+                            .build();
 
                     // Try to update the user from the database.
                     conn.update(user);
@@ -184,24 +188,24 @@ public class UsersRest {
     /**
      * Method to delete a user with param passed in the path.
      * 
-     * @param req Request header
+     * @param req     Request header
      * @param paramId The id of the user.
      * @return The user response.
      */
     @DELETE
-    @Path("{param_id}")
+    @Path("/me")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(@Context final HttpServletRequest req, @PathParam("param_id") long paramId) {
-        return ServiceUtils.processRequest(req, paramId, null, (token) -> {
+    public Response delete(@Context final HttpServletRequest req) {
+        return ServiceUtils.processUserRequest(req, null, null, (token, tokenData) -> {
             // Prepare the response.
             ResponseBuilder response;
 
             // Try to acquire connection.
             UsersConn conn = Connections.getInstance().acquireUsers();
-            
+
             try {
                 // Try to get the requested user.
-                User user = conn.read(Long.valueOf(token.getId()));
+                User user = conn.read(Long.valueOf(tokenData.getId()));
 
                 // Try to delete the requested user.
                 conn.delete(user);
@@ -214,6 +218,97 @@ public class UsersRest {
             } finally {
                 // Release the connection.
                 Connections.getInstance().releaseUsers(conn);
+            }
+
+            // Return the response.
+            return response;
+        });
+    }
+
+    /**
+     * Method for register a user.
+     * 
+     * @param req         Http headers.
+     * @param jsonRequest The request body.
+     * @return The operation response.
+     */
+    @POST
+    @Path("/register")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response registerUser(@Context final HttpServletRequest req, String jsonRequest) {
+        return ServiceUtils.processRequest(req, null, jsonRequest, (token, tokenData) -> {
+            // Prepare the bad request message.
+            ResponseBuilder response = Response.status(Status.BAD_REQUEST);
+
+            // If the body message is empty, don't process the petition.
+            if (jsonRequest.length() != 0) {
+                // Initialize the json object builder.
+                final JsonObject jsonData = Json.createReader(new StringReader(jsonRequest)).readObject();
+
+                // Try to read the user information.
+                UsersConn conn = Connections.getInstance().acquireUsers();
+
+                try {
+                    // Updates only the columns with new data.
+                    User user = new User.Builder(Long.valueOf(null))
+                            .setName(jsonData.getString("name"))
+                            .setSurname(jsonData.getString("surname"))
+                            .setEmail(jsonData.getString("email"))
+                            .setPassword(jsonData.getString("password"))
+                            .setTelephone(jsonData.getString("telephone"))
+                            .setBirthday(DatatypeConverter.parseDateTime(jsonData.getString("birthday")).getTime())
+                            .setCountry(Enum.valueOf(Country.class, jsonData.getString("country")))
+                            .setAddress(jsonData.getString("address"))
+                            .setAddressInformation(jsonData.getString("addressInformation"))
+                            .build();
+
+                    // Try to update the user from the database.
+                    conn.create(user);
+
+                    // If the process is complete successfully, write a ok response.
+                    response = Response.ok(MediaType.APPLICATION_JSON);
+                } catch (NoSuchElementException e) {
+                    // If the user was not found, write a not found response.
+                    response = Response.status(Status.NOT_FOUND);
+                } finally {
+                    // Return the users connection.
+                    Connections.getInstance().releaseUsers(conn);
+                }
+            }
+
+            return response;
+        });
+    }
+
+    /**
+     * Method for log out the user.
+     * 
+     * @param req   Http headers
+     * @return The response.
+     */
+    @POST
+    @Path("/logout")
+    public Response logoutUser(@Context final HttpServletRequest req) {
+        return ServiceUtils.processUserRequest(req, null, null, (token, tokenData) -> {
+            // Prepare the response.
+            ResponseBuilder response = null;
+
+            // Acquire a Tokens Connection instance.
+            Channel channel = Connections.getInstance().acquireBroker();
+
+            try {
+                // Send RPC call to Auth Server.
+                RpcRequest.removeToken(token);
+
+                // Write the ok response.
+                response = Response.status(Status.ACCEPTED);
+            } catch (NoSuchElementException e) {
+                // If the user was not found, write a not found response.
+                response = Response.status(Status.NOT_FOUND);
+            } finally {
+                // Release the tokens connection instance.
+                Connections.getInstance().releaseBroker(channel);
             }
 
             // Return the response.

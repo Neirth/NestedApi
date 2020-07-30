@@ -23,7 +23,8 @@
             "type": "record",
             "fields": [
                 { "name": "id", "type": [ "null", "long" ], "default": null },
-                { "name": "user", "type": [ "null", "UserObj" ], "default": null }
+                { "name": "user", "type": [ "null", "UserObj" ], "default": null },
+                { "name": "token", "type": [ "null", "string" ], "default": null }
             ]
         },
         {
@@ -31,9 +32,9 @@
             "name": "Response",
             "fields": [
                 { "name": "status", "type": [ "int" ] },
-                { "name": "object", "type": [ "null", "UserObj" ], "default": null  },
+                { "name": "message", "type": [ "null", "string" ], "default": null },
                 { "name": "object_id", "type": [ "null", "long" ], "default": null },
-                { "name": "message", "type": [ "null", "string" ], "default": null }
+                { "name": "object", "type": [ "null", "boolean", "UserObj" ], "default": null }
             ]
         }
     ],
