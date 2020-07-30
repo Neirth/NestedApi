@@ -1,5 +1,5 @@
 ## Stage 1 : build with maven builder image with native capabilities
-FROM quay.io/quarkus/centos-quarkus-maven:20.1.0-java8 AS build
+FROM quay.io/quarkus/centos-quarkus-maven:20.1.0-java11 AS build
 
 USER root
 
