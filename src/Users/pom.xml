@@ -9,16 +9,15 @@
     <properties>
         <!-- Maven properties -->
         <maven.compiler.parameters>true</maven.compiler.parameters>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <surefire-plugin.version>2.22.1</surefire-plugin.version>
 
         <!-- Quarkus framework properties -->
-        <quarkus-plugin.version>1.6.0.Final</quarkus-plugin.version>
         <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-        <quarkus.platform.version>1.6.0.Final</quarkus.platform.version>
+        <quarkus.platform.version>1.6.1.Final</quarkus.platform.version>
 
         <!-- Avro libraries properties -->
         <avro.version>1.10.0</avro.version>
@@ -44,27 +43,32 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy</artifactId>
+            <version>${quarkus.platform.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-jsonb</artifactId>
+            <version>${quarkus.platform.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-postgresql</artifactId>
+            <version>${quarkus.platform.version}</version>
         </dependency>
 
         <!-- JNA Dependencies -->
         <dependency>
             <groupId>jakarta.security.jacc</groupId>
             <artifactId>jakarta.security.jacc-api</artifactId>
+            <version>1.6.1</version>
         </dependency>
 
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
+            <version>5.6.0</version>
         </dependency>
 
         <!-- JWT Dependencies -->
@@ -117,6 +121,7 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
             <scope>test</scope>
+            <version>${quarkus.platform.version}</version>
         </dependency>
     </dependencies>
 
@@ -185,7 +190,7 @@
                     <plugin>
                         <groupId>io.quarkus</groupId>
                         <artifactId>quarkus-maven-plugin</artifactId>
-                        <version>${quarkus-plugin.version}</version>
+                        <version>${quarkus.platform.version}</version>
                         <executions>
                             <execution>
                                 <goals>
