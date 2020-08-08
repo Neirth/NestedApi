@@ -26,6 +26,7 @@ package io.neirth.nestedapi.Authentication.Controllers;
 // Used libraries from Java Standard.
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.NoSuchElementException;
 
 // Used libraries from Java Enterprise.
 import javax.ws.rs.core.Response.Status;
@@ -76,6 +77,9 @@ public class RpcServices implements IsValidToken {
             switch (type) {
                 case "IsValidToken":
                     response = IsValidToken(request);
+                    break;
+                case "RemoveToken":
+                    response = RemoveToken(request);
                     break;
             }
 
@@ -130,6 +134,35 @@ public class RpcServices implements IsValidToken {
             // If ocurrs any exception, the token is not valid.
             response.setStatus(Status.FORBIDDEN.getStatusCode());
             response.setObject(false);
+        } finally {
+            // Release the Token Connection.
+            Connections.getInstance().releaseAuths(conn);
+        }
+
+        // Return the RPC Response.
+        return response;
+    }
+
+    public Response RemoveToken(Request request) {
+        // Prepare conn and response variables.
+        TokensConn conn = null;
+        Response response = new Response();
+
+        try {
+            // Acquire the token connection.
+            conn = Connections.getInstance().acquireAuths();
+
+            // Remove the refresh token from database.
+            conn.delete(request.getToken().toString());
+
+            // Check the User ID from the Token with the User ID from the database.
+            response.setStatus(Status.ACCEPTED.getStatusCode());
+        } catch (NoSuchElementException e) {
+            // If the token doesn't exist in the database, return 404.
+            response.setStatus(Status.NOT_FOUND.getStatusCode());
+        } catch (Exception e) {
+            // If ocurrs any exception, return server error.
+            response.setStatus(Status.INTERNAL_SERVER_ERROR.getStatusCode());
         } finally {
             // Release the Token Connection.
             Connections.getInstance().releaseAuths(conn);

@@ -26,6 +26,8 @@ package io.neirth.nestedapi.Authentication.Controllers;
 // Used libraries from Java Standard.
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -55,7 +57,7 @@ public class RpcRequest {
      * @throws IOException If the operation returns any exception that is not Okey, throw this exception.
      * @throws InterruptedException If the acquire process was interruped, throws this exception.
      */
-    public void CreateUser(UserObj user) throws IOException, InterruptedException {
+    public static void createUser(UserObj user) throws IOException, InterruptedException {
         // Prepare the variables.
         Channel channel = null;
 
@@ -67,8 +69,12 @@ public class RpcRequest {
             String corrId = UUID.randomUUID().toString();
             String replyTo = channel.queueDeclare().getQueue();
 
+            // Add headers map.
+            Map<String, Object> headers = new HashMap<>();
+            headers.put("x-remote-method", "CreateUser");
+
             // Encapsulate into BasicProperties the instanced properties.
-            BasicProperties props = new BasicProperties().builder().correlationId(corrId).replyTo(replyTo).build();
+            BasicProperties props = new BasicProperties().builder().correlationId(corrId).replyTo(replyTo).headers(headers).build();
 
             // Build the request message.
             Request request = Request.newBuilder().setUser(user).build();
@@ -76,6 +82,7 @@ public class RpcRequest {
             // Send the request via RPC.
             channel.basicPublish("", "users", props, request.toByteBuffer().array());
 
+    
             // Prepare the response variable.
             BlockingQueue<Response> response = new ArrayBlockingQueue<>(1);
 
@@ -115,7 +122,7 @@ public class RpcRequest {
      * @throws IOException If the operation returns any exception that is not Okey, throw this exception.
      * @throws InterruptedException If the acquire process was interruped, throws this exception.
      */
-    public UserObj readUser(Long id) throws IOException, InterruptedException {
+    public static UserObj readUser(Long id) throws IOException, InterruptedException {
         // Prepare the variables.
         Channel channel = null;
         UserObj obj;
@@ -128,8 +135,12 @@ public class RpcRequest {
             String corrId = UUID.randomUUID().toString();
             String replyTo = channel.queueDeclare().getQueue();
 
+            // Add headers map.
+            Map<String, Object> headers = new HashMap<>();
+            headers.put("x-remote-method", "ReadUser");
+
             // Encapsulate into BasicProperties the instanced properties.
-            BasicProperties props = new BasicProperties().builder().correlationId(corrId).replyTo(replyTo).build();
+            BasicProperties props = new BasicProperties().builder().correlationId(corrId).replyTo(replyTo).headers(headers).build();
 
             // Build the request message.
             Request request = Request.newBuilder().setId(id).build();

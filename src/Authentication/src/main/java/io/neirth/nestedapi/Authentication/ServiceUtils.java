@@ -25,6 +25,7 @@ package io.neirth.nestedapi.Authentication;
 
 // Used libraries from Java Standard.
 import java.security.Key;
+import java.util.Map;
 
 // Used libraries from Java Enterprise.
 import javax.crypto.spec.SecretKeySpec;
@@ -67,7 +68,7 @@ public class ServiceUtils {
      * @param callback    The lambda callback
      * @return The response object.
      */
-    public static Response processRequest(HttpServletRequest req, Long paramId, Object body, RestCallback callback) {
+    public static Response processRequest(HttpServletRequest req, Long paramId, String body, RestCallback callback) {
         // Initialize the response builder.
         ResponseBuilder response = null;
 
