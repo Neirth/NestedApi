@@ -1,6 +1,6 @@
 {
     "namespace": "io.neirth.nestedapi.Invoices.Schemas",
-    "protocol": "CreateInvoice",
+    "protocol": "IsValidToken",
     "types": [
         {
             "name": "ProductObj",
@@ -48,8 +48,8 @@
         }
     ],
     "messages": {
-        "CreateInvoice": {
-            "request": [ { "name": "request", "type": "Request" } ],
+        "IsValidToken": {
+            "request": [{ "name": "request", "type": "Request" }],
             "response": "Response"
         }
     }

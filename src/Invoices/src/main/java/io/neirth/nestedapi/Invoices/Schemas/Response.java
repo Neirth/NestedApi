@@ -14,8 +14,8 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class Response extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 7781667204086722787L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Response\",\"namespace\":\"io.neirth.nestedapi.Invoices.Schemas\",\"fields\":[{\"name\":\"status\",\"type\":[\"int\"]},{\"name\":\"object\",\"type\":[\"null\",{\"type\":\"record\",\"name\":\"InvoiceObj\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"userId\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"creationDate\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"deliveryAddress\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"deliveryPostcode\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"deliveryCountry\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"deliveryCurrency\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"deliveryAddressInformation\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"products\",\"type\":[\"null\",{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"ProductObj\",\"fields\":[{\"name\":\"productName\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"productPrice\",\"type\":[\"null\",\"double\"],\"default\":null},{\"name\":\"productAmount\",\"type\":[\"null\",\"int\"],\"default\":null}]}}],\"default\":null}]}],\"default\":null},{\"name\":\"object_id\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"message\",\"type\":[\"null\",\"string\"],\"default\":null}]}");
+  private static final long serialVersionUID = -8194385269713644490L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Response\",\"namespace\":\"io.neirth.nestedapi.Invoices.Schemas\",\"fields\":[{\"name\":\"status\",\"type\":[\"int\"]},{\"name\":\"object\",\"type\":[\"null\",\"boolean\",{\"type\":\"record\",\"name\":\"InvoiceObj\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"userId\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"creationDate\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"deliveryAddress\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"deliveryPostcode\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"deliveryCountry\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"deliveryCurrency\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"deliveryAddressInformation\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"products\",\"type\":[\"null\",{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"ProductObj\",\"fields\":[{\"name\":\"productName\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"productPrice\",\"type\":[\"null\",\"double\"],\"default\":null},{\"name\":\"productAmount\",\"type\":[\"null\",\"int\"],\"default\":null}]}}],\"default\":null}]}],\"default\":null},{\"name\":\"object_id\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"message\",\"type\":[\"null\",\"string\"],\"default\":null}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -72,7 +72,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
   }
 
    private java.lang.Object status;
-   private io.neirth.nestedapi.Invoices.Schemas.InvoiceObj object;
+   private java.lang.Object object;
    private java.lang.CharSequence object_id;
    private java.lang.CharSequence message;
 
@@ -90,7 +90,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
    * @param object_id The new value for object_id
    * @param message The new value for message
    */
-  public Response(java.lang.Object status, io.neirth.nestedapi.Invoices.Schemas.InvoiceObj object, java.lang.CharSequence object_id, java.lang.CharSequence message) {
+  public Response(java.lang.Object status, java.lang.Object object, java.lang.CharSequence object_id, java.lang.CharSequence message) {
     this.status = status;
     this.object = object;
     this.object_id = object_id;
@@ -115,7 +115,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
     case 0: status = value$; break;
-    case 1: object = (io.neirth.nestedapi.Invoices.Schemas.InvoiceObj)value$; break;
+    case 1: object = value$; break;
     case 2: object_id = (java.lang.CharSequence)value$; break;
     case 3: message = (java.lang.CharSequence)value$; break;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
@@ -143,7 +143,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
    * Gets the value of the 'object' field.
    * @return The value of the 'object' field.
    */
-  public io.neirth.nestedapi.Invoices.Schemas.InvoiceObj getObject() {
+  public java.lang.Object getObject() {
     return object;
   }
 
@@ -152,7 +152,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
    * Sets the value of the 'object' field.
    * @param value the value to set.
    */
-  public void setObject(io.neirth.nestedapi.Invoices.Schemas.InvoiceObj value) {
+  public void setObject(java.lang.Object value) {
     this.object = value;
   }
 
@@ -232,8 +232,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
     implements org.apache.avro.data.RecordBuilder<Response> {
 
     private java.lang.Object status;
-    private io.neirth.nestedapi.Invoices.Schemas.InvoiceObj object;
-    private io.neirth.nestedapi.Invoices.Schemas.InvoiceObj.Builder objectBuilder;
+    private java.lang.Object object;
     private java.lang.CharSequence object_id;
     private java.lang.CharSequence message;
 
@@ -255,9 +254,6 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
       if (isValidValue(fields()[1], other.object)) {
         this.object = data().deepCopy(fields()[1].schema(), other.object);
         fieldSetFlags()[1] = other.fieldSetFlags()[1];
-      }
-      if (other.hasObjectBuilder()) {
-        this.objectBuilder = io.neirth.nestedapi.Invoices.Schemas.InvoiceObj.newBuilder(other.getObjectBuilder());
       }
       if (isValidValue(fields()[2], other.object_id)) {
         this.object_id = data().deepCopy(fields()[2].schema(), other.object_id);
@@ -283,7 +279,6 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
         this.object = data().deepCopy(fields()[1].schema(), other.object);
         fieldSetFlags()[1] = true;
       }
-      this.objectBuilder = null;
       if (isValidValue(fields()[2], other.object_id)) {
         this.object_id = data().deepCopy(fields()[2].schema(), other.object_id);
         fieldSetFlags()[2] = true;
@@ -338,7 +333,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
       * Gets the value of the 'object' field.
       * @return The value.
       */
-    public io.neirth.nestedapi.Invoices.Schemas.InvoiceObj getObject() {
+    public java.lang.Object getObject() {
       return object;
     }
 
@@ -348,9 +343,8 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
       * @param value The value of 'object'.
       * @return This builder.
       */
-    public io.neirth.nestedapi.Invoices.Schemas.Response.Builder setObject(io.neirth.nestedapi.Invoices.Schemas.InvoiceObj value) {
+    public io.neirth.nestedapi.Invoices.Schemas.Response.Builder setObject(java.lang.Object value) {
       validate(fields()[1], value);
-      this.objectBuilder = null;
       this.object = value;
       fieldSetFlags()[1] = true;
       return this;
@@ -364,39 +358,6 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
       return fieldSetFlags()[1];
     }
 
-    /**
-     * Gets the Builder instance for the 'object' field and creates one if it doesn't exist yet.
-     * @return This builder.
-     */
-    public io.neirth.nestedapi.Invoices.Schemas.InvoiceObj.Builder getObjectBuilder() {
-      if (objectBuilder == null) {
-        if (hasObject()) {
-          setObjectBuilder(io.neirth.nestedapi.Invoices.Schemas.InvoiceObj.newBuilder(object));
-        } else {
-          setObjectBuilder(io.neirth.nestedapi.Invoices.Schemas.InvoiceObj.newBuilder());
-        }
-      }
-      return objectBuilder;
-    }
-
-    /**
-     * Sets the Builder instance for the 'object' field
-     * @param value The builder instance that must be set.
-     * @return This builder.
-     */
-    public io.neirth.nestedapi.Invoices.Schemas.Response.Builder setObjectBuilder(io.neirth.nestedapi.Invoices.Schemas.InvoiceObj.Builder value) {
-      clearObject();
-      objectBuilder = value;
-      return this;
-    }
-
-    /**
-     * Checks whether the 'object' field has an active Builder instance
-     * @return True if the 'object' field has an active Builder instance
-     */
-    public boolean hasObjectBuilder() {
-      return objectBuilder != null;
-    }
 
     /**
       * Clears the value of the 'object' field.
@@ -404,7 +365,6 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
       */
     public io.neirth.nestedapi.Invoices.Schemas.Response.Builder clearObject() {
       object = null;
-      objectBuilder = null;
       fieldSetFlags()[1] = false;
       return this;
     }
@@ -495,16 +455,7 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
       try {
         Response record = new Response();
         record.status = fieldSetFlags()[0] ? this.status :  defaultValue(fields()[0]);
-        if (objectBuilder != null) {
-          try {
-            record.object = this.objectBuilder.build();
-          } catch (org.apache.avro.AvroMissingFieldException e) {
-            e.addParentField(record.getSchema().getField("object"));
-            throw e;
-          }
-        } else {
-          record.object = fieldSetFlags()[1] ? this.object : (io.neirth.nestedapi.Invoices.Schemas.InvoiceObj) defaultValue(fields()[1]);
-        }
+        record.object = fieldSetFlags()[1] ? this.object :  defaultValue(fields()[1]);
         record.object_id = fieldSetFlags()[2] ? this.object_id : (java.lang.CharSequence) defaultValue(fields()[2]);
         record.message = fieldSetFlags()[3] ? this.message : (java.lang.CharSequence) defaultValue(fields()[3]);
         return record;
