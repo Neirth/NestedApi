@@ -23,8 +23,11 @@
  */
 package io.neirth.nestedapi.Authentication;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 // Used libraries from Java Standard.
 import java.security.Key;
+import java.util.HashMap;
 import java.util.Map;
 
 // Used libraries from Java Enterprise.
@@ -104,6 +107,22 @@ public class ServiceUtils {
             // Information for production log.
             ServiceUtils.getLoggerSystem().error("An exception has occurred, " + e.toString());
         }
+    }
+
+
+    public static Map<String, String> parseFormEncoded(String formEncoded) {
+        Map<String, String> formMap = new HashMap<>();
+
+        for (String pair: formEncoded.split("&")) {
+            int index = pair.indexOf("=");
+
+            String key = URLDecoder.decode(pair.substring(0, index), StandardCharsets.UTF_8);
+            String value = URLDecoder.decode(pair.substring(0, index), StandardCharsets.UTF_8);
+
+            formMap.put(key, value);
+        }
+        
+        return formMap;
     }
 
     public static Key getKey() {

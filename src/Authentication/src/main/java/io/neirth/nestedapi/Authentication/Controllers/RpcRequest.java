@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -117,6 +118,79 @@ public class RpcRequest {
      * been implemented in the project. Thus reducing the service is monolithic and
      * can be easily scalable.
      * 
+     * @param email The user email.
+     * @return The object of the response.
+     * @throws IOException If the operation returns any exception that is not Okey, throw this exception.
+     * @throws InterruptedException If the acquire process was interruped, throws this exception.
+     */
+    public static UserObj readUser(String email) throws IOException, InterruptedException {
+        // Prepare the variables.
+        Channel channel = null;
+        UserObj obj;
+
+        try {
+            // Acquire the broker connection.
+            channel = Connections.getInstance().acquireBroker();
+
+            // Instance the properties.
+            String corrId = UUID.randomUUID().toString();
+            String replyTo = channel.queueDeclare().getQueue();
+
+            // Add headers map.
+            Map<String, Object> headers = new HashMap<>();
+            headers.put("x-remote-method", "ReadUser");
+
+            // Encapsulate into BasicProperties the instanced properties.
+            BasicProperties props = new BasicProperties().builder().correlationId(corrId).replyTo(replyTo).headers(headers).build();
+
+            // Build the request message.
+            Request request = Request.newBuilder().setEmail(email).build();
+
+            // Send the request via RPC.
+            channel.basicPublish("", "users", props, request.toByteBuffer().array());
+
+            // Prepare the response variable.
+            BlockingQueue<Response> response = new ArrayBlockingQueue<>(1);
+
+            // Create a consumer the response.
+            String ctag = channel.basicConsume(replyTo, true, (consumerTag, delivery) -> {
+                if (delivery.getProperties().getCorrelationId().equals(corrId)) {
+                    response.offer(Response.fromByteBuffer(ByteBuffer.wrap(delivery.getBody())));
+                }
+            }, consumerTag -> {
+            });
+
+            // Wait the response.
+            Response responseObj = response.take();
+
+            // Throw a Exception if the request fails.
+            if ((Integer) responseObj.getStatus() != Status.NOT_FOUND.getStatusCode())
+                throw new NoSuchElementException(responseObj.getMessage().toString());
+            else if ((Integer) responseObj.getStatus() != Status.ACCEPTED.getStatusCode())
+                throw new IOException(responseObj.getMessage().toString());
+
+            // Recovers the user object.
+            obj = (UserObj) responseObj.getObject();
+
+            // Cancel the consumer.
+            channel.basicCancel(ctag);
+        } finally {
+            // Release the broker connection.
+            Connections.getInstance().releaseBroker(channel);
+        }
+
+        // Return the object.
+        return obj;
+    }
+
+    /**
+     * Remote method for read users from users endpoint.
+     * 
+     * Since the Domain Driven Design architecture is being implemented in this
+     * project. We will use remote methods to work with the other servers that have
+     * been implemented in the project. Thus reducing the service is monolithic and
+     * can be easily scalable.
+     * 
      * @param id The user id.
      * @return The object of the response.
      * @throws IOException If the operation returns any exception that is not Okey, throw this exception.
@@ -163,7 +237,9 @@ public class RpcRequest {
             Response responseObj = response.take();
 
             // Throw a Exception if the request fails.
-            if ((Integer) responseObj.getStatus() != Status.ACCEPTED.getStatusCode())
+            if ((Integer) responseObj.getStatus() != Status.NOT_FOUND.getStatusCode())
+                throw new NoSuchElementException(responseObj.getMessage().toString());
+            else if ((Integer) responseObj.getStatus() != Status.ACCEPTED.getStatusCode())
                 throw new IOException(responseObj.getMessage().toString());
 
             // Recovers the user object.

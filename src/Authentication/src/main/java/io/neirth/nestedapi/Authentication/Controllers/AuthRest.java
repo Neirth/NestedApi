@@ -36,18 +36,28 @@ import javax.ws.rs.core.Response.Status;
 
 import com.rabbitmq.client.Channel;
 
+import java.io.IOException;
 import java.io.StringReader;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletRequest;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 // Internal packages of the project.
 import io.neirth.nestedapi.Authentication.ServiceUtils;
 import io.neirth.nestedapi.Authentication.Connectors.Connections;
 import io.neirth.nestedapi.Authentication.Connectors.TokensConn;
 import io.neirth.nestedapi.Authentication.Schemas.UserObj;
+import io.neirth.nestedapi.Authentication.Templates.Token;
 
 @Path("/auth")
 public class AuthRest {
@@ -57,49 +67,139 @@ public class AuthRest {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response authToken(@Context final HttpServletRequest req, String body) {
         return ServiceUtils.processRequest(req, null, body, () -> {
-            // TODO: Check if refresh token is present.
+            // Prepare the bad request message.
+            ResponseBuilder response = Response.status(Status.BAD_REQUEST);
 
-            /*
-             * 0. TODO: Create endpoint for serve a authentication html page with jsp.
-             * 
-             * 1. First of all, check the type of validation is used, or check if the refresh token is present in Bearer Authentication Header
-             * 
-             * 2. Validate the authorization code.
-             * 
-             * 3. Validate the client in the case of this.
-             * 
-             * 4. Read the permited scopes.
-             * 
-             * 5. Generate Refresh token.
-             * 
-             * 6. Generate Access token.
-             * 
-             * 7. Return it to the client.
-             */
-            // Get authentication header.
-            String authHeader = req.getHeader("Authentication");
+            // Parse the body variables.
+            Map<String, String> requestVars = ServiceUtils.parseFormEncoded(body);
+            String grantType = requestVars.get("grant_type");
 
-            // Check if is present the refresh token
-            if (authHeader.startsWith("Bearer")) {
-                // TODO: Check the refresh token.
-                TokensConn conn = null;
-
-                try {
-                    // Recovers the Token connection.
-                    conn = Connections.getInstance().acquireAuths();
-
-                    // Check if exist the token.
-                    conn.read(authHeader.substring(7));
-                } finally {
-                    Connections.getInstance().releaseAuths(conn);
-                }
-
-            } else {
-                // TODO: Check the type of validation.
-            }
-
-            return null;
+            // Determinate the type of authentication.
+            if (grantType == "password")
+                response = grantTypePassword(requestVars);
+            else if (grantType == "refresh_token") 
+                response = grantTypeRefreshToken(requestVars);
+            
+            return response;
         });
+    }
+
+    private ResponseBuilder grantTypePassword(Map<String, String> requestVars) throws InterruptedException, IOException, SQLException {
+        // Prepare the bad request message.
+        ResponseBuilder response = Response.status(Status.BAD_REQUEST);
+
+        // Return the username and password.
+        String username = requestVars.get("username"), password = requestVars.get("password");
+
+        // Check if this isn't null.
+        if (username != null || password != null) {
+            // Recover the connection.
+            TokensConn conn = Connections.getInstance().acquireAuths();
+
+            try {
+                // Recover from users microservice their data.
+                UserObj user = RpcRequest.readUser(username);
+
+                // Check if the password match.
+                if (password == user.getPassword().toString()) {
+                    // Prepares the Json Response.
+                    JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+
+                    // Prepares the refresh and auth token.
+                    String refreshToken = UUID.randomUUID().toString(), authToken = "";
+
+                    // Instances the actual operation time.
+                    Long actualTime = System.currentTimeMillis();
+                    Long expirationTime = System.currentTimeMillis() * 1800000;
+
+                    // Build the refresh token object.
+                    Token token = new Token.Builder().setUserId(user.getId()).setToken(refreshToken)
+                                                     .setValidFrom(new Date(actualTime)).build();
+
+                    // Insert them into the database.
+                    conn.create(token);
+
+                    // Build the authentication token object.
+                    authToken = Jwts.builder().setId(Long.toString(user.getId())).setSubject(user.getEmail().toString())
+                                              .setIssuedAt(new Date(actualTime)).setExpiration(new Date(expirationTime))
+                                              .signWith(ServiceUtils.getKey(), SignatureAlgorithm.HS512).compact();
+
+                    // Build json response with access and refresh token.
+                    jsonResponse.add("access_token", authToken);
+                    jsonResponse.add("token_type", "Bearer");
+                    jsonResponse.add("expires_in", expirationTime - actualTime);
+                    jsonResponse.add("refresh_token", refreshToken);
+
+                    // Sends the response.
+                    response = Response.status(Status.OK).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
+                } else {
+                    // Prepares the Json Response.
+                    JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+
+                    // If don't match, return a forbidden response.
+                    response = Response.status(Status.FORBIDDEN).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
+                }
+            } catch (NoSuchElementException e) {
+                // Prepares the Json Response.
+                JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+
+                // If don't match, return a forbidden response.
+                response = Response.status(Status.FORBIDDEN).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
+            } finally {
+                // Release the token connection.
+                Connections.getInstance().releaseAuths(conn);
+            }
+        }
+
+        return response;
+    }
+
+    private ResponseBuilder grantTypeRefreshToken(Map<String, String> requestVars) throws InterruptedException, IOException, SQLException {
+        // Prepare the bad request message.
+        ResponseBuilder response = Response.status(Status.BAD_REQUEST);
+
+        if (response != null) {
+            // Recover the connection.
+            TokensConn conn = Connections.getInstance().acquireAuths();
+
+            try {
+                // Prepares the Json Response.
+                JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+
+                // Prepares the refresh and auth token.
+                String refreshToken = requestVars.get("refresh_token"), authToken = "";
+
+                // Recover the data from the databases.
+                Token token = conn.read(refreshToken);
+                UserObj user = RpcRequest.readUser(token.getUserId());
+
+                // Instances the actual operation time.
+                Long actualTime = System.currentTimeMillis();
+                Long expirationTime = System.currentTimeMillis() * 1800000;
+
+                // Build the authentication token object.
+                authToken = Jwts.builder().setId(Long.toString(user.getId())).setSubject(user.getEmail().toString())
+                                          .setIssuedAt(new Date(actualTime)).setExpiration(new Date(expirationTime))
+                                          .signWith(ServiceUtils.getKey(), SignatureAlgorithm.HS512).compact();
+        
+                // Build json response with access and refresh token.
+                jsonResponse.add("access_token", authToken);
+                jsonResponse.add("token_type", "Bearer");
+                jsonResponse.add("expires_in", expirationTime - actualTime);
+                jsonResponse.add("refresh_token", refreshToken);
+
+                // Sends the response.
+                response = Response.status(Status.OK).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
+            } catch (NoSuchElementException e) {
+                // If the token or the user isn't found in their database, send the 401 response.
+                response = Response.status(Status.UNAUTHORIZED);
+            } finally {
+                // Release the token connection.
+                Connections.getInstance().releaseAuths(conn);
+            }
+        }
+
+        return response;
     }
 
     /**
@@ -141,7 +241,7 @@ public class AuthRest {
                 RpcRequest.createUser(user);
 
                 // If the process is complete successfully, write a ok response.
-                response = Response.ok(MediaType.APPLICATION_JSON);
+                response = Response.status(Status.OK);
             }
 
             return response;
@@ -175,7 +275,7 @@ public class AuthRest {
                 conn.delete(req.getHeader("Authentication").substring(7));
 
                 // Write the ok response.
-                response = Response.status(Status.ACCEPTED);
+                response = Response.status(Status.OK);
             } catch (NoSuchElementException e) {
                 // If the user was not found, write a not found response.
                 response = Response.status(Status.NOT_FOUND);
