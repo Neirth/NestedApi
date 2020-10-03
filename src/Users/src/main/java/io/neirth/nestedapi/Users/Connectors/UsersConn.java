@@ -46,6 +46,8 @@ public class UsersConn implements Closeable {
     private final PreparedStatement updateQuery;
     private final PreparedStatement deleteQuery;
 
+    private final PreparedStatement readFromEmailQuery;
+
     /**
      * Constructor with security level in default package so that it can only be
      * instantiated by the connections class.
@@ -56,6 +58,8 @@ public class UsersConn implements Closeable {
         this.readQuery = conn.prepareStatement("SELECT * FROM Users WHERE id = ?;");
         this.updateQuery = conn.prepareStatement("UPDATE Users SET name = ?, surname = ?, email = ?, password = ?, telephone = ?, birthday = ?, country = ?, address = ?, addressInformation = ? WHERE id = ?;");
         this.deleteQuery = conn.prepareStatement("DELETE FROM Users WHERE id = ?;");
+
+        this.readFromEmailQuery = conn.prepareStatement("SELECT * FROM Users WHERE email = ?;");
     }
 
     /**
@@ -180,6 +184,33 @@ public class UsersConn implements Closeable {
             throw new NoSuchElementException("The element " + user.getId() + " is not available in the database.");
     }
 
+    public User readFromEmail(String email) throws SQLException {
+        // Create a variable with null value.
+        User user = null;
+
+        // Set the email  of the user.
+        readFromEmailQuery.setString(1, email);
+
+        // Read the information in the database.
+        try (ResultSet rs = readFromEmailQuery.executeQuery()) {
+            if (rs.next())
+                // We build a new user object with the database information.
+                user = new User.Builder(rs.getLong("id")).setName(rs.getString("name")).setSurname(rs.getString("surname"))
+                        .setEmail(rs.getString("email")).setPassword(rs.getString("password"))
+                        .setTelephone(rs.getString("telephone")).setBirthday(rs.getDate("birthday"))
+                        .setCountry(Enum.valueOf(Country.class, rs.getString("country")))
+                        .setAddress(rs.getString("address")).setAddressInformation(rs.getString("addressInformation"))
+                        .build();
+            else
+                // If the case where the item doesn't exist, throws a exception warning for this
+                // situation.
+                throw new NoSuchElementException("The element " + email + " is not available in the database.");
+        }
+
+        // Return the user object builded.
+        return user;
+    }
+
     /**
      * Method to close the connections with the database.
      * 
@@ -192,6 +223,8 @@ public class UsersConn implements Closeable {
             readQuery.close();
             updateQuery.close();
             deleteQuery.close();
+
+            readFromEmailQuery.close();
 
             conn.close();
         } catch (SQLException e) {

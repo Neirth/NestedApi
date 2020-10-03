@@ -224,8 +224,8 @@ public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser
             conn = Connections.getInstance().acquireUsers();
 
             // Create a dummy user object with the id only.
-            User user = conn.read(request.getId());
             UserObj userObj = new UserObj();
+            User user = (request.getEmail() != null) ? conn.readFromEmail(request.getEmail().toString()) : conn.read(request.getId());
 
             // Add user information into RPC message.
             userObj.setId(user.getId());
