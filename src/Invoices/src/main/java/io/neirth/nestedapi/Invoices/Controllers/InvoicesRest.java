@@ -95,7 +95,7 @@ public class InvoicesRest {
                 jsonResponse.add("products", productsArray.build());
 
                 // If the process is complete successfully, write a ok response.
-                response = Response.ok(jsonResponse.build().toString(), MediaType.APPLICATION_JSON);
+                response = Response.status(Status.OK).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
             } catch (NoSuchElementException e) {
                 // If the user was not found, write a not found response.
                 response = Response.status(Status.NOT_FOUND);
