@@ -32,7 +32,8 @@
             "type": "record",
             "fields": [
                 { "name": "id", "type": [ "null", "string" ], "default": null },
-                { "name": "invoice", "type": [ "null", "InvoiceObj" ], "default": null }
+                { "name": "invoice", "type": [ "null", "InvoiceObj" ], "default": null },
+                { "name": "token", "type": [ "null", "string" ], "default": null }
             ]
         },
         {
@@ -40,7 +41,7 @@
             "type": "record",
             "fields": [
                 { "name": "status", "type": [ "int" ] },
-                { "name": "object", "type": [ "null", "InvoiceObj" ], "default": null  },
+                { "name": "object", "type": [ "null", "boolean", "InvoiceObj" ], "default": null },
                 { "name": "object_id", "type": [ "null", "string" ], "default": null },
                 { "name": "message", "type": [ "null", "string" ], "default": null }
             ]

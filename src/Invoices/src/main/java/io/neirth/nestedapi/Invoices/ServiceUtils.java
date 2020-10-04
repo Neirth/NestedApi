@@ -24,10 +24,10 @@
 package io.neirth.nestedapi.Invoices;
 
 // Used libraries from Java Enterprise.
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import org.jboss.resteasy.spi.HttpRequest;
 
 // Used libraries for logging the server events.
 import org.jboss.logging.Logger;
@@ -53,7 +53,7 @@ public class ServiceUtils {
      * @param callback The lambda callback
      * @return The response object.
      */
-    public static Response processRequest(HttpServletRequest req, String paramId, String jsonRequest, RestCallback callback) {
+    public static Response processRequest(HttpRequest req, String paramId, String jsonRequest, RestCallback callback) {
         // Initialize the response builder.
         ResponseBuilder response = null;
 
@@ -99,9 +99,4 @@ public class ServiceUtils {
     public static Logger getLoggerSystem() {
         return loggerSystem;
     }
-
-	public static Response processRequest(HttpServletRequest req, long paramId, Object object) {
-		return null;
-	}
-
 }

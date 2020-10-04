@@ -37,7 +37,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.connection.SocketSettings;
 
-import io.neirth.nestedapi.Invoices.Controllers.InvoicesRpc;
+import io.neirth.nestedapi.Invoices.Controllers.RpcServices;
 
 public class Connections implements Closeable {
     private static Connections instance = null;
@@ -71,12 +71,12 @@ public class Connections implements Closeable {
         invoiceSemaphore.release();
     }
 
-    public Channel acquireChannel() throws InterruptedException {
+    public Channel acquireBroker() throws InterruptedException {
         brokerSemaphore.acquire();
         return brokerStack.pop();
     }
 
-    public void releaseChannel(Channel conn) {
+    public void releaseBroker(Channel conn) {
         brokerStack.push(conn);
         brokerSemaphore.release();
     }
@@ -114,7 +114,7 @@ public class Connections implements Closeable {
         // Prepare callback logic.
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             // Start a new thread with Apache Avro Parser.
-            new Thread(() -> (new InvoicesRpc()).routeDelivery(channel, delivery)).start();
+            new Thread(() -> (new RpcServices()).routeDelivery(channel, delivery)).start();
         };
 
         // Configure channel.

@@ -14,8 +14,8 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class Request extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -6659781195009366717L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Request\",\"namespace\":\"io.neirth.nestedapi.Users.Schemas\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"user\",\"type\":[\"null\",{\"type\":\"record\",\"name\":\"UserObj\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"name\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"surname\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"email\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"password\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"telephone\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"birthday\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"country\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"address\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"addressInformation\",\"type\":[\"null\",\"string\"],\"default\":null}]}],\"default\":null}]}");
+  private static final long serialVersionUID = -9171379435468683084L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Request\",\"namespace\":\"io.neirth.nestedapi.Users.Schemas\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"email\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"user\",\"type\":[\"null\",{\"type\":\"record\",\"name\":\"UserObj\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"name\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"surname\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"email\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"password\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"telephone\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"birthday\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"country\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"address\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"addressInformation\",\"type\":[\"null\",\"string\"],\"default\":null}]}],\"default\":null},{\"name\":\"token\",\"type\":[\"null\",\"string\"],\"default\":null}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -72,7 +72,9 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
   }
 
    private java.lang.Long id;
+   private java.lang.CharSequence email;
    private io.neirth.nestedapi.Users.Schemas.UserObj user;
+   private java.lang.CharSequence token;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -84,11 +86,15 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
   /**
    * All-args constructor.
    * @param id The new value for id
+   * @param email The new value for email
    * @param user The new value for user
+   * @param token The new value for token
    */
-  public Request(java.lang.Long id, io.neirth.nestedapi.Users.Schemas.UserObj user) {
+  public Request(java.lang.Long id, java.lang.CharSequence email, io.neirth.nestedapi.Users.Schemas.UserObj user, java.lang.CharSequence token) {
     this.id = id;
+    this.email = email;
     this.user = user;
+    this.token = token;
   }
 
   public org.apache.avro.specific.SpecificData getSpecificData() { return MODEL$; }
@@ -97,7 +103,9 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
   public java.lang.Object get(int field$) {
     switch (field$) {
     case 0: return id;
-    case 1: return user;
+    case 1: return email;
+    case 2: return user;
+    case 3: return token;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
@@ -107,7 +115,9 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
     case 0: id = (java.lang.Long)value$; break;
-    case 1: user = (io.neirth.nestedapi.Users.Schemas.UserObj)value$; break;
+    case 1: email = (java.lang.CharSequence)value$; break;
+    case 2: user = (io.neirth.nestedapi.Users.Schemas.UserObj)value$; break;
+    case 3: token = (java.lang.CharSequence)value$; break;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
@@ -130,6 +140,23 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
   }
 
   /**
+   * Gets the value of the 'email' field.
+   * @return The value of the 'email' field.
+   */
+  public java.lang.CharSequence getEmail() {
+    return email;
+  }
+
+
+  /**
+   * Sets the value of the 'email' field.
+   * @param value the value to set.
+   */
+  public void setEmail(java.lang.CharSequence value) {
+    this.email = value;
+  }
+
+  /**
    * Gets the value of the 'user' field.
    * @return The value of the 'user' field.
    */
@@ -144,6 +171,23 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
    */
   public void setUser(io.neirth.nestedapi.Users.Schemas.UserObj value) {
     this.user = value;
+  }
+
+  /**
+   * Gets the value of the 'token' field.
+   * @return The value of the 'token' field.
+   */
+  public java.lang.CharSequence getToken() {
+    return token;
+  }
+
+
+  /**
+   * Sets the value of the 'token' field.
+   * @param value the value to set.
+   */
+  public void setToken(java.lang.CharSequence value) {
+    this.token = value;
   }
 
   /**
@@ -188,8 +232,10 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
     implements org.apache.avro.data.RecordBuilder<Request> {
 
     private java.lang.Long id;
+    private java.lang.CharSequence email;
     private io.neirth.nestedapi.Users.Schemas.UserObj user;
     private io.neirth.nestedapi.Users.Schemas.UserObj.Builder userBuilder;
+    private java.lang.CharSequence token;
 
     /** Creates a new Builder */
     private Builder() {
@@ -206,12 +252,20 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
         this.id = data().deepCopy(fields()[0].schema(), other.id);
         fieldSetFlags()[0] = other.fieldSetFlags()[0];
       }
-      if (isValidValue(fields()[1], other.user)) {
-        this.user = data().deepCopy(fields()[1].schema(), other.user);
+      if (isValidValue(fields()[1], other.email)) {
+        this.email = data().deepCopy(fields()[1].schema(), other.email);
         fieldSetFlags()[1] = other.fieldSetFlags()[1];
+      }
+      if (isValidValue(fields()[2], other.user)) {
+        this.user = data().deepCopy(fields()[2].schema(), other.user);
+        fieldSetFlags()[2] = other.fieldSetFlags()[2];
       }
       if (other.hasUserBuilder()) {
         this.userBuilder = io.neirth.nestedapi.Users.Schemas.UserObj.newBuilder(other.getUserBuilder());
+      }
+      if (isValidValue(fields()[3], other.token)) {
+        this.token = data().deepCopy(fields()[3].schema(), other.token);
+        fieldSetFlags()[3] = other.fieldSetFlags()[3];
       }
     }
 
@@ -225,11 +279,19 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
         this.id = data().deepCopy(fields()[0].schema(), other.id);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.user)) {
-        this.user = data().deepCopy(fields()[1].schema(), other.user);
+      if (isValidValue(fields()[1], other.email)) {
+        this.email = data().deepCopy(fields()[1].schema(), other.email);
         fieldSetFlags()[1] = true;
       }
+      if (isValidValue(fields()[2], other.user)) {
+        this.user = data().deepCopy(fields()[2].schema(), other.user);
+        fieldSetFlags()[2] = true;
+      }
       this.userBuilder = null;
+      if (isValidValue(fields()[3], other.token)) {
+        this.token = data().deepCopy(fields()[3].schema(), other.token);
+        fieldSetFlags()[3] = true;
+      }
     }
 
     /**
@@ -273,6 +335,46 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
     }
 
     /**
+      * Gets the value of the 'email' field.
+      * @return The value.
+      */
+    public java.lang.CharSequence getEmail() {
+      return email;
+    }
+
+
+    /**
+      * Sets the value of the 'email' field.
+      * @param value The value of 'email'.
+      * @return This builder.
+      */
+    public io.neirth.nestedapi.Users.Schemas.Request.Builder setEmail(java.lang.CharSequence value) {
+      validate(fields()[1], value);
+      this.email = value;
+      fieldSetFlags()[1] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'email' field has been set.
+      * @return True if the 'email' field has been set, false otherwise.
+      */
+    public boolean hasEmail() {
+      return fieldSetFlags()[1];
+    }
+
+
+    /**
+      * Clears the value of the 'email' field.
+      * @return This builder.
+      */
+    public io.neirth.nestedapi.Users.Schemas.Request.Builder clearEmail() {
+      email = null;
+      fieldSetFlags()[1] = false;
+      return this;
+    }
+
+    /**
       * Gets the value of the 'user' field.
       * @return The value.
       */
@@ -287,10 +389,10 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
       * @return This builder.
       */
     public io.neirth.nestedapi.Users.Schemas.Request.Builder setUser(io.neirth.nestedapi.Users.Schemas.UserObj value) {
-      validate(fields()[1], value);
+      validate(fields()[2], value);
       this.userBuilder = null;
       this.user = value;
-      fieldSetFlags()[1] = true;
+      fieldSetFlags()[2] = true;
       return this;
     }
 
@@ -299,7 +401,7 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
       * @return True if the 'user' field has been set, false otherwise.
       */
     public boolean hasUser() {
-      return fieldSetFlags()[1];
+      return fieldSetFlags()[2];
     }
 
     /**
@@ -343,7 +445,47 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
     public io.neirth.nestedapi.Users.Schemas.Request.Builder clearUser() {
       user = null;
       userBuilder = null;
-      fieldSetFlags()[1] = false;
+      fieldSetFlags()[2] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'token' field.
+      * @return The value.
+      */
+    public java.lang.CharSequence getToken() {
+      return token;
+    }
+
+
+    /**
+      * Sets the value of the 'token' field.
+      * @param value The value of 'token'.
+      * @return This builder.
+      */
+    public io.neirth.nestedapi.Users.Schemas.Request.Builder setToken(java.lang.CharSequence value) {
+      validate(fields()[3], value);
+      this.token = value;
+      fieldSetFlags()[3] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'token' field has been set.
+      * @return True if the 'token' field has been set, false otherwise.
+      */
+    public boolean hasToken() {
+      return fieldSetFlags()[3];
+    }
+
+
+    /**
+      * Clears the value of the 'token' field.
+      * @return This builder.
+      */
+    public io.neirth.nestedapi.Users.Schemas.Request.Builder clearToken() {
+      token = null;
+      fieldSetFlags()[3] = false;
       return this;
     }
 
@@ -353,6 +495,7 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
       try {
         Request record = new Request();
         record.id = fieldSetFlags()[0] ? this.id : (java.lang.Long) defaultValue(fields()[0]);
+        record.email = fieldSetFlags()[1] ? this.email : (java.lang.CharSequence) defaultValue(fields()[1]);
         if (userBuilder != null) {
           try {
             record.user = this.userBuilder.build();
@@ -361,8 +504,9 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
             throw e;
           }
         } else {
-          record.user = fieldSetFlags()[1] ? this.user : (io.neirth.nestedapi.Users.Schemas.UserObj) defaultValue(fields()[1]);
+          record.user = fieldSetFlags()[2] ? this.user : (io.neirth.nestedapi.Users.Schemas.UserObj) defaultValue(fields()[2]);
         }
+        record.token = fieldSetFlags()[3] ? this.token : (java.lang.CharSequence) defaultValue(fields()[3]);
         return record;
       } catch (org.apache.avro.AvroMissingFieldException e) {
         throw e;
@@ -403,12 +547,28 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
       out.writeLong(this.id);
     }
 
+    if (this.email == null) {
+      out.writeIndex(0);
+      out.writeNull();
+    } else {
+      out.writeIndex(1);
+      out.writeString(this.email);
+    }
+
     if (this.user == null) {
       out.writeIndex(0);
       out.writeNull();
     } else {
       out.writeIndex(1);
       this.user.customEncode(out);
+    }
+
+    if (this.token == null) {
+      out.writeIndex(0);
+      out.writeNull();
+    } else {
+      out.writeIndex(1);
+      out.writeString(this.token);
     }
 
   }
@@ -427,6 +587,13 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
 
       if (in.readIndex() != 1) {
         in.readNull();
+        this.email = null;
+      } else {
+        this.email = in.readString(this.email instanceof Utf8 ? (Utf8)this.email : null);
+      }
+
+      if (in.readIndex() != 1) {
+        in.readNull();
         this.user = null;
       } else {
         if (this.user == null) {
@@ -435,8 +602,15 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
         this.user.customDecode(in);
       }
 
+      if (in.readIndex() != 1) {
+        in.readNull();
+        this.token = null;
+      } else {
+        this.token = in.readString(this.token instanceof Utf8 ? (Utf8)this.token : null);
+      }
+
     } else {
-      for (int i = 0; i < 2; i++) {
+      for (int i = 0; i < 4; i++) {
         switch (fieldOrder[i].pos()) {
         case 0:
           if (in.readIndex() != 1) {
@@ -450,12 +624,30 @@ public class Request extends org.apache.avro.specific.SpecificRecordBase impleme
         case 1:
           if (in.readIndex() != 1) {
             in.readNull();
+            this.email = null;
+          } else {
+            this.email = in.readString(this.email instanceof Utf8 ? (Utf8)this.email : null);
+          }
+          break;
+
+        case 2:
+          if (in.readIndex() != 1) {
+            in.readNull();
             this.user = null;
           } else {
             if (this.user == null) {
               this.user = new io.neirth.nestedapi.Users.Schemas.UserObj();
             }
             this.user.customDecode(in);
+          }
+          break;
+
+        case 3:
+          if (in.readIndex() != 1) {
+            in.readNull();
+            this.token = null;
+          } else {
+            this.token = in.readString(this.token instanceof Utf8 ? (Utf8)this.token : null);
           }
           break;
 

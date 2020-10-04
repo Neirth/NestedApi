@@ -14,8 +14,8 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class Response extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 3520041478262867768L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Response\",\"namespace\":\"io.neirth.nestedapi.Users.Schemas\",\"fields\":[{\"name\":\"status\",\"type\":[\"int\"]},{\"name\":\"object\",\"type\":[\"null\",{\"type\":\"record\",\"name\":\"UserObj\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"name\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"surname\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"email\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"password\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"telephone\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"birthday\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"country\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"address\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"addressInformation\",\"type\":[\"null\",\"string\"],\"default\":null}]}],\"default\":null},{\"name\":\"object_id\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"message\",\"type\":[\"null\",\"string\"],\"default\":null}]}");
+  private static final long serialVersionUID = -2573829136850412582L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Response\",\"namespace\":\"io.neirth.nestedapi.Users.Schemas\",\"fields\":[{\"name\":\"status\",\"type\":[\"int\"]},{\"name\":\"message\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"object_id\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"object\",\"type\":[\"null\",\"boolean\",{\"type\":\"record\",\"name\":\"UserObj\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"name\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"surname\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"email\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"password\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"telephone\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"birthday\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"country\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"address\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"addressInformation\",\"type\":[\"null\",\"string\"],\"default\":null}]}],\"default\":null}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -72,9 +72,9 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
   }
 
    private java.lang.Object status;
-   private io.neirth.nestedapi.Users.Schemas.UserObj object;
-   private java.lang.Long object_id;
    private java.lang.CharSequence message;
+   private java.lang.Long object_id;
+   private java.lang.Object object;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -86,15 +86,15 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
   /**
    * All-args constructor.
    * @param status The new value for status
-   * @param object The new value for object
-   * @param object_id The new value for object_id
    * @param message The new value for message
+   * @param object_id The new value for object_id
+   * @param object The new value for object
    */
-  public Response(java.lang.Object status, io.neirth.nestedapi.Users.Schemas.UserObj object, java.lang.Long object_id, java.lang.CharSequence message) {
+  public Response(java.lang.Object status, java.lang.CharSequence message, java.lang.Long object_id, java.lang.Object object) {
     this.status = status;
-    this.object = object;
-    this.object_id = object_id;
     this.message = message;
+    this.object_id = object_id;
+    this.object = object;
   }
 
   public org.apache.avro.specific.SpecificData getSpecificData() { return MODEL$; }
@@ -103,9 +103,9 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
   public java.lang.Object get(int field$) {
     switch (field$) {
     case 0: return status;
-    case 1: return object;
+    case 1: return message;
     case 2: return object_id;
-    case 3: return message;
+    case 3: return object;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
@@ -115,9 +115,9 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
     case 0: status = value$; break;
-    case 1: object = (io.neirth.nestedapi.Users.Schemas.UserObj)value$; break;
+    case 1: message = (java.lang.CharSequence)value$; break;
     case 2: object_id = (java.lang.Long)value$; break;
-    case 3: message = (java.lang.CharSequence)value$; break;
+    case 3: object = value$; break;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
@@ -140,20 +140,20 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
   }
 
   /**
-   * Gets the value of the 'object' field.
-   * @return The value of the 'object' field.
+   * Gets the value of the 'message' field.
+   * @return The value of the 'message' field.
    */
-  public io.neirth.nestedapi.Users.Schemas.UserObj getObject() {
-    return object;
+  public java.lang.CharSequence getMessage() {
+    return message;
   }
 
 
   /**
-   * Sets the value of the 'object' field.
+   * Sets the value of the 'message' field.
    * @param value the value to set.
    */
-  public void setObject(io.neirth.nestedapi.Users.Schemas.UserObj value) {
-    this.object = value;
+  public void setMessage(java.lang.CharSequence value) {
+    this.message = value;
   }
 
   /**
@@ -174,20 +174,20 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
   }
 
   /**
-   * Gets the value of the 'message' field.
-   * @return The value of the 'message' field.
+   * Gets the value of the 'object' field.
+   * @return The value of the 'object' field.
    */
-  public java.lang.CharSequence getMessage() {
-    return message;
+  public java.lang.Object getObject() {
+    return object;
   }
 
 
   /**
-   * Sets the value of the 'message' field.
+   * Sets the value of the 'object' field.
    * @param value the value to set.
    */
-  public void setMessage(java.lang.CharSequence value) {
-    this.message = value;
+  public void setObject(java.lang.Object value) {
+    this.object = value;
   }
 
   /**
@@ -232,10 +232,9 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
     implements org.apache.avro.data.RecordBuilder<Response> {
 
     private java.lang.Object status;
-    private io.neirth.nestedapi.Users.Schemas.UserObj object;
-    private io.neirth.nestedapi.Users.Schemas.UserObj.Builder objectBuilder;
-    private java.lang.Long object_id;
     private java.lang.CharSequence message;
+    private java.lang.Long object_id;
+    private java.lang.Object object;
 
     /** Creates a new Builder */
     private Builder() {
@@ -252,19 +251,16 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
         this.status = data().deepCopy(fields()[0].schema(), other.status);
         fieldSetFlags()[0] = other.fieldSetFlags()[0];
       }
-      if (isValidValue(fields()[1], other.object)) {
-        this.object = data().deepCopy(fields()[1].schema(), other.object);
+      if (isValidValue(fields()[1], other.message)) {
+        this.message = data().deepCopy(fields()[1].schema(), other.message);
         fieldSetFlags()[1] = other.fieldSetFlags()[1];
-      }
-      if (other.hasObjectBuilder()) {
-        this.objectBuilder = io.neirth.nestedapi.Users.Schemas.UserObj.newBuilder(other.getObjectBuilder());
       }
       if (isValidValue(fields()[2], other.object_id)) {
         this.object_id = data().deepCopy(fields()[2].schema(), other.object_id);
         fieldSetFlags()[2] = other.fieldSetFlags()[2];
       }
-      if (isValidValue(fields()[3], other.message)) {
-        this.message = data().deepCopy(fields()[3].schema(), other.message);
+      if (isValidValue(fields()[3], other.object)) {
+        this.object = data().deepCopy(fields()[3].schema(), other.object);
         fieldSetFlags()[3] = other.fieldSetFlags()[3];
       }
     }
@@ -279,17 +275,16 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
         this.status = data().deepCopy(fields()[0].schema(), other.status);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.object)) {
-        this.object = data().deepCopy(fields()[1].schema(), other.object);
+      if (isValidValue(fields()[1], other.message)) {
+        this.message = data().deepCopy(fields()[1].schema(), other.message);
         fieldSetFlags()[1] = true;
       }
-      this.objectBuilder = null;
       if (isValidValue(fields()[2], other.object_id)) {
         this.object_id = data().deepCopy(fields()[2].schema(), other.object_id);
         fieldSetFlags()[2] = true;
       }
-      if (isValidValue(fields()[3], other.message)) {
-        this.message = data().deepCopy(fields()[3].schema(), other.message);
+      if (isValidValue(fields()[3], other.object)) {
+        this.object = data().deepCopy(fields()[3].schema(), other.object);
         fieldSetFlags()[3] = true;
       }
     }
@@ -335,76 +330,41 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
     }
 
     /**
-      * Gets the value of the 'object' field.
+      * Gets the value of the 'message' field.
       * @return The value.
       */
-    public io.neirth.nestedapi.Users.Schemas.UserObj getObject() {
-      return object;
+    public java.lang.CharSequence getMessage() {
+      return message;
     }
 
 
     /**
-      * Sets the value of the 'object' field.
-      * @param value The value of 'object'.
+      * Sets the value of the 'message' field.
+      * @param value The value of 'message'.
       * @return This builder.
       */
-    public io.neirth.nestedapi.Users.Schemas.Response.Builder setObject(io.neirth.nestedapi.Users.Schemas.UserObj value) {
+    public io.neirth.nestedapi.Users.Schemas.Response.Builder setMessage(java.lang.CharSequence value) {
       validate(fields()[1], value);
-      this.objectBuilder = null;
-      this.object = value;
+      this.message = value;
       fieldSetFlags()[1] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'object' field has been set.
-      * @return True if the 'object' field has been set, false otherwise.
+      * Checks whether the 'message' field has been set.
+      * @return True if the 'message' field has been set, false otherwise.
       */
-    public boolean hasObject() {
+    public boolean hasMessage() {
       return fieldSetFlags()[1];
     }
 
-    /**
-     * Gets the Builder instance for the 'object' field and creates one if it doesn't exist yet.
-     * @return This builder.
-     */
-    public io.neirth.nestedapi.Users.Schemas.UserObj.Builder getObjectBuilder() {
-      if (objectBuilder == null) {
-        if (hasObject()) {
-          setObjectBuilder(io.neirth.nestedapi.Users.Schemas.UserObj.newBuilder(object));
-        } else {
-          setObjectBuilder(io.neirth.nestedapi.Users.Schemas.UserObj.newBuilder());
-        }
-      }
-      return objectBuilder;
-    }
 
     /**
-     * Sets the Builder instance for the 'object' field
-     * @param value The builder instance that must be set.
-     * @return This builder.
-     */
-    public io.neirth.nestedapi.Users.Schemas.Response.Builder setObjectBuilder(io.neirth.nestedapi.Users.Schemas.UserObj.Builder value) {
-      clearObject();
-      objectBuilder = value;
-      return this;
-    }
-
-    /**
-     * Checks whether the 'object' field has an active Builder instance
-     * @return True if the 'object' field has an active Builder instance
-     */
-    public boolean hasObjectBuilder() {
-      return objectBuilder != null;
-    }
-
-    /**
-      * Clears the value of the 'object' field.
+      * Clears the value of the 'message' field.
       * @return This builder.
       */
-    public io.neirth.nestedapi.Users.Schemas.Response.Builder clearObject() {
-      object = null;
-      objectBuilder = null;
+    public io.neirth.nestedapi.Users.Schemas.Response.Builder clearMessage() {
+      message = null;
       fieldSetFlags()[1] = false;
       return this;
     }
@@ -450,41 +410,41 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
     }
 
     /**
-      * Gets the value of the 'message' field.
+      * Gets the value of the 'object' field.
       * @return The value.
       */
-    public java.lang.CharSequence getMessage() {
-      return message;
+    public java.lang.Object getObject() {
+      return object;
     }
 
 
     /**
-      * Sets the value of the 'message' field.
-      * @param value The value of 'message'.
+      * Sets the value of the 'object' field.
+      * @param value The value of 'object'.
       * @return This builder.
       */
-    public io.neirth.nestedapi.Users.Schemas.Response.Builder setMessage(java.lang.CharSequence value) {
+    public io.neirth.nestedapi.Users.Schemas.Response.Builder setObject(java.lang.Object value) {
       validate(fields()[3], value);
-      this.message = value;
+      this.object = value;
       fieldSetFlags()[3] = true;
       return this;
     }
 
     /**
-      * Checks whether the 'message' field has been set.
-      * @return True if the 'message' field has been set, false otherwise.
+      * Checks whether the 'object' field has been set.
+      * @return True if the 'object' field has been set, false otherwise.
       */
-    public boolean hasMessage() {
+    public boolean hasObject() {
       return fieldSetFlags()[3];
     }
 
 
     /**
-      * Clears the value of the 'message' field.
+      * Clears the value of the 'object' field.
       * @return This builder.
       */
-    public io.neirth.nestedapi.Users.Schemas.Response.Builder clearMessage() {
-      message = null;
+    public io.neirth.nestedapi.Users.Schemas.Response.Builder clearObject() {
+      object = null;
       fieldSetFlags()[3] = false;
       return this;
     }
@@ -495,18 +455,9 @@ public class Response extends org.apache.avro.specific.SpecificRecordBase implem
       try {
         Response record = new Response();
         record.status = fieldSetFlags()[0] ? this.status :  defaultValue(fields()[0]);
-        if (objectBuilder != null) {
-          try {
-            record.object = this.objectBuilder.build();
-          } catch (org.apache.avro.AvroMissingFieldException e) {
-            e.addParentField(record.getSchema().getField("object"));
-            throw e;
-          }
-        } else {
-          record.object = fieldSetFlags()[1] ? this.object : (io.neirth.nestedapi.Users.Schemas.UserObj) defaultValue(fields()[1]);
-        }
+        record.message = fieldSetFlags()[1] ? this.message : (java.lang.CharSequence) defaultValue(fields()[1]);
         record.object_id = fieldSetFlags()[2] ? this.object_id : (java.lang.Long) defaultValue(fields()[2]);
-        record.message = fieldSetFlags()[3] ? this.message : (java.lang.CharSequence) defaultValue(fields()[3]);
+        record.object = fieldSetFlags()[3] ? this.object :  defaultValue(fields()[3]);
         return record;
       } catch (org.apache.avro.AvroMissingFieldException e) {
         throw e;

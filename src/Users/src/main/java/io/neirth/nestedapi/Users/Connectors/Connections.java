@@ -35,7 +35,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
-import io.neirth.nestedapi.Users.Controllers.UsersRpc;
+import io.neirth.nestedapi.Users.Controllers.RpcServices;
 
 /**
  * Class that regulates connections to the database.
@@ -193,7 +193,7 @@ public class Connections implements Closeable {
         // Prepare callback logic.
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             // Start a new thread with Apache Avro Parser.
-            new Thread(() -> (new UsersRpc()).routeDelivery(channel, delivery)).start();
+            new Thread(() -> (new RpcServices()).routeDelivery(channel, delivery)).start();
         };
 
         // Configure channel.

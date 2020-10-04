@@ -51,7 +51,7 @@ import io.neirth.nestedapi.Users.Schemas.UserObj;
 import io.neirth.nestedapi.Users.Templates.Country;
 import io.neirth.nestedapi.Users.Templates.User;
 
-public class UsersRpc implements CreateUser, ReadUser, UpdateUser, DeleteUser {
+public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser {
     /**
      * Method to receive AMQP traffic and route the correct method.
      * 
@@ -115,7 +115,7 @@ public class UsersRpc implements CreateUser, ReadUser, UpdateUser, DeleteUser {
      * @throws Exception If an exception occurs.
      */
     @Override
-    public Response DeleteUser(Request request) throws IOException {
+    public Response DeleteUser(Request request) {
         // Prepare the conn and response variable
         UsersConn conn = null;
         Response response = new Response();
@@ -158,7 +158,7 @@ public class UsersRpc implements CreateUser, ReadUser, UpdateUser, DeleteUser {
      * @throws Exception If an exception occurs.
      */
     @Override
-    public Response UpdateUser(Request request) throws IOException {
+    public Response UpdateUser(Request request) {
         // Prepare the conn and response variable
         UsersConn conn = null;
         Response response = new Response();
@@ -214,7 +214,7 @@ public class UsersRpc implements CreateUser, ReadUser, UpdateUser, DeleteUser {
      * @throws Exception If an exception occurs.
      */
     @Override
-    public Response ReadUser(Request request) throws IOException {
+    public Response ReadUser(Request request) {
         // Prepare the conn and response variable
         UsersConn conn = null;
         Response response = new Response();
@@ -224,8 +224,8 @@ public class UsersRpc implements CreateUser, ReadUser, UpdateUser, DeleteUser {
             conn = Connections.getInstance().acquireUsers();
 
             // Create a dummy user object with the id only.
-            User user = conn.read(request.getId());
             UserObj userObj = new UserObj();
+            User user = (request.getEmail() != null) ? conn.readFromEmail(request.getEmail().toString()) : conn.read(request.getId());
 
             // Add user information into RPC message.
             userObj.setId(user.getId());
@@ -268,7 +268,7 @@ public class UsersRpc implements CreateUser, ReadUser, UpdateUser, DeleteUser {
      * @throws Exception If an exception occurs.
      */
     @Override
-    public Response CreateUser(Request request) throws IOException {
+    public Response CreateUser(Request request) {
         // Prepare the conn and response variable
         UsersConn conn = null;
         Response response = new Response();

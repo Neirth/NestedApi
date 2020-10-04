@@ -23,49 +23,123 @@
  */
 package io.neirth.nestedapi.Users;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 // Used libraries from Java Enterprise.
-import javax.ws.rs.core.Response.Status;
-import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
+import org.jboss.resteasy.spi.HttpRequest;
 
 // Used library for logging the server events.
 import org.jboss.logging.Logger;
 
+// Used libraries for process the jwt token.
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+
+// Internal packages of the project.
+import io.neirth.nestedapi.Users.Controllers.RpcRequest;
+
 public class ServiceUtils {
+    // The instance of logger.
     private static Logger loggerSystem = Logger.getLogger(ServiceApp.class);
-    
+
+    // The callback with custom procedures.
     public interface RestCallback {
-        ResponseBuilder run() throws Exception;
+        ResponseBuilder run(String token, Claims tokenData) throws Exception;
     }
 
     /**
-     * Method that process the request received from RESTful API and generate a response
-     * in the json format.
+     * Method that process the request received from RESTful API and generate a
+     * response in the json format.
      * 
      * This method, with the corresponding RestCallback to do the specifici tasks,
-     * retrives the information from the body and executes the callback lambda, the message
-     * returnted is a HTTP response with Json Body.
+     * retrives the information from the body and executes the callback lambda, the
+     * message returnted is a HTTP response with Json Body.
      * 
-     * @param req The headers of http request.
-     * @param paramId The paramId of the requested object.
-     * @param jsonRequest The body of http request.
-     * @param callback The lambda callback
+     * @param req         The headers of http request.
+     * @param paramId     The paramId of the requested object.
+     * @param body The body of http request.
+     * @param callback    The lambda callback
      * @return The response object.
      */
-    public static Response processRequest(HttpServletRequest req, long paramId, String jsonRequest, RestCallback callback) {
+    public static Response processRequest(HttpRequest req, Long paramId, String body, RestCallback callback) {
         // Initialize the response builder.
         ResponseBuilder response = null;
 
         try {
-            // Run the callback.
-            response = callback.run();
+            // Run the callback and get the response.
+            response = callback.run(null, null);
         } catch (Exception e) {
             // Write the exception in the log.
             writeServerException(e);
 
+            // Build the json error response.
+            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            jsonResponse.add("error", "server_error");
+            jsonResponse.add("error_description", "An error has occurred on the server while processing your request.");
+
             // Create error response.
-            response = Response.status(Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
+            response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
+        }
+
+        // Throws the response.
+        return response.build();
+    }
+
+    /**
+     * Method that process the request received from RESTful API and generate a
+     * response in the json format.
+     * 
+     * This method, with the corresponding RestCallback to do the specifici tasks,
+     * retrives the information from the body and executes the callback lambda, the
+     * message returnted is a HTTP response with Json Body.
+     * 
+     * @param req         The headers of http request.
+     * @param paramId     The paramId of the requested object.
+     * @param body The body of http request.
+     * @param callback    The lambda callback
+     * @return The response object.
+     */
+    public static Response processUserRequest(HttpRequest req, Long paramId, Object body, RestCallback callback) {
+        // Initialize the response builder.
+        ResponseBuilder response = null;
+
+        // Obtains a token string and her data.
+        String authHeader = req.getHttpHeaders().getHeaderString(HttpHeaders.AUTHORIZATION);
+        String token = (authHeader != null) ? authHeader.substring(7).trim() : null;
+
+        try {
+            // Validate the token.
+            if (RpcRequest.isValidToken(token)) {
+                // Parse the token data
+                Claims tokenData = Jwts.parser().parseClaimsJws(token).getBody();
+
+                // Run the callback and get the response.
+                response = callback.run(token, tokenData);
+            } else {
+                // Build the json error response.
+                JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+                jsonResponse.add("error", "access_denied");
+                jsonResponse.add("error_description", "Login information could not be validated correctly.");
+
+                // If the user was not found, write a not found response.
+                response = Response.status(Status.FORBIDDEN).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
+            }
+        } catch (Exception e) {
+            // Write the exception in the log.
+            writeServerException(e);
+
+            // Build the json error response.
+            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            jsonResponse.add("error", "server_error");
+            jsonResponse.add("error_description", "An error has occurred on the server while processing your request.");
+
+            // Create error response.
+            response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
         }
 
         // Throws the response.

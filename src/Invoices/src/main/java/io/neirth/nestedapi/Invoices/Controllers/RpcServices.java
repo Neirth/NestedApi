@@ -41,6 +41,7 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 
+import io.neirth.nestedapi.Invoices.ServiceUtils;
 // Internal packages of the project.
 import io.neirth.nestedapi.Invoices.Connectors.Connections;
 import io.neirth.nestedapi.Invoices.Connectors.InvoicesConn;
@@ -53,7 +54,7 @@ import io.neirth.nestedapi.Invoices.Schemas.Response;
 import io.neirth.nestedapi.Invoices.Templates.Country;
 import io.neirth.nestedapi.Invoices.Templates.Invoice;
 
-public class InvoicesRpc implements CreateInvoice, ReadInvoice {
+public class RpcServices implements CreateInvoice, ReadInvoice {
     public void routeDelivery(Channel channel, Delivery delivery) {
         try {
             // Obtain a called method.
@@ -84,7 +85,7 @@ public class InvoicesRpc implements CreateInvoice, ReadInvoice {
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         } catch (Exception e) {
             // In the case of crash, print the stack trace.
-            e.printStackTrace();
+            ServiceUtils.writeServerException(e);
         }
     }
 

@@ -33,6 +33,15 @@ spec:
 apiVersion: getambassador.io/v2
 kind:  Mapping
 metadata:
+  name:  auth-service
+spec:
+  # Related user service with its corresponding endpoint.
+  prefix: /auth/
+  service: http://auth-service:8080
+---
+apiVersion: getambassador.io/v2
+kind:  Mapping
+metadata:
   name:  users-service
 spec:
   # Related user service with its corresponding endpoint.
