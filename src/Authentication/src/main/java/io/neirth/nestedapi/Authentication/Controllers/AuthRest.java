@@ -33,11 +33,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-
+import javax.ws.rs.core.HttpHeaders;
+import org.jboss.resteasy.spi.HttpRequest;
 import com.rabbitmq.client.Channel;
 
 import java.io.IOException;
 import java.io.StringReader;
+
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.Map;
@@ -47,7 +49,6 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.servlet.http.HttpServletRequest;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -65,7 +66,7 @@ public class AuthRest {
     @Path("/token")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response authToken(@Context final HttpServletRequest req, String body) {
+    public Response authToken(@Context final HttpRequest req, String body) {
         return ServiceUtils.processRequest(req, null, body, () -> {
             // Prepare the bad request message.
             ResponseBuilder response = Response.status(Status.BAD_REQUEST);
@@ -133,11 +134,7 @@ public class AuthRest {
                     // Sends the response.
                     response = Response.status(Status.OK).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
                 } else {
-                    // Prepares the Json Response.
-                    JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
-
-                    // If don't match, return a forbidden response.
-                    response = Response.status(Status.FORBIDDEN).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
+                   throw new NoSuchElementException();
                 }
             } catch (NoSuchElementException e) {
                 // Prepares the Json Response.
@@ -213,7 +210,7 @@ public class AuthRest {
     @Path("/register")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response registerUser(@Context final HttpServletRequest req, String jsonRequest) {
+    public Response registerUser(@Context final HttpRequest req, String jsonRequest) {
         return ServiceUtils.processRequest(req, null, jsonRequest, () -> {
             // Prepare the bad request message.
             ResponseBuilder response = Response.status(Status.BAD_REQUEST);
@@ -256,7 +253,7 @@ public class AuthRest {
      */
     @POST
     @Path("/logout")
-    public Response logoutUser(@Context final HttpServletRequest req) {
+    public Response logoutUser(@Context final HttpRequest req) {
         return ServiceUtils.processRequest(req, null, null, () -> {
             // Prepare the response.
             ResponseBuilder response = null;
@@ -272,7 +269,7 @@ public class AuthRest {
                 conn = Connections.getInstance().acquireAuths();
 
                 // Remove the token from database.
-                conn.delete(req.getHeader("Authentication").substring(7));
+                conn.delete(req.getHttpHeaders().getHeaderString(HttpHeaders.AUTHORIZATION).substring(7));
 
                 // Write the ok response.
                 response = Response.status(Status.OK);

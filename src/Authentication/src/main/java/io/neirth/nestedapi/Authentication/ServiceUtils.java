@@ -32,7 +32,6 @@ import java.util.Map;
 
 // Used libraries from Java Enterprise.
 import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
@@ -40,6 +39,7 @@ import javax.xml.bind.DatatypeConverter;
 
 // Used library for logging the server events.
 import org.jboss.logging.Logger;
+import org.jboss.resteasy.spi.HttpRequest;
 
 // Used libraries for process the jwt token.
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -71,7 +71,7 @@ public class ServiceUtils {
      * @param callback    The lambda callback
      * @return The response object.
      */
-    public static Response processRequest(HttpServletRequest req, Long paramId, String body, RestCallback callback) {
+    public static Response processRequest(HttpRequest req, Long paramId, String body, RestCallback callback) {
         // Initialize the response builder.
         ResponseBuilder response = null;
 
