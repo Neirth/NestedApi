@@ -32,6 +32,9 @@ import java.util.Map;
 
 // Used libraries from Java Enterprise.
 import javax.crypto.spec.SecretKeySpec;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
@@ -82,8 +85,13 @@ public class ServiceUtils {
             // Write the exception in the log.
             writeServerException(e);
 
+            // Build the json error response.
+            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            jsonResponse.add("error", "server_error");
+            jsonResponse.add("error_description", "An error has occurred on the server while processing your request.");
+
             // Create error response.
-            response = Response.status(Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
+            response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
         }
 
         // Throws the response.

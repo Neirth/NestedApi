@@ -37,19 +37,21 @@ import javax.ws.rs.core.HttpHeaders;
 import org.jboss.resteasy.spi.HttpRequest;
 import com.rabbitmq.client.Channel;
 
+// Packages for manage exception.
 import java.io.IOException;
-import java.io.StringReader;
-
-import java.sql.Date;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.NoSuchElementException;
+
+// Packages for manage data structures
+import java.sql.Date;
+import java.io.StringReader;
+import java.util.Map;
 import java.util.UUID;
 
+// Packages for process Jwts and Json.
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -62,6 +64,14 @@ import io.neirth.nestedapi.Authentication.Templates.Token;
 
 @Path("/auth")
 public class AuthRest {
+    private Long expirationTime = Long.valueOf(System.getenv("expiration_time"));
+
+    /**
+     * Http method for authenticate the users.
+     * 
+     * @param req The http headers.
+     * @param body The www encoded variables.
+     */
     @POST
     @Path("/token")
     @Produces(MediaType.APPLICATION_JSON)
@@ -76,15 +86,22 @@ public class AuthRest {
             String grantType = requestVars.get("grant_type");
 
             // Determinate the type of authentication.
-            if (grantType == "password")
+            if (grantType == "password") {
                 response = grantTypePassword(requestVars);
-            else if (grantType == "refresh_token") 
+            } else if (grantType == "refresh_token") {
                 response = grantTypeRefreshToken(requestVars);
-            
+            }
+
             return response;
         });
     }
 
+    /**
+     * Method for process the password petition.
+     * 
+     * @param requestVars Map with www encoded variables.
+     * @return The response.
+     */
     private ResponseBuilder grantTypePassword(Map<String, String> requestVars) throws InterruptedException, IOException, SQLException {
         // Prepare the bad request message.
         ResponseBuilder response = Response.status(Status.BAD_REQUEST);
@@ -111,7 +128,7 @@ public class AuthRest {
 
                     // Instances the actual operation time.
                     Long actualTime = System.currentTimeMillis();
-                    Long expirationTime = System.currentTimeMillis() * 1800000;
+                    Long expirationTime = System.currentTimeMillis() * this.expirationTime;
 
                     // Build the refresh token object.
                     Token token = new Token.Builder().setUserId(user.getId()).setToken(refreshToken)
@@ -128,7 +145,7 @@ public class AuthRest {
                     // Build json response with access and refresh token.
                     jsonResponse.add("access_token", authToken);
                     jsonResponse.add("token_type", "Bearer");
-                    jsonResponse.add("expires_in", expirationTime - actualTime);
+                    jsonResponse.add("expires_in", this.expirationTime);
                     jsonResponse.add("refresh_token", refreshToken);
 
                     // Sends the response.
@@ -137,8 +154,10 @@ public class AuthRest {
                    throw new NoSuchElementException();
                 }
             } catch (NoSuchElementException e) {
-                // Prepares the Json Response.
+                // Build the json error response.
                 JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+                jsonResponse.add("error", "access_denied");
+                jsonResponse.add("error_description", "Login information could not be validated correctly.");
 
                 // If don't match, return a forbidden response.
                 response = Response.status(Status.FORBIDDEN).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
@@ -151,15 +170,21 @@ public class AuthRest {
         return response;
     }
 
+    /**
+     * Method for process the refresh token petition.
+     * 
+     * @param requestVars Map with www encoded variables.
+     * @return The response.
+     */
     private ResponseBuilder grantTypeRefreshToken(Map<String, String> requestVars) throws InterruptedException, IOException, SQLException {
         // Prepare the bad request message.
         ResponseBuilder response = Response.status(Status.BAD_REQUEST);
 
-        if (response != null) {
-            // Recover the connection.
-            TokensConn conn = Connections.getInstance().acquireAuths();
+        // Recover the connection.
+        TokensConn conn = Connections.getInstance().acquireAuths();
 
-            try {
+        try {
+            if (response != null) {
                 // Prepares the Json Response.
                 JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
 
@@ -172,7 +197,7 @@ public class AuthRest {
 
                 // Instances the actual operation time.
                 Long actualTime = System.currentTimeMillis();
-                Long expirationTime = System.currentTimeMillis() * 1800000;
+                Long expirationTime = System.currentTimeMillis() * this.expirationTime;
 
                 // Build the authentication token object.
                 authToken = Jwts.builder().setId(Long.toString(user.getId())).setSubject(user.getEmail().toString())
@@ -182,18 +207,25 @@ public class AuthRest {
                 // Build json response with access and refresh token.
                 jsonResponse.add("access_token", authToken);
                 jsonResponse.add("token_type", "Bearer");
-                jsonResponse.add("expires_in", expirationTime - actualTime);
+                jsonResponse.add("expires_in", this.expirationTime);
                 jsonResponse.add("refresh_token", refreshToken);
 
                 // Sends the response.
                 response = Response.status(Status.OK).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
-            } catch (NoSuchElementException e) {
-                // If the token or the user isn't found in their database, send the 401 response.
-                response = Response.status(Status.UNAUTHORIZED);
-            } finally {
-                // Release the token connection.
-                Connections.getInstance().releaseAuths(conn);
+            } else {
+                throw new NoSuchElementException();
             }
+        } catch (NoSuchElementException e) {
+            // Build the json error response.
+            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            jsonResponse.add("error", "access_denied");
+            jsonResponse.add("error_description", "The token could not be properly validated.");
+
+            // If don't match, return a forbidden response.
+            response = Response.status(Status.FORBIDDEN).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
+        } finally {
+            // Release the token connection.
+            Connections.getInstance().releaseAuths(conn);
         }
 
         return response;
@@ -213,7 +245,7 @@ public class AuthRest {
     public Response registerUser(@Context final HttpRequest req, String jsonRequest) {
         return ServiceUtils.processRequest(req, null, jsonRequest, () -> {
             // Prepare the bad request message.
-            ResponseBuilder response = Response.status(Status.BAD_REQUEST);
+            ResponseBuilder response = null;
 
             // If the body message is empty, don't process the petition.
             if (jsonRequest.length() != 0) {
@@ -239,6 +271,14 @@ public class AuthRest {
 
                 // If the process is complete successfully, write a ok response.
                 response = Response.status(Status.OK);
+            } else {
+                // Build the json error response.
+                JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+                jsonResponse.add("error", "invalid_request");
+                jsonResponse.add("error_description", "The information required for registration was not found.");
+
+                // If the user was not found, write a not found response.
+                response = Response.status(Status.BAD_REQUEST).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
             }
 
             return response;
@@ -265,17 +305,29 @@ public class AuthRest {
             TokensConn conn = null;
 
             try {
-                // Get connection instance.
-                conn = Connections.getInstance().acquireAuths();
+                // Get the token.
+                String token = req.getHttpHeaders().getHeaderString(HttpHeaders.AUTHORIZATION);
 
-                // Remove the token from database.
-                conn.delete(req.getHttpHeaders().getHeaderString(HttpHeaders.AUTHORIZATION).substring(7));
-
-                // Write the ok response.
-                response = Response.status(Status.OK);
+                if (token != null) {
+                    // Get connection instance.
+                    conn = Connections.getInstance().acquireAuths();
+    
+                    // Remove the token from database.
+                    conn.delete(token.substring(7));
+    
+                    // Write the ok response.
+                    response = Response.status(Status.OK);
+                } else {
+                    throw new NoSuchElementException();
+                }
             } catch (NoSuchElementException e) {
+                // Build the json error response.
+                JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+                jsonResponse.add("error", "access_denied");
+                jsonResponse.add("error_description", "The token could not be properly validated.");
+
                 // If the user was not found, write a not found response.
-                response = Response.status(Status.NOT_FOUND);
+                response = Response.status(Status.FORBIDDEN).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
             } finally {
                 // Release the tokens connection instance.
                 Connections.getInstance().releaseBroker(channel);
