@@ -31,7 +31,6 @@ import java.util.NoSuchElementException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -41,6 +40,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import org.jboss.resteasy.spi.HttpRequest;
 
 // Internal packages of the project.
 import io.neirth.nestedapi.Invoices.ServiceUtils;
@@ -53,7 +53,7 @@ public class InvoicesRest {
     @GET
     @Path("{param_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(@Context final HttpServletRequest req, @PathParam("param_id") String paramId) {
+    public Response get(@Context final HttpRequest req, @PathParam("param_id") String paramId) {
         return ServiceUtils.processRequest(req, paramId, null, () -> {
             // Prepare the response
             ResponseBuilder response = null;
