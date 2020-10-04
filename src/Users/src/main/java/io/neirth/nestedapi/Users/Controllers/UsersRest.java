@@ -45,7 +45,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
-import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.HttpHeaders;
+import org.jboss.resteasy.spi.HttpRequest;
+import com.rabbitmq.client.Channel;
 
 // Internal packages of the project.
 import io.neirth.nestedapi.Users.ServiceUtils;
@@ -66,7 +68,7 @@ public class UsersRest {
     @GET
     @Path("/me")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(@Context final HttpServletRequest req) {
+    public Response get(@Context final HttpRequest req) {
         return ServiceUtils.processUserRequest(req, null, null, (token, tokenData) -> {
             // Prepare the response
             ResponseBuilder response = null;
@@ -131,7 +133,7 @@ public class UsersRest {
     @PUT
     @Path("/me")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response modify(@Context final HttpServletRequest req, String jsonRequest) {
+    public Response modify(@Context final HttpRequest req, String jsonRequest) {
         return ServiceUtils.processUserRequest(req, null, jsonRequest, (token, tokenData) -> {
             // Prepare the bad request message.
             ResponseBuilder response = Response.status(Status.BAD_REQUEST);
@@ -190,7 +192,7 @@ public class UsersRest {
     @DELETE
     @Path("/me")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(@Context final HttpServletRequest req) {
+    public Response delete(@Context final HttpRequest req) {
         return ServiceUtils.processUserRequest(req, null, null, (token, tokenData) -> {
             // Prepare the response.
             ResponseBuilder response;

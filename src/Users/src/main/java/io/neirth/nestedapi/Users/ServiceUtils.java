@@ -23,16 +23,13 @@
  */
 package io.neirth.nestedapi.Users;
 
-// Used libraries from Java Standard.
-import java.util.Collections;
-import java.util.List;
 
 // Used libraries from Java Enterprise.
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import org.jboss.resteasy.spi.HttpRequest;
 
 // Used library for logging the server events.
 import org.jboss.logging.Logger;
@@ -67,7 +64,7 @@ public class ServiceUtils {
      * @param callback    The lambda callback
      * @return The response object.
      */
-    public static Response processRequest(HttpServletRequest req, Long paramId, String body, RestCallback callback) {
+    public static Response processRequest(HttpRequest req, Long paramId, String body, RestCallback callback) {
         // Initialize the response builder.
         ResponseBuilder response = null;
 
@@ -100,15 +97,13 @@ public class ServiceUtils {
      * @param callback    The lambda callback
      * @return The response object.
      */
-    public static Response processUserRequest(HttpServletRequest req, Long paramId, Object body, RestCallback callback) {
+    public static Response processUserRequest(HttpRequest req, Long paramId, Object body, RestCallback callback) {
         // Initialize the response builder.
         ResponseBuilder response = null;
 
-        // Recovers the authentication header.
-        List<String> authHeader = Collections.list(req.getHeaders(HttpHeaders.AUTHORIZATION));
-
         // Obtains a token string and her data.
-        String token = (authHeader.size() != 0) ? authHeader.get(0).substring(7).trim() : null;
+        String authHeader = req.getHttpHeaders().getHeaderString(HttpHeaders.AUTHORIZATION);
+        String token = (authHeader != null) ? authHeader.substring(7).trim() : null;
 
         try {
             // Validate the token.
