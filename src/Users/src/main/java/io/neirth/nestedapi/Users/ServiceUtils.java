@@ -23,9 +23,11 @@
  */
 package io.neirth.nestedapi.Users;
 
-
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 // Used libraries from Java Enterprise.
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
@@ -75,8 +77,13 @@ public class ServiceUtils {
             // Write the exception in the log.
             writeServerException(e);
 
+            // Build the json error response.
+            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            jsonResponse.add("error", "server_error");
+            jsonResponse.add("error_description", "An error has occurred on the server while processing your request.");
+
             // Create error response.
-            response = Response.status(Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
+            response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
         }
 
         // Throws the response.
@@ -114,15 +121,25 @@ public class ServiceUtils {
                 // Run the callback and get the response.
                 response = callback.run(token, tokenData);
             } else {
-                // In the case of the token is not valid, generate the response forbidden.
-                response = Response.status(Status.FORBIDDEN);
+                // Build the json error response.
+                JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+                jsonResponse.add("error", "access_denied");
+                jsonResponse.add("error_description", "Login information could not be validated correctly.");
+
+                // If the user was not found, write a not found response.
+                response = Response.status(Status.FORBIDDEN).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
             }
         } catch (Exception e) {
             // Write the exception in the log.
             writeServerException(e);
 
+            // Build the json error response.
+            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            jsonResponse.add("error", "server_error");
+            jsonResponse.add("error_description", "An error has occurred on the server while processing your request.");
+
             // Create error response.
-            response = Response.status(Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
+            response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
         }
 
         // Throws the response.

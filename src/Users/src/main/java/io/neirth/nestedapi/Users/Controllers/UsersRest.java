@@ -110,8 +110,13 @@ public class UsersRest {
                 // If the process is complete successfully, write a ok response.
                 response = Response.status(Status.OK).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
             } catch (NoSuchElementException e) {
+                // Build the json error response.
+                JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+                jsonResponse.add("error", "access_denied");
+                jsonResponse.add("error_description", "Login information could not be validated correctly.");
+
                 // If the user was not found, write a not found response.
-                response = Response.status(Status.NOT_FOUND);
+                response = Response.status(Status.FORBIDDEN).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
             } finally {
                 // Return the users connection.
                 Connections.getInstance().releaseUsers(conn);
@@ -169,8 +174,13 @@ public class UsersRest {
                     // If the process is complete successfully, write a ok response.
                     response = Response.status(Status.OK);
                 } catch (NoSuchElementException e) {
+                    // Build the json error response.
+                    JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+                    jsonResponse.add("error", "access_denied");
+                    jsonResponse.add("error_description", "Login information could not be validated correctly.");
+
                     // If the user was not found, write a not found response.
-                    response = Response.status(Status.NOT_FOUND);
+                    response = Response.status(Status.FORBIDDEN).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
                 } finally {
                     // Return the users connection.
                     Connections.getInstance().releaseUsers(conn);
@@ -210,8 +220,13 @@ public class UsersRest {
                 // If the process is successfully, return the ok message.
                 response = Response.status(Status.OK);
             } catch (NoSuchFieldError e) {
-                // If the process throws a not found error.
-                response = Response.status(Status.NOT_FOUND);
+                // Build the json error response.
+                JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+                jsonResponse.add("error", "access_denied");
+                jsonResponse.add("error_description", "Login information could not be validated correctly.");
+
+                // If the user was not found, write a not found response.
+                response = Response.status(Status.FORBIDDEN).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
             } finally {
                 // Release the connection.
                 Connections.getInstance().releaseUsers(conn);
