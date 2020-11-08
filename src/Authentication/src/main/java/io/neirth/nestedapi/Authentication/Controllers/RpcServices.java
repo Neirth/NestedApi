@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.util.NoSuchElementException;
 
 // Used libraries from Java Enterprise.
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.Response.Status;
 
 // Used libraries for AMQP operations.
@@ -65,7 +66,7 @@ public class RpcServices implements IsValidToken {
     public void routeDelivery(Channel channel, Delivery delivery) {
         try {
             // Obtain a called method.
-            String type = (String) delivery.getProperties().getHeaders().get("x-remote-method");
+            String type = delivery.getProperties().getHeaders().get("x-remote-method").toString();
 
             // Read the request.
             Request request = Request.fromByteBuffer(ByteBuffer.wrap(delivery.getBody()));
@@ -81,16 +82,20 @@ public class RpcServices implements IsValidToken {
                 case "RemoveToken":
                     response = RemoveToken(request);
                     break;
+                default:
+                    break;
             }
 
-            // Prepare the properties of the response.
-            BasicProperties replyProps = new BasicProperties.Builder()
-                    .correlationId(delivery.getProperties().getCorrelationId()).build();
+            if (response != null) {
+                // Prepare the properties of the response.
+                BasicProperties replyProps = new BasicProperties.Builder().correlationId(delivery.getProperties().getCorrelationId()).build();
 
-            // Publish the response into the private queue and sets the acknowledge.
-            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps,
-                    response.toByteBuffer().array());
-            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+                // Publish the response into the private queue and sets the acknowledge.
+                channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.toByteBuffer().array());
+                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            } else {
+                throw new InternalServerErrorException("The response can't be processed.");
+            }
         } catch (Exception e) {
             // In the case of crash, print the stack trace.
             e.printStackTrace();
@@ -100,9 +105,9 @@ public class RpcServices implements IsValidToken {
     /**
      * RPC Method for check if the token is valid or not.
      * 
-     * This method is used by the RPC interface to check the validuty if the
+     * This method is used by the RPC interface to check the validity if the
      * authentication token by reading the status of the refresh token, as well as
-     * whether it has been altered in any waym validating the security component of
+     * whether it has been altered in any way validating the security component of
      * the token.
      * 
      * @param request The RPC request.
@@ -129,9 +134,9 @@ public class RpcServices implements IsValidToken {
 
             // Check the User ID from the Token with the User ID from the database.
             response.setStatus(Status.ACCEPTED.getStatusCode());
-            response.setObject(token.getUserId() == Long.valueOf(claims.getSubject()));
+            response.setObject(token.getUserId().equals(Long.valueOf(claims.getSubject())));
         } catch (Exception e) {
-            // If ocurrs any exception, the token is not valid.
+            // If occurs any exception, the token is not valid.
             response.setStatus(Status.FORBIDDEN.getStatusCode());
             response.setObject(false);
         } finally {
@@ -161,7 +166,7 @@ public class RpcServices implements IsValidToken {
             // If the token doesn't exist in the database, return 404.
             response.setStatus(Status.NOT_FOUND.getStatusCode());
         } catch (Exception e) {
-            // If ocurrs any exception, return server error.
+            // If occurs any exception, return server error.
             response.setStatus(Status.INTERNAL_SERVER_ERROR.getStatusCode());
         } finally {
             // Release the Token Connection.

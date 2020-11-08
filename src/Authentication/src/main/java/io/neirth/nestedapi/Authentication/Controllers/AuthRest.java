@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -64,13 +64,14 @@ import io.neirth.nestedapi.Authentication.Templates.Token;
 
 @Path("/auth")
 public class AuthRest {
-    private Long expirationTime = Long.valueOf(System.getenv("expiration_time"));
+    private final Long expirationTime = Long.valueOf(System.getenv("EXPIRATION_TIME"));
 
     /**
      * Http method for authenticate the users.
      * 
-     * @param req The http headers.
-     * @param body The www encoded variables.
+     * @param req         Http headers.
+     * @param body        The www encoded variables.
+     * @return The operation response.
      */
     @POST
     @Path("/token")
@@ -86,10 +87,15 @@ public class AuthRest {
             String grantType = requestVars.get("grant_type");
 
             // Determinate the type of authentication.
-            if (grantType == "password") {
-                response = grantTypePassword(requestVars);
-            } else if (grantType == "refresh_token") {
-                response = grantTypeRefreshToken(requestVars);
+            switch (grantType) {
+                case "password":
+                    response = grantTypePassword(requestVars);
+                    break;
+                case "refresh_token":
+                    response = grantTypeRefreshToken(requestVars);
+                    break;
+                default:
+                    break;
             }
 
             return response;
@@ -100,7 +106,7 @@ public class AuthRest {
      * Method for process the password petition.
      * 
      * @param requestVars Map with www encoded variables.
-     * @return The response.
+     * @return The operation response.
      */
     private ResponseBuilder grantTypePassword(Map<String, String> requestVars) throws InterruptedException, IOException, SQLException {
         // Prepare the bad request message.
@@ -119,27 +125,27 @@ public class AuthRest {
                 UserObj user = RpcRequest.readUser(username);
 
                 // Check if the password match.
-                if (password == user.getPassword().toString()) {
+                if (password.equals(user.getPassword().toString())) {
                     // Prepares the Json Response.
                     JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
 
                     // Prepares the refresh and auth token.
-                    String refreshToken = UUID.randomUUID().toString(), authToken = "";
+                    String refreshToken = UUID.randomUUID().toString(), authToken;
 
                     // Instances the actual operation time.
-                    Long actualTime = System.currentTimeMillis();
-                    Long expirationTime = System.currentTimeMillis() * this.expirationTime;
+                    long actualDate = System.currentTimeMillis();
+                    long expirationDate = actualDate + this.expirationTime;
 
                     // Build the refresh token object.
                     Token token = new Token.Builder().setUserId(user.getId()).setToken(refreshToken)
-                                                     .setValidFrom(new Date(actualTime)).build();
+                                                     .setValidFrom(new Date(actualDate)).build();
 
                     // Insert them into the database.
                     conn.create(token);
 
                     // Build the authentication token object.
                     authToken = Jwts.builder().setId(Long.toString(user.getId())).setSubject(user.getEmail().toString())
-                                              .setIssuedAt(new Date(actualTime)).setExpiration(new Date(expirationTime))
+                                              .setIssuedAt(new Date(actualDate)).setExpiration(new Date(expirationDate))
                                               .signWith(ServiceUtils.getKey(), SignatureAlgorithm.HS512).compact();
 
                     // Build json response with access and refresh token.
@@ -147,6 +153,8 @@ public class AuthRest {
                     jsonResponse.add("token_type", "Bearer");
                     jsonResponse.add("expires_in", this.expirationTime);
                     jsonResponse.add("refresh_token", refreshToken);
+
+                    // TODO: Send email warning the login.
 
                     // Sends the response.
                     response = Response.status(Status.OK).entity(jsonResponse.build().toString()).encoding(MediaType.APPLICATION_JSON);
@@ -174,7 +182,7 @@ public class AuthRest {
      * Method for process the refresh token petition.
      * 
      * @param requestVars Map with www encoded variables.
-     * @return The response.
+     * @return The operation response.
      */
     private ResponseBuilder grantTypeRefreshToken(Map<String, String> requestVars) throws InterruptedException, IOException, SQLException {
         // Prepare the bad request message.
@@ -189,19 +197,19 @@ public class AuthRest {
                 JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
 
                 // Prepares the refresh and auth token.
-                String refreshToken = requestVars.get("refresh_token"), authToken = "";
+                String refreshToken = requestVars.get("refresh_token"), authToken;
 
                 // Recover the data from the databases.
                 Token token = conn.read(refreshToken);
                 UserObj user = RpcRequest.readUser(token.getUserId());
 
                 // Instances the actual operation time.
-                Long actualTime = System.currentTimeMillis();
-                Long expirationTime = System.currentTimeMillis() * this.expirationTime;
+                long actualDate = System.currentTimeMillis();
+                long expirationDate = System.currentTimeMillis() + this.expirationTime;
 
                 // Build the authentication token object.
                 authToken = Jwts.builder().setId(Long.toString(user.getId())).setSubject(user.getEmail().toString())
-                                          .setIssuedAt(new Date(actualTime)).setExpiration(new Date(expirationTime))
+                                          .setIssuedAt(new Date(actualDate)).setExpiration(new Date(expirationDate))
                                           .signWith(ServiceUtils.getKey(), SignatureAlgorithm.HS512).compact();
         
                 // Build json response with access and refresh token.
@@ -245,7 +253,7 @@ public class AuthRest {
     public Response registerUser(@Context final HttpRequest req, String jsonRequest) {
         return ServiceUtils.processRequest(req, null, jsonRequest, () -> {
             // Prepare the bad request message.
-            ResponseBuilder response = null;
+            ResponseBuilder response;
 
             // If the body message is empty, don't process the petition.
             if (jsonRequest.length() != 0) {
@@ -269,6 +277,9 @@ public class AuthRest {
                 // Try to update the user from the database.
                 RpcRequest.createUser(user);
 
+                // TODO: Send email with verification.
+                ServiceUtils.sendMail((String) user.getEmail(), "Welcome to NESTEDAPI", "Welcome to NESTEDAPI," + user.getName());
+
                 // If the process is complete successfully, write a ok response.
                 response = Response.status(Status.OK);
             } else {
@@ -288,21 +299,21 @@ public class AuthRest {
     /**
      * Method for log out the user.
      * 
-     * @param req Http headers
-     * @return The response.
+     * @param req         Http headers.
+     * @return The operation response.
      */
     @POST
     @Path("/logout")
     public Response logoutUser(@Context final HttpRequest req) {
         return ServiceUtils.processRequest(req, null, null, () -> {
             // Prepare the response.
-            ResponseBuilder response = null;
+            ResponseBuilder response;
 
             // Acquire a Tokens Connection instance.
             Channel channel = Connections.getInstance().acquireBroker();
 
             // Prepare connections variable.
-            TokensConn conn = null;
+            TokensConn conn;
 
             try {
                 // Get the token.

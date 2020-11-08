@@ -3,10 +3,10 @@ package io.neirth.nestedapi.Authentication.Templates;
 import java.sql.Date;
 
 public class Token {
-    private Long userId;
-    private Date validFrom;
-    private String token;
-    private String userAgent; 
+    private final Long userId;
+    private final Date validFrom;
+    private final String token;
+    private final String userAgent;
 
     public static class Builder {
         private Long userId;

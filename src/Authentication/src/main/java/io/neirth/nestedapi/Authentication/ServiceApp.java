@@ -23,9 +23,9 @@ public class ServiceApp {
      */
     public static class MyApp implements QuarkusApplication {
         @Override
-        public int run(String... args) throws Exception {
+        public int run(String... args) {
             try {
-                // Notify in the logs that the connectios are being initialized.
+                // Notify in the logs that the connections are being initialized.
                 ServiceUtils.getLoggerSystem().info("Loading the connections...");
 
                 // Initialize the instance of Connections, setting up the connections...

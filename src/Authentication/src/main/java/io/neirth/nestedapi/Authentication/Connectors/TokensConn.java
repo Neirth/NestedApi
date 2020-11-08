@@ -82,7 +82,7 @@ public class TokensConn implements Closeable {
      */
     public Token read(String token) throws SQLException {
         // Create a variable with null value.
-        Token tokenObj = null;
+        Token tokenObj;
 
         // Set the token of the row.
         readQuery.setString(1, token);

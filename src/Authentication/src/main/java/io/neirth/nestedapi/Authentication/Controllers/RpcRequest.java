@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -55,8 +55,8 @@ public class RpcRequest {
      * launch the request via RPC to the user endpoint and wait for a response.
      * 
      * @param user The user object to send.
-     * @throws IOException If the operation returns any exception that is not Okey, throw this exception.
-     * @throws InterruptedException If the acquire process was interruped, throws this exception.
+     * @throws IOException If the operation returns any exception that is not Okay, throw this exception.
+     * @throws InterruptedException If the acquire process was interrupted, throws this exception.
      */
     public static void createUser(UserObj user) throws IOException, InterruptedException {
         // Prepare the variables.
@@ -88,7 +88,7 @@ public class RpcRequest {
             BlockingQueue<Response> response = new ArrayBlockingQueue<>(1);
 
             // Create a consumer the response.
-            String ctag = channel.basicConsume(replyTo, true, (consumerTag, delivery) -> {
+            String cTag = channel.basicConsume(replyTo, true, (consumerTag, delivery) -> {
                 if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                     response.offer(Response.fromByteBuffer(ByteBuffer.wrap(delivery.getBody())));
                 }
@@ -103,7 +103,7 @@ public class RpcRequest {
                 throw new IOException(responseObj.getMessage().toString());
 
             // Cancel the consumer.
-            channel.basicCancel(ctag);
+            channel.basicCancel(cTag);
         } finally {
             // Release the broker connection.
             Connections.getInstance().releaseBroker(channel);
@@ -120,8 +120,8 @@ public class RpcRequest {
      * 
      * @param email The user email.
      * @return The object of the response.
-     * @throws IOException If the operation returns any exception that is not Okey, throw this exception.
-     * @throws InterruptedException If the acquire process was interruped, throws this exception.
+     * @throws IOException If the operation returns any exception that is not Okay, throw this exception.
+     * @throws InterruptedException If the acquire process was interrupted, throws this exception.
      */
     public static UserObj readUser(String email) throws IOException, InterruptedException {
         // Prepare the variables.
@@ -153,7 +153,7 @@ public class RpcRequest {
             BlockingQueue<Response> response = new ArrayBlockingQueue<>(1);
 
             // Create a consumer the response.
-            String ctag = channel.basicConsume(replyTo, true, (consumerTag, delivery) -> {
+            String cTag = channel.basicConsume(replyTo, true, (consumerTag, delivery) -> {
                 if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                     response.offer(Response.fromByteBuffer(ByteBuffer.wrap(delivery.getBody())));
                 }
@@ -173,7 +173,7 @@ public class RpcRequest {
             obj = (UserObj) responseObj.getObject();
 
             // Cancel the consumer.
-            channel.basicCancel(ctag);
+            channel.basicCancel(cTag);
         } finally {
             // Release the broker connection.
             Connections.getInstance().releaseBroker(channel);
@@ -193,8 +193,8 @@ public class RpcRequest {
      * 
      * @param id The user id.
      * @return The object of the response.
-     * @throws IOException If the operation returns any exception that is not Okey, throw this exception.
-     * @throws InterruptedException If the acquire process was interruped, throws this exception.
+     * @throws IOException If the operation returns any exception that is not Okay, throw this exception.
+     * @throws InterruptedException If the acquire process was interrupted, throws this exception.
      */
     public static UserObj readUser(Long id) throws IOException, InterruptedException {
         // Prepare the variables.
@@ -226,7 +226,7 @@ public class RpcRequest {
             BlockingQueue<Response> response = new ArrayBlockingQueue<>(1);
 
             // Create a consumer the response.
-            String ctag = channel.basicConsume(replyTo, true, (consumerTag, delivery) -> {
+            String cTag = channel.basicConsume(replyTo, true, (consumerTag, delivery) -> {
                 if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                     response.offer(Response.fromByteBuffer(ByteBuffer.wrap(delivery.getBody())));
                 }
@@ -246,7 +246,7 @@ public class RpcRequest {
             obj = (UserObj) responseObj.getObject();
 
             // Cancel the consumer.
-            channel.basicCancel(ctag);
+            channel.basicCancel(cTag);
         } finally {
             // Release the broker connection.
             Connections.getInstance().releaseBroker(channel);

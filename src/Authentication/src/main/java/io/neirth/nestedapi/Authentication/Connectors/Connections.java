@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -53,7 +53,7 @@ public class Connections implements Closeable {
     private static Connections instance = null;
 
     // Variable of max connections.
-    private final int maxConnections = Integer.valueOf(System.getenv("NESTEDAPI_MAX_CONNECTIONS"));
+    private final int maxConnections = Integer.parseInt(System.getenv("NESTEDAPI_MAX_CONNECTIONS"));
 
     // Semaphores for connections.
     private final Semaphore tokenSemaphore = new Semaphore(maxConnections);
@@ -77,8 +77,8 @@ public class Connections implements Closeable {
     /**
      * Method for acquire a authentication connection.
      * 
-     * If the connection doesn't avaiable, the thread caller will stopped util one
-     * connection is avaiable for use.
+     * If the connection doesn't available, the thread caller will stopped util one
+     * connection is available for use.
      * 
      * The mechanism used for know who needs the connection is FIFO (First Input,
      * First Out).
@@ -103,7 +103,7 @@ public class Connections implements Closeable {
      * NESTEDAPI_MAX_CONNECTIONS, with no chance of recovering in production. Be
      * careful with this fact.
      * 
-     * @param connection The user connection.
+     * @param conn The user connection.
      */
     public void releaseAuths(TokensConn conn) {
         tokensConnStack.push(conn);
@@ -148,7 +148,7 @@ public class Connections implements Closeable {
      * Private method for instance a database connection.
      * 
      * This is used for instance a connection object, which previously loads the
-     * database squema into him. It's a private method because the only point which
+     * database schema into him. It's a private method because the only point which
      * should be used is only in the instance of TokensConn.
      * 
      * @return The database connection.
@@ -167,7 +167,7 @@ public class Connections implements Closeable {
         Connection conn = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
 
         // When the connection was instanced, before return to the caller method, we
-        // initialize the datbase squema, in this case, only initialize the user table.
+        // initialize the database schema, in this case, only initialize the user table.
         try (Statement st = conn.createStatement()) {
             st.execute("CREATE TABLE IF NOT EXISTS Tokens (token VARCHAR(36), userId BIGINT, validFrom DATE, tokenAgent TEXT, PRIMARY KEY(token));");
         }
@@ -216,14 +216,13 @@ public class Connections implements Closeable {
      * constructor.
      */
     public void init() {
-        return;
     }
 
     /**
      * Obtains the only instance for this class.
      * 
      * @return The class instance.
-     * @throws Exception Any exception throwed.
+     * @throws Exception Any exception threw.
      */
     public static Connections getInstance() {
         if (instance == null)

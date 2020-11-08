@@ -81,6 +81,19 @@
       <version>8.0</version>
     </dependency>
 
+    <!-- Java Mail -->
+    <dependency>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>javax.mail</artifactId>
+      <version>1.6.2</version>
+    </dependency>
+  
+    <dependency>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>logging-mailhandler</artifactId>
+      <version>1.6.2</version>
+    </dependency>
+  
     <!-- JWT Dependencies -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
@@ -234,7 +247,7 @@
         </plugins>
       </build>
       <properties>
-        <quarkus.native.additional-build-args>--report-unsupported-elements-at-runtime</quarkus.native.additional-build-args>
+        <quarkus.native.additional-build-args>--report-unsupported-elements-at-runtime, --initialize-at-run-time=io.neirth.nestedapi.Authentication.ServiceUtils</quarkus.native.additional-build-args>
         <quarkus.package.type>native</quarkus.package.type>
       </properties>
     </profile>
