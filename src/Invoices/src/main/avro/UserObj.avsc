@@ -1,0 +1,17 @@
+{
+  "type": "record",
+  "name": "UserObj",
+  "namespace" : "io.neirth.nestedapi.schemas",
+  "fields": [
+    { "name": "id", "type": [ "null", "long" ], "default": null },
+    { "name": "name", "type": [ "null", "string" ], "default": null },
+    { "name": "surname", "type": [ "null", "string" ], "default": null },
+    { "name": "email", "type": [ "null", "string" ], "default": null },
+    { "name": "password", "type": [ "null", "string" ], "default": null },
+    { "name": "telephone", "type": [ "null", "string" ], "default": null },
+    { "name": "birthday", "type": [ "null", "string" ], "default": null },
+    { "name": "country", "type": [ "null", "string" ], "default": null },
+    { "name": "address", "type": [ "null", "string" ], "default": null },
+    { "name": "addressInformation", "type": [ "null", "string" ], "default": null }
+  ]
+}

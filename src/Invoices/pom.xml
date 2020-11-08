@@ -153,6 +153,11 @@
                     </executions>
                     <configuration>
                         <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
+                        <imports>
+                            <import>${project.basedir}/src/main/avro/ProductObj.avsc</import>
+                            <import>${project.basedir}/src/main/avro/UserObj.avsc</import>
+                            <import>${project.basedir}/src/main/avro/InvoiceObj.avsc</import>
+                        </imports>
                         <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
                     </configuration>
                 </plugin>

@@ -1,0 +1,10 @@
+{
+  "type": "record",
+  "name": "Response",
+  "namespace" : "io.neirth.nestedapi.schemas",
+  "fields": [
+    { "name": "status", "type": [ "int" ] },
+    { "name": "message", "type": [ "null", "string" ], "default": null },
+    { "name": "data", "type": [ "null", "boolean", "UserObj", "InvoiceObj" ], "default": null }
+  ]
+}

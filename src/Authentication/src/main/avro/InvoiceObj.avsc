@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "InvoiceObj",
+  "namespace" : "io.neirth.nestedapi.schemas",
+  "fields": [
+    { "name": "id", "type": [ "null", "string" ], "default": null },
+    { "name": "userId", "type": [ "null", "long" ], "default": null },
+    { "name": "creationDate", "type": [ "null", "string" ], "default": null },
+    { "name": "deliveryAddress", "type": [ "null", "string" ], "default": null },
+    { "name": "deliveryPostcode", "type": [ "null", "string" ], "default": null },
+    { "name": "deliveryCountry", "type": [ "null", "string" ], "default": null },
+    { "name": "deliveryCurrency", "type": [ "null", "string" ], "default": null },
+    { "name": "deliveryAddressInformation", "type": [ "null", "string" ], "default": null },
+    { "name": "products", "type": [ "null", { "type": "array", "items" : "ProductObj" } ], "default": null }
+  ]
+}
