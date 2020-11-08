@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -71,7 +71,7 @@ public class UsersConn implements Closeable {
      */
     public long create(User user) throws SQLException {
         // Instance the new id.
-        long idCreated = 0;
+        long idCreated;
 
         // Insert the values into update query.
         createQuery.setString(1, user.getName());
@@ -102,7 +102,7 @@ public class UsersConn implements Closeable {
     /**
      * Method to read a row corresponding to the users table.
      * 
-     * @param user The user to read.
+     * @param id The user to read.
      * @throws SQLException           The exception in case of problems with the
      *                                database.
      * @throws NoSuchElementException The exception in the case that the desired
@@ -110,7 +110,7 @@ public class UsersConn implements Closeable {
      */
     public User read(long id) throws SQLException {
         // Create a variable with null value.
-        User user = null;
+        User user;
 
         // Set the id of the row.
         readQuery.setLong(1, id);
@@ -131,7 +131,7 @@ public class UsersConn implements Closeable {
                 throw new NoSuchElementException("The element " + id + " is not available in the database.");
         }
 
-        // Return the user object builded.
+        // Return the user object built.
         return user;
     }
 
@@ -186,7 +186,7 @@ public class UsersConn implements Closeable {
 
     public User readFromEmail(String email) throws SQLException {
         // Create a variable with null value.
-        User user = null;
+        User user;
 
         // Set the email  of the user.
         readFromEmailQuery.setString(1, email);
@@ -207,14 +207,12 @@ public class UsersConn implements Closeable {
                 throw new NoSuchElementException("The element " + email + " is not available in the database.");
         }
 
-        // Return the user object builded.
+        // Return the user object built.
         return user;
     }
 
     /**
      * Method to close the connections with the database.
-     * 
-     * @param arg0
      */
     @Override
     public void close() {

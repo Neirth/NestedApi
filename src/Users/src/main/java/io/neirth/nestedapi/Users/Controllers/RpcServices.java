@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.NoSuchElementException;
 
 // Used libraries from Java Enterprise.
+import javax.ws.rs.InternalServerErrorException;
 import javax.xml.bind.DatatypeConverter;
 import javax.ws.rs.core.Response.Status;
 
@@ -67,7 +68,7 @@ public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser
     public void routeDelivery(Channel channel, Delivery delivery) {
         try {
             // Obtain a called method.
-            String type = (String) delivery.getProperties().getHeaders().get("x-remote-method");
+            String type = delivery.getProperties().getHeaders().get("x-remote-method").toString();
 
             // Read the request.
             Request request = Request.fromByteBuffer(ByteBuffer.wrap(delivery.getBody()));
@@ -91,13 +92,16 @@ public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser
                     break;
             }
 
-            // Prepare the properties of the response.
-            BasicProperties replyProps = new BasicProperties.Builder()
-                    .correlationId(delivery.getProperties().getCorrelationId()).build();
+            if (response != null) {
+                // Prepare the properties of the response.
+                BasicProperties replyProps = new BasicProperties.Builder().correlationId(delivery.getProperties().getCorrelationId()).build();
 
-            // Publish the response into the private queue and sets the acknowledge.
-            channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.toByteBuffer().array());
-            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+                // Publish the response into the private queue and sets the acknowledge.
+                channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.toByteBuffer().array());
+                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            } else {
+                throw new InternalServerErrorException("The request is no processed correctly");
+            }
         } catch (Exception e) {
             // In the case of crash, print the stack trace.
             e.printStackTrace();
@@ -105,7 +109,7 @@ public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser
     }
 
     /**
-     * This method is used for delete a user throught RPC channel.
+     * This method is used for delete a user throughout RPC channel.
      * 
      * In some cases, the modules need delete a user, which maybe is banned from the
      * service or another thing.
@@ -148,7 +152,7 @@ public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser
     }
 
     /**
-     * This method is used for update a user throught RPC channel.
+     * This method is used for update a user throughout RPC channel.
      * 
      * Some modules needs update the user information, such as specific job module
      * which works with user module.
@@ -204,7 +208,7 @@ public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser
     }
 
     /**
-     * This method is used for read a user throught RPC channel.
+     * This method is used for read a user throughout RPC channel.
      * 
      * When user is trying to login, other service module will try to read the user
      * information, creating a RPC message to this server.
@@ -234,7 +238,7 @@ public class RpcServices implements CreateUser, ReadUser, UpdateUser, DeleteUser
             userObj.setEmail(user.getEmail());
             userObj.setPassword(user.getPassword());
             userObj.setTelephone(user.getTelephone());
-            userObj.setBirthday((new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")).format(user.getBirthday()));
+            userObj.setBirthday(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(user.getBirthday()));
             userObj.setCountry(user.getCountry().getCountryName());
             userObj.setAddress(user.getAddress());
             userObj.setAddressInformation(user.getAddressInformation());

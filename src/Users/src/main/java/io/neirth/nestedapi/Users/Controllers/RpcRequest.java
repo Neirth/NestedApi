@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -44,7 +44,7 @@ public class RpcRequest {
     public static boolean isValidToken(String token) throws IOException, InterruptedException {
         // Prepare the variables.
         Channel channel = null;
-        boolean result = false;
+        boolean result;
 
         try {
             // Acquire the broker connection.
@@ -71,7 +71,7 @@ public class RpcRequest {
             BlockingQueue<Response> response = new ArrayBlockingQueue<>(1);
 
             // Create a consumer the response.
-            String ctag = channel.basicConsume(replyTo, true, (consumerTag, delivery) -> {
+            String cTag = channel.basicConsume(replyTo, true, (consumerTag, delivery) -> {
                 if (delivery.getProperties().getCorrelationId().equals(corrId))
                     response.offer(Response.fromByteBuffer(ByteBuffer.wrap(delivery.getBody())));
             }, consumerTag -> {});
@@ -84,7 +84,7 @@ public class RpcRequest {
                 throw new IOException(responseObj.getMessage().toString());
 
             // Cancel the consumer.
-            channel.basicCancel(ctag);
+            channel.basicCancel(cTag);
 
             // Save the result in the variable.
             result = (Boolean) responseObj.getObject();

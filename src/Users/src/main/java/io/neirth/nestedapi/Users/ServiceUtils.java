@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -45,7 +45,7 @@ import io.neirth.nestedapi.Users.Controllers.RpcRequest;
 
 public class ServiceUtils {
     // The instance of logger.
-    private static Logger loggerSystem = Logger.getLogger(ServiceApp.class);
+    private static final Logger loggerSystem = Logger.getLogger(ServiceApp.class);
 
     // The callback with custom procedures.
     public interface RestCallback {
@@ -53,12 +53,12 @@ public class ServiceUtils {
     }
 
     /**
-     * Method that process the request received from RESTful API and generate a
+     * Method that process the request received from REST API and generate a
      * response in the json format.
      * 
-     * This method, with the corresponding RestCallback to do the specifici tasks,
-     * retrives the information from the body and executes the callback lambda, the
-     * message returnted is a HTTP response with Json Body.
+     * This method, with the corresponding RestCallback to do the specific tasks,
+     * retrieves the information from the body and executes the callback lambda, the
+     * message returned is a HTTP response with Json Body.
      * 
      * @param req         The headers of http request.
      * @param paramId     The paramId of the requested object.
@@ -68,7 +68,7 @@ public class ServiceUtils {
      */
     public static Response processRequest(HttpRequest req, Long paramId, String body, RestCallback callback) {
         // Initialize the response builder.
-        ResponseBuilder response = null;
+        ResponseBuilder response;
 
         try {
             // Run the callback and get the response.
@@ -91,12 +91,12 @@ public class ServiceUtils {
     }
 
     /**
-     * Method that process the request received from RESTful API and generate a
+     * Method that process the request received from REST API and generate a
      * response in the json format.
      * 
-     * This method, with the corresponding RestCallback to do the specifici tasks,
-     * retrives the information from the body and executes the callback lambda, the
-     * message returnted is a HTTP response with Json Body.
+     * This method, with the corresponding RestCallback to do the specific tasks,
+     * retrieves the information from the body and executes the callback lambda, the
+     * message returned is a HTTP response with Json Body.
      * 
      * @param req         The headers of http request.
      * @param paramId     The paramId of the requested object.
@@ -106,7 +106,7 @@ public class ServiceUtils {
      */
     public static Response processUserRequest(HttpRequest req, Long paramId, Object body, RestCallback callback) {
         // Initialize the response builder.
-        ResponseBuilder response = null;
+        ResponseBuilder response;
 
         // Obtains a token string and her data.
         String authHeader = req.getHttpHeaders().getHeaderString(HttpHeaders.AUTHORIZATION);
@@ -152,7 +152,7 @@ public class ServiceUtils {
      * It's useful for write the stack trace in debug mode or only the error in
      * production.
      * 
-     * @param Exception The exception catched.
+     * @param e The exception caught.
      */
     public static void writeServerException(Exception e) {
         if (ServiceUtils.getLoggerSystem().isDebugEnabled()) {

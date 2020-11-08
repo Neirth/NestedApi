@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -30,16 +30,16 @@ import java.util.Date;
  * present in the database.
  */
 public class User {
-    private Long id;
-    private String name;
-    private String surname;
-    private String email;
-    private String password;
-    private String telephone;
-    private Date birthday;
-    private Country country;
-    private String address;
-    private String addressInformation;
+    private final Long id;
+    private final String name;
+    private final String surname;
+    private final String email;
+    private final String password;
+    private final String telephone;
+    private final Date birthday;
+    private final Country country;
+    private final String address;
+    private final String addressInformation;
 
     /**
      * Builder class for made a User object within setters methods.
@@ -48,7 +48,7 @@ public class User {
      * are mandatory in the constructor of the object.
      */
     public static class Builder {
-        private Long id;
+        private final Long id;
         private String name;
         private String surname;
         private String email;

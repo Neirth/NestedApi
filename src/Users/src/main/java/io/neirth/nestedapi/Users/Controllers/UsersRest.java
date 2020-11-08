@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -45,9 +45,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
-import javax.ws.rs.core.HttpHeaders;
 import org.jboss.resteasy.spi.HttpRequest;
-import com.rabbitmq.client.Channel;
 
 // Internal packages of the project.
 import io.neirth.nestedapi.Users.ServiceUtils;
@@ -62,7 +60,6 @@ public class UsersRest {
      * Method to get a user with param passed in the path.
      * 
      * @param req     Request header
-     * @param paramId The id of the user.
      * @return The user response.
      */
     @GET
@@ -71,7 +68,7 @@ public class UsersRest {
     public Response get(@Context final HttpRequest req) {
         return ServiceUtils.processUserRequest(req, null, null, (token, tokenData) -> {
             // Prepare the response
-            ResponseBuilder response = null;
+            ResponseBuilder response;
 
             // Try to acquire the connection.
             UsersConn conn = Connections.getInstance().acquireUsers();
@@ -81,7 +78,7 @@ public class UsersRest {
                 JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
 
                 // Try to read the user information.
-                User user = conn.read(Long.valueOf(tokenData.getId()));
+                User user = conn.read(Long.parseLong(tokenData.getId()));
 
                 // Add all information into the json object builder
                 jsonResponse.add("id", user.getId());
@@ -131,7 +128,6 @@ public class UsersRest {
      * Method to update a user with param passed in the path.
      * 
      * @param req         Request header
-     * @param paramId     The id of the user.
      * @param jsonRequest The request body.
      * @return The user response.
      */
@@ -153,7 +149,7 @@ public class UsersRest {
 
                 try {
                     // Get the old user.
-                    User auxUser = conn.read(Long.valueOf(tokenData.getId()));
+                    User auxUser = conn.read(Long.parseLong(tokenData.getId()));
 
                     // Updates only the columns with new data.
                     User user = new User.Builder(Long.valueOf(tokenData.getId()))
@@ -195,8 +191,7 @@ public class UsersRest {
     /**
      * Method to delete a user with param passed in the path.
      * 
-     * @param req     Request header
-     * @param paramId The id of the user.
+     * @param req     Request header.
      * @return The user response.
      */
     @DELETE
@@ -212,7 +207,7 @@ public class UsersRest {
 
             try {
                 // Try to get the requested user.
-                User user = conn.read(Long.valueOf(tokenData.getId()));
+                User user = conn.read(Long.parseLong(tokenData.getId()));
 
                 // Try to delete the requested user.
                 conn.delete(user);
