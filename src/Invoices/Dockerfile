@@ -9,7 +9,7 @@ COPY ./pom.xml /usr/src/app
 RUN mvn -f /usr/src/app/pom.xml -B de.qaware.maven:go-offline-maven-plugin:1.2.5:resolve-dependencies
 
 RUN mvn -f /usr/src/app/pom.xml clean \
-    && mvn -f /usr/src/app/pom.xml avro:protocol \
+    && mvn -f /usr/src/app/pom.xml avro:schema \
     && mvn -f /usr/src/app/pom.xml compile \
     && mvn -f /usr/src/app/pom.xml package -Pnative
 
