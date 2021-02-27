@@ -27,3 +27,6 @@ fun closeSession(): Unit {
     sessionFactory?.close()
 }
 
+fun processJwtToken(jwtToken : String) : Map<String, Any?> {
+    TODO("Builds the function")
+}

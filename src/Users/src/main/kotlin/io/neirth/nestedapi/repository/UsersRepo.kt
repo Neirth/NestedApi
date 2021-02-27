@@ -33,9 +33,14 @@ class UsersRepo : RepositoryDao<User> {
                       .setParameter("idEntity", idEntity).uniqueResult() as User
     }
 
+
     override fun insertOrUpdate(entity: User): User {
         session.saveOrUpdate(entity)
 
         return entity
+    }
+
+    override fun close() {
+        session.close()
     }
 }
