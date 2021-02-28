@@ -1,4 +1,4 @@
-package io.neirth.nestedapi.repository
+package io.neirth.nestedapi.users.repository
 
 import java.io.Closeable
 
@@ -9,6 +9,4 @@ interface RepositoryDao<T> : Closeable {
 
     fun findAll() : List<T>
     fun findById(idEntity: Long) : T
-
-    fun insertOrUpdate(entity: T) : T
 }

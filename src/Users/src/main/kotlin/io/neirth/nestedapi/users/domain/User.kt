@@ -1,4 +1,4 @@
-package io.neirth.nestedapi.domain
+package io.neirth.nestedapi.users.domain
 
 import java.sql.Timestamp
 import javax.persistence.*

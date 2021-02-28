@@ -1,4 +1,4 @@
-package io.neirth.nestedapi.domain
+package io.neirth.nestedapi.users.domain
 
 enum class Country(name: String) {
     AF("Afghanistan"), AX("Aland Islands"), AL("Albania"), DZ("Algeria"), AS("American Samoa"), AD("Andorra"),
