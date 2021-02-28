@@ -52,7 +52,6 @@ class AuthCtrl {
                     } else {
                         throw LoginException("The username or the password is not validated")
                     }
-
                 } else {
                     throw MalformedURLException("The body is malformed")
                 }
