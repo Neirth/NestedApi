@@ -3,7 +3,11 @@ package io.neirth.nestedapi.users.util
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.SignatureException
+import io.neirth.nestedapi.users.controller.UsersCtrl
 import io.neirth.nestedapi.users.repository.LoginException
+import java.util.logging.Logger
+
+val loggerSystem: Logger = Logger.getLogger("Users Module")
 
 fun processJwtToken(jwtToken : String?) : Map<String, Any?> {
     try {
