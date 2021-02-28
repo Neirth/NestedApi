@@ -9,6 +9,10 @@ import java.util.logging.Logger
 import javax.crypto.spec.SecretKeySpec
 import javax.security.auth.login.LoginException
 import javax.xml.bind.DatatypeConverter
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+
+import java.util.HashMap
 
 val signingKey : Key = SecretKeySpec(
     DatatypeConverter.parseBase64Binary(System.getenv("LOGIN_KEY")),
@@ -29,4 +33,19 @@ fun processJwtToken(jwtToken : String?) : Map<String, Any?> {
     } catch (e: SignatureException) {
         throw SecurityException("The token has been tampered, please get a new valid token")
     }
+}
+
+fun parseFormEncoded(formEncoded: String): Map<String, String> {
+    val formMap: MutableMap<String, String> = HashMap()
+
+    for (pair in formEncoded.split("&").toTypedArray()) {
+        val index = pair.indexOf("=")
+
+        val key: String = URLDecoder.decode(pair.substring(0, index), StandardCharsets.UTF_8)
+        val value: String = URLDecoder.decode(pair.substring(0, index), StandardCharsets.UTF_8)
+
+        formMap[key] = value
+    }
+
+    return formMap
 }
