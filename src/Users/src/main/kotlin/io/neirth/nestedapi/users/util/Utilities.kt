@@ -23,17 +23,16 @@
  */
 package io.neirth.nestedapi.users.util
 
+import java.security.Key
+import java.util.logging.Logger
+import javax.crypto.spec.SecretKeySpec
+import javax.xml.bind.DatatypeConverter
+
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.SignatureException
-import io.neirth.nestedapi.users.controller.UsersCtrl
-import io.neirth.nestedapi.users.repository.LoginException
-import java.security.Key
-import java.util.logging.Logger
-import javax.xml.bind.DatatypeConverter
-
-import javax.crypto.spec.SecretKeySpec
+import io.neirth.nestedapi.users.exception.LoginException
 
 val signingKey : Key = SecretKeySpec(
     DatatypeConverter.parseBase64Binary(System.getenv("LOGIN_KEY")),

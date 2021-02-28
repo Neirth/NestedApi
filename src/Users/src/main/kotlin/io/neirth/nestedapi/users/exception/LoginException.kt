@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.neirth.nestedapi.users.repository
+package io.neirth.nestedapi.users.exception
 
 import java.lang.RuntimeException
 

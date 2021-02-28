@@ -23,10 +23,10 @@
  */
 package io.neirth.nestedapi.users.repository
 
-import io.neirth.nestedapi.users.domain.User
 import javax.enterprise.context.ApplicationScoped
 import javax.inject.Inject
 import javax.persistence.EntityManager
+import io.neirth.nestedapi.users.domain.User
 
 @ApplicationScoped
 class UsersRepo : RepositoryDao<User> {
@@ -56,7 +56,6 @@ class UsersRepo : RepositoryDao<User> {
         return entityManager.createQuery("from users where id = :idEntity")
                             .setParameter("idEntity", idEntity).resultList[0] as User
     }
-
 
     override fun close() {
         entityManager.close()

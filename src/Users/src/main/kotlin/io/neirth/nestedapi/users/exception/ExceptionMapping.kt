@@ -27,8 +27,6 @@ import javax.ws.rs.core.Response
 import javax.ws.rs.ext.ExceptionMapper
 import javax.ws.rs.ext.Provider
 
-import io.neirth.nestedapi.users.repository.LoginException
-
 @Provider
 class ExceptionMapping : ExceptionMapper<Exception> {
     override fun toResponse(p0: Exception): Response {

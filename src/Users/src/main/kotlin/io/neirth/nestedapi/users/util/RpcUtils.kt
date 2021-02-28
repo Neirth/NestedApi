@@ -23,15 +23,14 @@
  */
 package io.neirth.nestedapi.users.util
 
-import com.rabbitmq.client.*
-import io.neirth.nestedapi.users.util.annotation.RpcMessage
-
+import java.util.Properties
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
-import de.undercouch.bson4jackson.BsonFactory
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.util.*
+import com.rabbitmq.client.*
+import de.undercouch.bson4jackson.BsonFactory
+import io.neirth.nestedapi.users.util.annotation.RpcMessage
 
 fun initRpcQueues() {
     // Load Properties from XML
