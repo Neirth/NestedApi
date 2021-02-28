@@ -21,28 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.neirth.nestedapi.users.exception
+package io.neirth.nestedapi.users.util
 
-import javax.ws.rs.core.Response
-import javax.ws.rs.ext.ExceptionMapper
-import javax.ws.rs.ext.Provider
-
+import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
+import io.jsonwebtoken.security.SignatureException
+import io.neirth.nestedapi.users.controller.UsersCtrl
 import io.neirth.nestedapi.users.repository.LoginException
+import java.security.Key
+import java.util.logging.Logger
+import javax.xml.bind.DatatypeConverter
 
-@Provider
-class ExceptionMapping : ExceptionMapper<Exception> {
-    override fun toResponse(p0: Exception): Response {
-        return when (p0) {
-            is SecurityException -> {
-                Response.status(Response.Status.FORBIDDEN.statusCode, p0.message).build()
-            }
-            is LoginException -> {
-                Response.status(Response.Status.UNAUTHORIZED.statusCode, p0.message).build()
-            }
-            else -> {
-                println(p0.printStackTrace())
-                Response.status(Response.Status.INTERNAL_SERVER_ERROR.statusCode, p0.message).build()
-            }
+import javax.crypto.spec.SecretKeySpec
+
+val signingKey : Key = SecretKeySpec(
+    DatatypeConverter.parseBase64Binary(System.getenv("LOGIN_KEY")),
+    SignatureAlgorithm.HS512.jcaName
+)
+
+val loggerSystem: Logger = Logger.getLogger("Users Module")
+
+fun processJwtToken(jwtToken : String?) : Map<String, Any?> {
+    try {
+        if (jwtToken != null) {
+            return Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(jwtToken).body
+        } else {
+            throw LoginException("The authorization key is not present")
         }
+    } catch (e: ExpiredJwtException) {
+        throw LoginException("The token has expired, please renew it before submitting another request")
+    } catch (e: SignatureException) {
+        throw SecurityException("The token has been tampered, please get a new valid token")
     }
 }
