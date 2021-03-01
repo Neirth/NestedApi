@@ -8,8 +8,8 @@ import javax.persistence.Table
 @Entity
 @Table(name = "RefreshTokens")
 data class RefreshToken(@Id
-                        val userId: Long,
+                        var userId: Long,
                         @Id
-                        val refreshToken: String,
-                        val validFrom: Timestamp)
+                        var refreshToken: String,
+                        var validFrom: Timestamp)
 

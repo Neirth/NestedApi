@@ -7,6 +7,6 @@ import javax.persistence.Table
 @Entity
 @Table(name = "Credentials")
 data class Credential(@Id
-                      val userId: Long,
+                      var userId: Long,
                       @Id
-                      val password: String)
+                      var password: String)
