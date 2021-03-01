@@ -43,6 +43,11 @@ class RefreshTokenRepo : RepositoryDao<RefreshToken> {
                             .setParameter("idEntity", idEntity).resultList[0] as RefreshToken
     }
 
+    fun findByRefreshToken(idEntity: String): RefreshToken {
+        return entityManager.createQuery("from RefreshTokens where refreshToken = :idEntity")
+            .setParameter("idEntity", idEntity).resultList[0] as RefreshToken
+    }
+
     override fun close() {
         entityManager.close()
     }

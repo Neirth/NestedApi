@@ -13,6 +13,7 @@ import io.neirth.nestedapi.authentication.repository.CredentialsRepo
 import io.neirth.nestedapi.authentication.repository.RefreshTokenRepo
 import io.neirth.nestedapi.authentication.util.annotation.RpcMessage
 import io.neirth.nestedapi.authentication.util.parseFormEncoded
+import io.neirth.nestedapi.authentication.util.processJwtToken
 import io.neirth.nestedapi.authentication.util.sendMessage
 import io.neirth.nestedapi.authentication.util.signingKey
 import java.net.MalformedURLException
@@ -29,7 +30,7 @@ class AuthCtrl {
     internal lateinit var connRefresh: RefreshTokenRepo
 
     @Inject
-    internal lateinit var conCredential: CredentialsRepo
+    internal lateinit var connCredential: CredentialsRepo
 
     private val expirationTime: Long = System.getenv("EXPIRATION_TIME").toLong()
 
@@ -44,16 +45,15 @@ class AuthCtrl {
                 val password: String? = requestVars["password"]
 
                 if (username != null && password != null) {
-                    // TODO: Read user password throw the network
-                    val userPass: String? = ""
+                    val credential = connCredential.findByUsername(username)
 
-                    if (userPass != null && userPass == password) {
+                    if (credential.password == password) {
                         val refreshToken: String = UUID.randomUUID().toString()
 
                         val actualTime = System.currentTimeMillis()
                         val expirationTime = System.currentTimeMillis() * expirationTime
 
-                        // TODO: Save the token into the database
+                        connRefresh.insert(RefreshToken(credential.userId, refreshToken, Timestamp(actualTime)))
 
                         val accessToken: String = Jwts.builder().setId(0.toString()).setSubject("")
                             .setExpiration(Date(expirationTime))
@@ -74,10 +74,10 @@ class AuthCtrl {
                 val refreshToken: String? = requestVars["refresh_token"]
 
                 if (refreshToken != null) {
-                    // TODO: Recover the token from the database
-                    // TODO: Read user info throw the network
+                    val refreshTokenObj: RefreshToken = connRefresh.findByRefreshToken(refreshToken)
+
                     val objectMapper = ObjectMapper()
-                    val jsonRequest: JsonParser = objectMapper.createParser("{ \"id\": \"\"")
+                    val jsonRequest: JsonParser = objectMapper.createParser("{ \"id\":" + refreshTokenObj.userId + " }")
                     val user: JsonNode? = sendMessage("users.login", objectMapper.readTree(jsonRequest))
 
                     if (user != null) {
@@ -111,20 +111,29 @@ class AuthCtrl {
         val objectMapper = ObjectMapper()
         val jsonRequest: JsonParser = objectMapper.createParser(body)
 
-        sendMessage("users.register", objectMapper.readTree(jsonRequest))
-            ?: throw MalformedURLException("The body is malformed")
+        val jsonNode: JsonNode = objectMapper.readTree(jsonRequest)
+        val jsonResult: JsonNode =
+            sendMessage("users.register", jsonNode) ?: throw MalformedURLException("The body is malformed")
+
+        connCredential.insert(
+            Credential(
+                jsonResult["id"].asLong(),
+                jsonResult["username"].asText(),
+                jsonNode["password"].asText()
+            )
+        )
     }
 
     @POST
     @Path("logout")
     fun logoutUser(@HeaderParam("authorization") jwtToken: String) {
-        TODO("Create a true logout function")
+        connRefresh.remove(connRefresh.findById(processJwtToken(jwtToken)["sub"] as Long))
     }
 
     @RpcMessage(topic = "auths", queue = "remove")
     fun deleteCredentials(credential: Credential): Credential {
-        conCredential.remove(credential)
-        connRefresh.remove(RefreshToken(credential.userId, "", Timestamp(0)))
+        connCredential.remove(credential)
+        connRefresh.remove(connRefresh.findById(credential.userId))
 
         return credential
     }

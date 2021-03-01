@@ -43,6 +43,11 @@ class CredentialsRepo: RepositoryDao<Credential> {
                             .setParameter("idEntity", idEntity).resultList[0] as Credential
     }
 
+    fun findByUsername(idEntity: String): Credential {
+        return entityManager.createQuery("from Credentials where username = :idEntity")
+                            .setParameter("idEntity", idEntity).resultList[0] as Credential
+    }
+
     override fun close() {
         entityManager.close()
     }

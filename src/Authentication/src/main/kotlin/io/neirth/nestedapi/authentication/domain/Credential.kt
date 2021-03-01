@@ -9,4 +9,6 @@ import javax.persistence.Table
 data class Credential(@Id
                       var userId: Long,
                       @Id
+                      var username: String,
+                      @Id
                       var password: String)
