@@ -16,6 +16,7 @@ import io.neirth.nestedapi.authentication.util.parseFormEncoded
 import io.neirth.nestedapi.authentication.util.processJwtToken
 import io.neirth.nestedapi.authentication.util.sendMessage
 import io.neirth.nestedapi.authentication.util.signingKey
+import io.vertx.core.json.Json
 import java.net.MalformedURLException
 import java.sql.Timestamp
 import java.util.*
@@ -55,13 +56,21 @@ class AuthCtrl {
 
                         connRefresh.insert(RefreshToken(credential.userId, refreshToken, Timestamp(actualTime)))
 
-                        val accessToken: String = Jwts.builder().setId(0.toString()).setSubject("")
-                            .setExpiration(Date(expirationTime))
-                            .setIssuedAt(Date(actualTime))
-                            .signWith(signingKey, SignatureAlgorithm.HS512)
-                            .compact()
+                        val objectMapper = ObjectMapper()
+                        val jsonRequest: JsonParser = objectMapper.createParser("{ \"id\": " + credential.userId + " }")
+                        val user: JsonNode? = sendMessage("users.login", objectMapper.readTree(jsonRequest))
 
-                        AuthSuccess(accessToken, "bearer", expirationTime, refreshToken)
+                        if (user != null) {
+                            val accessToken: String = Jwts.builder().setId(user["id"].asText()).setSubject(user["email"].asText())
+                                                          .setExpiration(Date(expirationTime)).setIssuedAt(Date(actualTime))
+                                                          .signWith(signingKey, SignatureAlgorithm.HS512).compact()
+
+                            // TODO: Send email waring the login to the user
+
+                            AuthSuccess(accessToken, "bearer", expirationTime, refreshToken)
+                        } else {
+                            throw LoginException("The username or the password is not validated")
+                        }
                     } else {
                         throw LoginException("The username or the password is not validated")
                     }
@@ -77,18 +86,16 @@ class AuthCtrl {
                     val refreshTokenObj: RefreshToken = connRefresh.findByRefreshToken(refreshToken)
 
                     val objectMapper = ObjectMapper()
-                    val jsonRequest: JsonParser = objectMapper.createParser("{ \"id\":" + refreshTokenObj.userId + " }")
+                    val jsonRequest: JsonParser = objectMapper.createParser("{ \"id\": " + refreshTokenObj.userId + " }")
                     val user: JsonNode? = sendMessage("users.login", objectMapper.readTree(jsonRequest))
 
                     if (user != null) {
                         val actualTime = System.currentTimeMillis()
                         val expirationTime = System.currentTimeMillis() * expirationTime
 
-                        val accessToken: String = Jwts.builder().setId(0.toString()).setSubject("")
-                            .setExpiration(Date(expirationTime))
-                            .setIssuedAt(Date(actualTime))
-                            .signWith(signingKey, SignatureAlgorithm.HS512)
-                            .compact()
+                        val accessToken: String = Jwts.builder().setId(user["id"].asText()).setSubject(user["email"].asText())
+                                                      .setExpiration(Date(expirationTime)).setIssuedAt(Date(actualTime))
+                                                      .signWith(signingKey, SignatureAlgorithm.HS512).compact()
 
                         AuthSuccess(accessToken, "bearer", expirationTime, refreshToken)
                     } else {
@@ -112,16 +119,17 @@ class AuthCtrl {
         val jsonRequest: JsonParser = objectMapper.createParser(body)
 
         val jsonNode: JsonNode = objectMapper.readTree(jsonRequest)
-        val jsonResult: JsonNode =
-            sendMessage("users.register", jsonNode) ?: throw MalformedURLException("The body is malformed")
+        val jsonResult: JsonNode = sendMessage("users.register", jsonNode) ?: throw MalformedURLException("The body is malformed")
 
         connCredential.insert(
             Credential(
                 jsonResult["id"].asLong(),
-                jsonResult["username"].asText(),
+                jsonResult["user"].asText(),
                 jsonNode["password"].asText()
             )
         )
+
+        // TODO: Send email to user confirming the register
     }
 
     @POST
