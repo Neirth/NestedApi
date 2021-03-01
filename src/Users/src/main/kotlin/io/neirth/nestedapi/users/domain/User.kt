@@ -27,7 +27,6 @@ import java.sql.Timestamp
 import javax.persistence.*
 
 @Entity
-@Cacheable
 @Table(name = "Users")
 data class User(@Id
                 @GeneratedValue(strategy = GenerationType.IDENTITY)
