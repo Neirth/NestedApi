@@ -24,15 +24,18 @@
 package io.neirth.nestedapi.authentication.domain
 
 import java.sql.Timestamp
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.Table
+import javax.persistence.*
 
 @Entity
 @Table(name = "RefreshTokens")
-data class RefreshToken(@Id
-                        var userId: Long,
-                        @Id
-                        var refreshToken: String,
-                        var validFrom: Timestamp)
+data class RefreshToken(
+    @Id
+    var userId: Long,
+
+    @Column(unique = true)
+    var refreshToken: String,
+
+    @Column(unique = true)
+    var validFrom: Timestamp
+)
 
