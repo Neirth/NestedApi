@@ -31,8 +31,7 @@ import javax.persistence.*
 @Table(name = "Users")
 data class User(@Id
                 @GeneratedValue(strategy = GenerationType.IDENTITY)
-                val id: Long, val name: String, val surname: String,
-                val email: String, val password: String, val telephone: String,
-                val birthday: Timestamp, val country: Country, val address: String,
-                val addressInformation: String)
+                var id: Long, var name: String, var surname: String,
+                var email: String, var telephone: String, var birthday: Timestamp,
+                var country: Country, var address: String, var addressInformation: String)
 

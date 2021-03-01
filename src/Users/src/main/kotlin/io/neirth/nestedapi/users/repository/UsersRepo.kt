@@ -39,9 +39,23 @@ class UsersRepo : RepositoryDao<User> {
     }
 
     override fun update(entity: User): User {
-        entityManager.find(User::class.java, entity.id)
+        val entityAux : User = entityManager.find(User::class.java, entity.id)
 
-        return entity
+        entityManager.transaction.begin()
+
+        entityAux.address = entity.address
+        entityAux.addressInformation = entity.addressInformation
+        entityAux.birthday = entity.birthday
+        entityAux.country = entity.country
+        entityAux.email = entity.email
+        entityAux.id = entity.id
+        entityAux.name = entity.name
+        entityAux.surname = entity.surname
+        entityAux.telephone = entity.telephone
+
+        entityManager.transaction.commit()
+
+        return entityAux
     }
 
     override fun remove(entity: User) {
@@ -49,11 +63,11 @@ class UsersRepo : RepositoryDao<User> {
     }
 
     override fun findAll(): List<User> {
-       return entityManager.createQuery("from users").resultList.filterIsInstance<User>()
+       return entityManager.createQuery("from Users").resultList.filterIsInstance<User>()
     }
 
     override fun findById(idEntity: Long): User {
-        return entityManager.createQuery("from users where id = :idEntity")
+        return entityManager.createQuery("from Users where id = :idEntity")
                             .setParameter("idEntity", idEntity).resultList[0] as User
     }
 
