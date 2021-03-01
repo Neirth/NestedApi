@@ -23,28 +23,31 @@
  */
 package io.neirth.nestedapi.users.controller
 
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.neirth.nestedapi.users.domain.User
 import io.neirth.nestedapi.users.repository.UsersRepo
 import io.neirth.nestedapi.users.util.annotation.RpcMessage
 import io.neirth.nestedapi.users.util.processJwtToken
-import javax.ws.rs.*
+import io.neirth.nestedapi.users.util.sendMessage
 import javax.inject.Inject
+import javax.ws.rs.*
 
 @Path("/users")
 class UsersCtrl {
     @Inject
-    internal lateinit var conn : UsersRepo
+    internal lateinit var conn: UsersRepo
 
     @GET
     @Path("me")
-    fun getUserInfo(@HeaderParam("authorization") jwtToken : String?) : User? {
+    fun getUserInfo(@HeaderParam("authorization") jwtToken: String?): User? {
         return conn.findById(processJwtToken(jwtToken)["sub"] as Long)
     }
 
     @PUT
     @Path("me")
-    fun updateUserInfo(@HeaderParam("authorization") jwtToken : String?, user: User) : User? {
-        val jwtTokenMap : Map<String, Any?> = processJwtToken(jwtToken)
+    fun updateUserInfo(@HeaderParam("authorization") jwtToken: String?, user: User): User? {
+        val jwtTokenMap: Map<String, Any?> = processJwtToken(jwtToken)
 
         if (user.id == jwtTokenMap["sub"]) {
             return conn.update(user)
@@ -56,16 +59,24 @@ class UsersCtrl {
     @DELETE
     @Path("me")
     fun deleteUserInfo(@HeaderParam("authorization") jwtToken: String?) {
-        conn.remove(conn.findById(processJwtToken(jwtToken)["sub"] as Long))
+        val claims: Map<String, Any?> = processJwtToken(jwtToken)
+
+        conn.remove(conn.findById(claims["sub"] as Long))
+
+        val objectMapper = ObjectMapper()
+        val jsonRequest: JsonParser = objectMapper.createParser("{\"userId\": " + claims["sub"] + "}")
+
+        sendMessage("auths.remove", objectMapper.readTree(jsonRequest))
+            ?: throw RuntimeException("No couldn't delete a user credentials")
     }
 
     @RpcMessage(topic = "users", queue = "register")
-    fun addUserInfo(user: User) : User {
+    fun addUserInfo(user: User): User {
         return conn.insert(user)
     }
 
     @RpcMessage(topic = "users", queue = "login")
-    fun getUserInfo(idUser: Long) : User {
+    fun getUserInfo(idUser: Long): User {
         return conn.findById(idUser)
     }
 }

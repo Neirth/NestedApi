@@ -23,7 +23,7 @@
  */
 package io.neirth.nestedapi.users.util
 
-import java.util.Properties
+import com.fasterxml.jackson.databind.JsonNode
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
@@ -31,7 +31,15 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.rabbitmq.client.*
 import de.undercouch.bson4jackson.BsonFactory
 import io.neirth.nestedapi.users.util.annotation.RpcMessage
+import java.util.*
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 
+/**
+ * Method for init the RPC Queues
+ */
 fun initRpcQueues() {
     // Load Properties from XML
     val props = Properties()
@@ -125,5 +133,76 @@ fun initRpcQueues() {
                 }
             }
         }
+    }
+}
+
+/**
+ * Method for send RPC Messages throw the network without schema
+ * @param topicRedirect The routing key
+ * @param obj The Json Node Obj
+ * @return The network response or null if nothing is passed
+ */
+fun sendMessage(topicRedirect: String, obj: JsonNode) : JsonNode? {
+    // Instance a connection factory
+    val connFactory = ConnectionFactory()
+
+    // Set the URI of RabbitMQ Broker
+    connFactory.setUri(System.getenv("RABBITMQ_AMQP_URI"))
+
+    // Instance a connection object
+    val conn: Connection = connFactory.newConnection()
+
+    // Create channel
+    conn.createChannel().use {
+        // Set the new Correlation ID
+        val corrId: String = UUID.randomUUID().toString()
+
+        // Declare a Queue to receive the response
+        val replyTo: String = it.queueDeclare().queue
+
+        // Set AMQP properties
+        val props: AMQP.BasicProperties = AMQP.BasicProperties().builder()
+            .correlationId(corrId).replyTo(replyTo)
+            .build()
+
+        // Set the bson factory
+        val bsonFactory = BsonFactory()
+
+        // Set the output array
+        val output = ByteArrayOutputStream()
+
+        // Prepare the object mapper with bson encoding
+        val mapper = ObjectMapper(bsonFactory)
+
+        // Map the passed object
+        mapper.writeTree(bsonFactory.createGenerator(output), obj)
+
+        // Get the routing key
+        val routing: Array<String> = topicRedirect.split(".").toTypedArray()
+
+        // Publish the RPC message to the topic
+        it.basicPublish(routing[0], topicRedirect, props, output.toByteArray())
+
+        // Get a Blocking Queue with the response
+        val response: BlockingQueue<JsonNode> = ArrayBlockingQueue(1)
+
+        // Generate a nothing callback
+        val nothing = CancelCallback { }
+
+        // Generate a response callback
+        val callback = DeliverCallback { consumerTag, delivery ->
+            if (delivery.properties.correlationId == corrId) {
+                response.offer(mapper.readTree(ByteArrayInputStream(delivery.body)))
+            }
+        }
+
+        // Wait to the server response
+        it.basicConsume(replyTo, true, callback, nothing)
+
+        // Set a timeout for the response
+        response.poll(1, TimeUnit.SECONDS)
+
+        // Wait the response
+        return response.take()
     }
 }
