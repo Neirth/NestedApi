@@ -34,8 +34,16 @@ import javax.security.auth.login.LoginException
 import javax.xml.bind.DatatypeConverter
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.*
+import javax.mail.Message
 
-import java.util.HashMap
+import javax.mail.Session
+import javax.mail.Transport
+import javax.mail.internet.InternetAddress
+
+import javax.mail.internet.MimeMessage
 
 val signingKey : Key = SecretKeySpec(
     DatatypeConverter.parseBase64Binary(System.getenv("LOGIN_KEY")),
@@ -43,6 +51,7 @@ val signingKey : Key = SecretKeySpec(
 )
 
 val loggerSystem: Logger = Logger.getLogger("Authentication Module")
+var sessionMail : Session? = null
 
 fun processJwtToken(jwtToken : String?) : Map<String, Any?> {
     try {
@@ -71,4 +80,34 @@ fun parseFormEncoded(formEncoded: String): Map<String, String> {
     }
 
     return formMap
+}
+
+fun sendEmail(to: String, subject: String, title: String, message: String) {
+    if (sessionMail == null) {
+        val properties = Properties()
+
+        properties["mail.smtp.host"] = System.getenv("MAIL_SMTP_HOST")
+        properties["mail.smtp.starttls.enable"] = System.getenv("MAIL_SMTP_STARTTLS_ENABLE").toBoolean()
+        properties["mail.smtp.port"] = System.getenv("MAIL_SMTP_PORT").toInt()
+        properties["mail.smtp.mail.sender"] = System.getenv("MAIL_SMTP_MAIL_SENDER")
+        properties["mail.smtp.user"] = System.getenv("MAIL_SMTP_USER")
+        properties["mail.smtp.auth"] = System.getenv("MAIL_SMTP_AUTH").toBoolean()
+
+        sessionMail = Session.getDefaultInstance(properties)
+    }
+
+    if (sessionMail != null) {
+        val mail = MimeMessage(sessionMail)
+
+        mail.setFrom(InternetAddress(sessionMail?.getProperty("mail.smtp.mail.sender")))
+        mail.addRecipient(Message.RecipientType.TO, InternetAddress(to))
+
+        mail.subject = subject
+        mail.setText(String.format(Files.readString(Path.of("Templates/mail.html")), title, message))
+
+        sessionMail!!.getTransport("smtp").use {
+            it.connect(sessionMail?.getProperty("mail.smtp.user"), sessionMail?.getProperty("mail.smtp.password"))
+            it.sendMessage(mail, mail.allRecipients)
+        }
+    }
 }

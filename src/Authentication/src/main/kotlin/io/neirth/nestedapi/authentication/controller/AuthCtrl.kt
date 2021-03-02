@@ -34,11 +34,8 @@ import io.neirth.nestedapi.authentication.domain.RefreshToken
 import io.neirth.nestedapi.authentication.exception.LoginException
 import io.neirth.nestedapi.authentication.repository.CredentialsRepo
 import io.neirth.nestedapi.authentication.repository.RefreshTokenRepo
+import io.neirth.nestedapi.authentication.util.*
 import io.neirth.nestedapi.authentication.util.annotation.RpcMessage
-import io.neirth.nestedapi.authentication.util.parseFormEncoded
-import io.neirth.nestedapi.authentication.util.processJwtToken
-import io.neirth.nestedapi.authentication.util.sendMessage
-import io.neirth.nestedapi.authentication.util.signingKey
 import io.vertx.core.json.Json
 import java.net.MalformedURLException
 import java.sql.Timestamp
@@ -88,7 +85,7 @@ class AuthCtrl {
                                                           .setExpiration(Date(expirationTime)).setIssuedAt(Date(actualTime))
                                                           .signWith(signingKey, SignatureAlgorithm.HS512).compact()
 
-                            // TODO: Send email waring the login to the user
+                            sendEmail(user["email"].asText(), "Login Detected", "Login Detected", "The login was detected, please check the login registry")
 
                             AuthSuccess(accessToken, "bearer", expirationTime, refreshToken)
                         } else {
@@ -152,7 +149,7 @@ class AuthCtrl {
             )
         )
 
-        // TODO: Send email to user confirming the register
+        sendEmail(jsonNode["email"].asText(), "Registry successfully", "Registry successfully", "The register of ${jsonNode["username"]} is complete")
     }
 
     @POST
