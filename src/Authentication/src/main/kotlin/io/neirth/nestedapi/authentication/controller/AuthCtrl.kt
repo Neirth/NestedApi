@@ -71,8 +71,8 @@ class AuthCtrl {
                     if (credential.password == password) {
                         val refreshToken: String = UUID.randomUUID().toString()
 
-                        val actualTime = System.currentTimeMillis()
-                        val expirationTime = System.currentTimeMillis() * expirationTime
+                        val actualTime: Long = System.currentTimeMillis()
+                        val expirationTime: Long = System.currentTimeMillis() * expirationTime
 
                         connRefresh.insert(RefreshToken(credential.userId, refreshToken, Timestamp(actualTime)))
 
