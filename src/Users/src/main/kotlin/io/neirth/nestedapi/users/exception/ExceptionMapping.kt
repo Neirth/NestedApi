@@ -23,6 +23,8 @@
  */
 package io.neirth.nestedapi.users.exception
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import javax.ws.rs.core.Response
 import javax.ws.rs.ext.ExceptionMapper
 import javax.ws.rs.ext.Provider
@@ -32,15 +34,25 @@ class ExceptionMapping : ExceptionMapper<Exception> {
     override fun toResponse(p0: Exception): Response {
         return when (p0) {
             is SecurityException -> {
-                Response.status(Response.Status.FORBIDDEN.statusCode, p0.message).build()
+                Response.status(Response.Status.FORBIDDEN.statusCode).entity(generateJsonResponse(p0)).build()
             }
             is LoginException -> {
-                Response.status(Response.Status.UNAUTHORIZED.statusCode, p0.message).build()
+                Response.status(Response.Status.UNAUTHORIZED.statusCode, p0.message).entity(generateJsonResponse(p0)).build()
             }
             else -> {
                 println(p0.printStackTrace())
-                Response.status(Response.Status.INTERNAL_SERVER_ERROR.statusCode, p0.message).build()
+                Response.status(Response.Status.INTERNAL_SERVER_ERROR.statusCode, p0.message).entity(generateJsonResponse(p0)).build()
             }
         }
+    }
+
+    private fun generateJsonResponse(p0: Exception): String {
+        val mapper = ObjectMapper()
+
+        val user: ObjectNode = mapper.createObjectNode()
+        user.put("error", "${p0.cause}")
+        user.put("error_description", "${p0.message}")
+
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(user)
     }
 }
