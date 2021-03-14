@@ -24,15 +24,11 @@
 package io.neirth.nestedapi.authentication.repository
 
 import io.neirth.nestedapi.authentication.domain.RefreshToken
-import javax.enterprise.context.ApplicationScoped
-import javax.inject.Inject
+import javax.enterprise.context.RequestScoped
 import javax.persistence.EntityManager
 
-@ApplicationScoped
-class RefreshTokenRepo : RepositoryDao<RefreshToken> {
-    @Inject
-    internal lateinit var entityManager: EntityManager
-
+@RequestScoped
+class RefreshTokenRepo(private val entityManager: EntityManager) : RepositoryDao<RefreshToken> {
     override fun insert(entity: RefreshToken): RefreshToken {
         entityManager.persist(entity)
 
@@ -40,7 +36,7 @@ class RefreshTokenRepo : RepositoryDao<RefreshToken> {
     }
 
     override fun update(entity: RefreshToken): RefreshToken {
-        val entityAux : RefreshToken = entityManager.find(RefreshToken::class.java, entity.userId)
+        val entityAux: RefreshToken = entityManager.find(RefreshToken::class.java, entity.userId)
 
         entityManager.transaction.begin()
 
@@ -68,7 +64,7 @@ class RefreshTokenRepo : RepositoryDao<RefreshToken> {
 
     fun findByRefreshToken(idEntity: String): RefreshToken {
         return entityManager.createQuery("from RefreshTokens where refreshToken = :idEntity")
-            .setParameter("idEntity", idEntity).resultList[0] as RefreshToken
+                            .setParameter("idEntity", idEntity).resultList[0] as RefreshToken
     }
 
     override fun close() {

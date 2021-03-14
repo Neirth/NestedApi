@@ -30,24 +30,14 @@ import javax.ws.rs.core.Response
 import javax.ws.rs.ext.ExceptionMapper
 import javax.ws.rs.ext.Provider
 
-
 @Provider
 class ExceptionMapping : ExceptionMapper<Exception> {
     override fun toResponse(p0: Exception): Response {
         return when (p0) {
-            is SecurityException -> {
-                Response.status(Response.Status.FORBIDDEN.statusCode).entity(generateJsonResponse(p0)).build()
-            }
-            is LoginException -> {
-                Response.status(Response.Status.UNAUTHORIZED.statusCode).entity(generateJsonResponse(p0)).build()
-            }
-            is MalformedURLException -> {
-                Response.status(Response.Status.BAD_REQUEST.statusCode).entity(generateJsonResponse(p0)).build()
-            }
-            else -> {
-                println(p0.printStackTrace())
-                Response.status(Response.Status.INTERNAL_SERVER_ERROR.statusCode).entity(generateJsonResponse(p0)).build()
-            }
+            is SecurityException -> Response.status(Response.Status.FORBIDDEN.statusCode).entity(generateJsonResponse(p0)).build()
+            is LoginException -> Response.status(Response.Status.UNAUTHORIZED.statusCode).entity(generateJsonResponse(p0)).build()
+            is MalformedURLException -> Response.status(Response.Status.BAD_REQUEST.statusCode).entity(generateJsonResponse(p0)).build()
+            else -> Response.status(Response.Status.INTERNAL_SERVER_ERROR.statusCode).entity(generateJsonResponse(p0)).build()
         }
     }
 

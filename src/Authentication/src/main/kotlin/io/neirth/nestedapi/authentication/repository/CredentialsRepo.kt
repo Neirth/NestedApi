@@ -24,16 +24,11 @@
 package io.neirth.nestedapi.authentication.repository
 
 import io.neirth.nestedapi.authentication.domain.Credential
-import io.neirth.nestedapi.authentication.domain.RefreshToken
-import javax.enterprise.context.ApplicationScoped
-import javax.inject.Inject
+import javax.enterprise.context.RequestScoped
 import javax.persistence.EntityManager
 
-@ApplicationScoped
-class CredentialsRepo: RepositoryDao<Credential> {
-    @Inject
-    internal lateinit var entityManager: EntityManager
-
+@RequestScoped
+class CredentialsRepo(private val entityManager: EntityManager): RepositoryDao<Credential> {
     override fun insert(entity: Credential): Credential {
         entityManager.persist(entity)
 

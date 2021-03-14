@@ -8,7 +8,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <properties>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
-        <kotlin.version>1.4.21</kotlin.version>
+        <kotlin.version>1.4.31</kotlin.version>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
@@ -155,6 +155,11 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-noarg</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
                         <artifactId>kotlin-maven-allopen</artifactId>
                         <version>${kotlin.version}</version>
                     </dependency>
@@ -164,6 +169,7 @@
                     <jvmTarget>1.8</jvmTarget>
                     <compilerPlugins>
                         <plugin>all-open</plugin>
+                        <plugin>jpa</plugin>
                     </compilerPlugins>
                     <pluginOptions>
                         <option>all-open:annotation=javax.ws.rs.Path</option>

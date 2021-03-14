@@ -55,7 +55,6 @@ class InitApp : QuarkusApplication {
             loggerSystem.log(Level.INFO, "Stopping the server...")
         } catch (e: Exception) {
             loggerSystem.log(Level.SEVERE, "An exception has occurred, $e")
-            //e.printStackTrace()
         }
 
         return 0
