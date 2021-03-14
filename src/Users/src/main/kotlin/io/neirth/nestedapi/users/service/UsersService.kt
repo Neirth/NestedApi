@@ -21,41 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.neirth.nestedapi.users.controller
+package io.neirth.nestedapi.users.service
 
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.neirth.nestedapi.users.domain.User
-import io.neirth.nestedapi.users.service.UsersService
-import io.neirth.nestedapi.users.util.annotation.RpcMessage
-import io.neirth.nestedapi.users.util.processJwtToken
-import javax.ws.rs.*
+import io.neirth.nestedapi.users.repository.UsersRepo
+import io.neirth.nestedapi.users.util.sendMessage
+import javax.enterprise.context.ApplicationScoped
 
-@Path("/users")
-class UsersCtrl(private val usersService: UsersService) {
-    @GET
-    @Path("me")
-    fun getUserInfo(@HeaderParam("authorization") jwtToken: String?): User? {
-        return usersService.findUserById(processJwtToken(jwtToken)["sub"] as Long)
+@ApplicationScoped
+class UsersService(private val conn: UsersRepo) {
+    fun insertUserByObj(user: User): User {
+        return conn.insert(user)
     }
 
-    @PUT
-    @Path("me")
-    fun updateUserInfo(@HeaderParam("authorization") jwtToken: String?, user: User): User? {
-        return usersService.updateUserById(processJwtToken(jwtToken)["sub"] as Long, user)
+    fun findUserById(id: Long): User {
+       return conn.findById(id)
     }
 
-    @DELETE
-    @Path("me")
-    fun deleteUserInfo(@HeaderParam("authorization") jwtToken: String?) {
-        return usersService.deleteUserById(processJwtToken(jwtToken)["sub"] as Long)
+    fun updateUserById(id: Long, user: User): User {
+        if (user.id == id) {
+            return conn.update(user)
+        } else {
+            throw SecurityException("Attempt to manipulate a different user")
+        }
     }
 
-    @RpcMessage(topic = "users", queue = "register")
-    fun addUserInfo(user: User): User {
-        return usersService.insertUserByObj(user)
-    }
+    fun deleteUserById(id: Long) {
+        conn.remove(conn.findById(id))
 
-    @RpcMessage(topic = "users", queue = "login")
-    fun getUserInfo(idUser: Long): User {
-        return usersService.findUserById(idUser)
+        val objectMapper = ObjectMapper()
+        val jsonRequest: JsonParser = objectMapper.createParser("{ \"userId\" : $id }")
+
+        sendMessage("auths.remove", objectMapper.readTree(jsonRequest)) ?: throw RuntimeException("No couldn't delete a user credentials")
     }
 }

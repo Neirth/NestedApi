@@ -28,6 +28,10 @@ import io.neirth.nestedapi.users.util.loggerSystem
 import io.quarkus.runtime.Quarkus
 import io.quarkus.runtime.QuarkusApplication
 import java.util.logging.Level
+import javax.enterprise.context.ApplicationScoped
+import org.eclipse.microprofile.context.ManagedExecutor
+
+import javax.inject.Inject
 
 fun main(args: Array<String>) {
     Quarkus.run(InitApp::class.java, *args)

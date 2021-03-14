@@ -23,16 +23,12 @@
  */
 package io.neirth.nestedapi.users.repository
 
-import javax.enterprise.context.ApplicationScoped
-import javax.inject.Inject
 import javax.persistence.EntityManager
 import io.neirth.nestedapi.users.domain.User
+import javax.enterprise.context.RequestScoped
 
-@ApplicationScoped
-class UsersRepo : RepositoryDao<User> {
-    @Inject
-    internal lateinit var entityManager: EntityManager
-
+@RequestScoped
+class UsersRepo(private val entityManager: EntityManager): RepositoryDao<User> {
     override fun insert(entity: User): User {
         entityManager.persist(entity)
         return entity
