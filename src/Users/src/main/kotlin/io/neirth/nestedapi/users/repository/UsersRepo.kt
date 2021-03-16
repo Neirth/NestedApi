@@ -26,9 +26,10 @@ package io.neirth.nestedapi.users.repository
 import javax.persistence.EntityManager
 import io.neirth.nestedapi.users.domain.User
 import javax.enterprise.context.RequestScoped
+import javax.persistence.PersistenceContext
 
 @RequestScoped
-class UsersRepo(private val entityManager: EntityManager): RepositoryDao<User> {
+class UsersRepo(@PersistenceContext private val entityManager: EntityManager): RepositoryDao<User> {
     override fun insert(entity: User): User {
         entityManager.persist(entity)
         return entity
@@ -59,11 +60,11 @@ class UsersRepo(private val entityManager: EntityManager): RepositoryDao<User> {
     }
 
     override fun findAll(): List<User> {
-       return entityManager.createQuery("from Users").resultList.filterIsInstance<User>()
+       return entityManager.createQuery("from User", User::class.java).resultList.filterIsInstance<User>()
     }
 
     override fun findById(idEntity: Long): User {
-        return entityManager.createQuery("from Users where id = :idEntity")
+        return entityManager.createQuery("from User where id = :idEntity", User::class.java)
                             .setParameter("idEntity", idEntity).resultList[0] as User
     }
 

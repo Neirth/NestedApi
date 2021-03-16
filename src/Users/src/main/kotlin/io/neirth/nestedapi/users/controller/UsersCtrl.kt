@@ -34,19 +34,19 @@ class UsersCtrl(private val usersService: UsersService) {
     @GET
     @Path("me")
     fun getUserInfo(@HeaderParam("authorization") jwtToken: String?): User? {
-        return usersService.findUserById(processJwtToken(jwtToken)["sub"] as Long)
+        return usersService.findUserById(processJwtToken(jwtToken)["jti"].toString().toLong())
     }
 
     @PUT
     @Path("me")
     fun updateUserInfo(@HeaderParam("authorization") jwtToken: String?, user: User): User? {
-        return usersService.updateUserById(processJwtToken(jwtToken)["sub"] as Long, user)
+        return usersService.updateUserById(processJwtToken(jwtToken)["jti"].toString().toLong(), user)
     }
 
     @DELETE
     @Path("me")
     fun deleteUserInfo(@HeaderParam("authorization") jwtToken: String?) {
-        return usersService.deleteUserById(processJwtToken(jwtToken)["sub"] as Long)
+        return usersService.deleteUserById(processJwtToken(jwtToken)["jti"].toString().toLong())
     }
 
     @RpcMessage(topic = "users", queue = "register")
@@ -55,7 +55,7 @@ class UsersCtrl(private val usersService: UsersService) {
     }
 
     @RpcMessage(topic = "users", queue = "login")
-    fun getUserInfo(idUser: Long): User {
-        return usersService.findUserById(idUser)
+    fun getUserInfo(user: User): User {
+        return usersService.findUserById(user.id)
     }
 }

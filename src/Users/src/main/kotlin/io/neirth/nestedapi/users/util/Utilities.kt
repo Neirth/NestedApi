@@ -44,7 +44,7 @@ val loggerSystem: Logger = Logger.getLogger("Users Module")
 fun processJwtToken(jwtToken : String?) : Map<String, Any?> {
     try {
         if (jwtToken != null) {
-            return Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(jwtToken).body
+            return Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(jwtToken.substring(7)).body
         } else {
             throw LoginException("The authorization key is not present")
         }

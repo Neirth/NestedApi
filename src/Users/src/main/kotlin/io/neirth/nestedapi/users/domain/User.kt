@@ -23,14 +23,35 @@
  */
 package io.neirth.nestedapi.users.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.sql.Timestamp
 import javax.persistence.*
 
 @Entity
-@Table(name = "Users")
-data class User(@Id
-                @GeneratedValue(strategy = GenerationType.IDENTITY)
-                var id: Long, var name: String, var surname: String,
-                var email: String, var telephone: String, var birthday: Timestamp,
-                var country: Country, var address: String, var addressInformation: String)
+data class User(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long,
+
+    var name: String,
+
+    var surname: String,
+
+    @Column(unique = true)
+    var email: String,
+
+    @Column(unique = true)
+    var telephone: String,
+
+    var birthday: Timestamp,
+
+    var country: Country,
+
+    var address: String,
+
+    var addressInformation: String,
+
+    @JsonIgnore
+    var password: String
+)
 

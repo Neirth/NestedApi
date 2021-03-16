@@ -27,7 +27,7 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.neirth.nestedapi.users.domain.User
 import io.neirth.nestedapi.users.repository.UsersRepo
-import io.neirth.nestedapi.users.util.sendMessage
+import io.neirth.nestedapi.users.util.RpcUtils
 import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
@@ -54,6 +54,6 @@ class UsersService(private val conn: UsersRepo) {
         val objectMapper = ObjectMapper()
         val jsonRequest: JsonParser = objectMapper.createParser("{ \"userId\" : $id }")
 
-        sendMessage("auths.remove", objectMapper.readTree(jsonRequest)) ?: throw RuntimeException("No couldn't delete a user credentials")
+        RpcUtils.sendMessage("auths.remove", objectMapper.readTree(jsonRequest)) ?: throw RuntimeException("No couldn't delete a user credentials")
     }
 }
