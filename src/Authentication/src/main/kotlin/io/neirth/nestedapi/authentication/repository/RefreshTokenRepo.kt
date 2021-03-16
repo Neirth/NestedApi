@@ -26,15 +26,18 @@ package io.neirth.nestedapi.authentication.repository
 import io.neirth.nestedapi.authentication.domain.RefreshToken
 import javax.enterprise.context.RequestScoped
 import javax.persistence.EntityManager
+import javax.transaction.Transactional
 
 @RequestScoped
 class RefreshTokenRepo(private val entityManager: EntityManager) : RepositoryDao<RefreshToken> {
+    @Transactional
     override fun insert(entity: RefreshToken): RefreshToken {
         entityManager.persist(entity)
 
         return entity
     }
 
+    @Transactional
     override fun update(entity: RefreshToken): RefreshToken {
         val entityAux: RefreshToken = entityManager.find(RefreshToken::class.java, entity.userId)
 
@@ -49,21 +52,22 @@ class RefreshTokenRepo(private val entityManager: EntityManager) : RepositoryDao
         return entityAux
     }
 
+    @Transactional
     override fun remove(entity: RefreshToken) {
         entityManager.remove(entity)
     }
 
     override fun findAll(): List<RefreshToken> {
-        return entityManager.createQuery("from RefreshTokens").resultList.filterIsInstance<RefreshToken>()
+        return entityManager.createQuery("from RefreshToken", RefreshToken::class.java).resultList.filterIsInstance<RefreshToken>()
     }
 
     override fun findById(idEntity: Long): RefreshToken {
-        return entityManager.createQuery("from RefreshTokens where userId = :idEntity")
+        return entityManager.createQuery("from RefreshToken where userId = :idEntity", RefreshToken::class.java)
                             .setParameter("idEntity", idEntity).resultList[0] as RefreshToken
     }
 
     fun findByRefreshToken(idEntity: String): RefreshToken {
-        return entityManager.createQuery("from RefreshTokens where refreshToken = :idEntity")
+        return entityManager.createQuery("from RefreshToken where refreshToken = :idEntity", RefreshToken::class.java)
                             .setParameter("idEntity", idEntity).resultList[0] as RefreshToken
     }
 

@@ -26,7 +26,6 @@ package io.neirth.nestedapi.authentication.domain
 import javax.persistence.*
 
 @Entity
-@Table(name = "Credentials")
 data class Credential(
     @Id
     var userId: Long,

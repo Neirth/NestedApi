@@ -37,7 +37,10 @@ class ExceptionMapping : ExceptionMapper<Exception> {
             is SecurityException -> Response.status(Response.Status.FORBIDDEN.statusCode).entity(generateJsonResponse(p0)).build()
             is LoginException -> Response.status(Response.Status.UNAUTHORIZED.statusCode).entity(generateJsonResponse(p0)).build()
             is MalformedURLException -> Response.status(Response.Status.BAD_REQUEST.statusCode).entity(generateJsonResponse(p0)).build()
-            else -> Response.status(Response.Status.INTERNAL_SERVER_ERROR.statusCode).entity(generateJsonResponse(p0)).build()
+            else -> {
+                p0.printStackTrace()
+                Response.status(Response.Status.INTERNAL_SERVER_ERROR.statusCode).entity(generateJsonResponse(p0)).build()
+            }
         }
     }
 

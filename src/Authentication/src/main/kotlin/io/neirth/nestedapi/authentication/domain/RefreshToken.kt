@@ -27,7 +27,6 @@ import java.sql.Timestamp
 import javax.persistence.*
 
 @Entity
-@Table(name = "RefreshTokens")
 data class RefreshToken(
     @Id
     var userId: Long,

@@ -28,6 +28,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.rabbitmq.client.*
 import de.undercouch.bson4jackson.BsonFactory
 import io.neirth.nestedapi.authentication.util.annotation.RpcMessage
+import io.quarkus.arc.Unremovable
+import io.quarkus.runtime.StartupEvent
+import org.eclipse.microprofile.context.ManagedExecutor
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.lang.reflect.InvocationTargetException
@@ -38,34 +41,56 @@ import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
+import javax.enterprise.context.ApplicationScoped
+import javax.enterprise.context.Dependent
+import javax.enterprise.context.control.ActivateRequestContext
+import javax.enterprise.event.Observes
+import javax.enterprise.inject.spi.CDI
+import javax.transaction.Transactional
 import kotlin.collections.ArrayList
 import kotlin.system.exitProcess
-import javax.enterprise.inject.spi.CDI
 
-/**
- * Method for init the RPC Queues
- */
-fun initRpcQueues() {
-    try {
-        // Load Properties from XML
-        val props = Properties()
-        props.loadFromXML(ClassLoader.getSystemResourceAsStream("META-INF/rpc-classes.xml"))
+@ApplicationScoped
+class RpcUtils(var executor: ManagedExecutor) {
+    /**
+     * Method for init the RPC Queues
+     */
+    fun onStart(@Observes ev: StartupEvent) {
+        loggerSystem.log(Level.INFO, "Starting RPC Queues...")
 
-        // Prepare the arraylist
-        val clazzArr: ArrayList<Class<*>> = ArrayList()
+        try {
+            // Load Properties from XML
+            val props = Properties()
+            props.loadFromXML(ClassLoader.getSystemResourceAsStream("META-INF/rpc-classes.xml"))
 
-        // Scan all RPC Market classes
-        for (clazz in props.getProperty("rpc.classes").split(",")) {
-            clazzArr.add(Class.forName(clazz))
+            // Prepare the arraylist
+            val clazzArr: ArrayList<Class<*>> = ArrayList()
+
+            // Scan all RPC Market classes
+            for (clazz in props.getProperty("rpc.classes").split(",")) {
+                clazzArr.add(Class.forName(clazz))
+            }
+
+            // Prepare a new connection factory object
+            val connFactory = ConnectionFactory()
+
+            // Set the URI for attach to broker
+            connFactory.setUri(System.getenv("RABBITMQ_AMQP_URI"))
+
+            // Initialize all classes
+            processClasses(connFactory, clazzArr)
+
+            loggerSystem.log(Level.INFO, "Started RPC Queues!")
+        } catch (e: ConnectException) {
+            loggerSystem.log(Level.SEVERE, "Could not connect to the message broker!")
+            exitProcess(-1)
         }
+    }
 
-        // Prepare a new connection factory object
-        val connFactory = ConnectionFactory()
-
-        // Set the URI for attach to broker
-        connFactory.setUri(System.getenv("RABBITMQ_AMQP_URI"))
-
-        // Initialize all classes
+    /**
+     * Method for process all classes annotated with @RpcMessage
+     */
+    private fun processClasses(connFactory: ConnectionFactory, clazzArr: ArrayList<Class<*>>) {
         for (clazz in clazzArr) {
             for (method in clazz.methods) {
                 if (method.isAnnotationPresent(RpcMessage::class.java)) {
@@ -86,136 +111,156 @@ fun initRpcQueues() {
                     val queueName: String = UUID.randomUUID().toString()
 
                     // Declare a queue with options
-                    channel.queueDeclare(queueName, false, true, true, null)
+                    channel.queueDeclare(queueName, false, true, false, null)
 
                     // Bind the queue with routing key
                     channel.queueBind(queueName, topic, queue)
 
                     // Generate a deliver callback
-                    val callback = instanceCallback(channel, method, clazz)
+                    val callback = DeliverCallback { _: String?, delivery: Delivery ->
+                        // Instance bean with CDI
+                        val deliveryRunnable: DeliveryCallback = CDI.current().select(DeliveryCallback::class.java).get()
+
+                        // Set the common properties
+                        deliveryRunnable.delivery = delivery
+                        deliveryRunnable.channel = channel
+                        deliveryRunnable.method = method
+                        deliveryRunnable.clazz = clazz
+
+                        // Execute the thread in thread pool
+                        executor.execute(deliveryRunnable)
+                    }
 
                     // Start a basic consume
-                    channel.basicConsume(queueName, true, callback, CancelCallback { })
+                    channel.basicConsume(queueName, false, callback, CancelCallback { })
                 }
             }
         }
-    } catch (e: ConnectException) {
-        loggerSystem.log(Level.SEVERE, "Could not connect to the message broker!")
-        exitProcess(-1)
     }
-}
 
-/**
- * Method for send RPC Messages throw the network without schema
- * @param topicRedirect The routing key
- * @param obj The Json Node Obj
- * @return The network response or null if nothing is passed
- */
-fun sendMessage(topicRedirect: String, obj: JsonNode): JsonNode? {
-    // Instance a connection factory
-    val connFactory = ConnectionFactory()
+    /**
+     * Method for instance the callback instructions when receive a RPC Message
+     * @param it Channel used for the rpc message
+     * @param method Method instance used for process the message
+     * @param clazz Class where is the method
+     */
+    @Dependent
+    @Unremovable
+    class DeliveryCallback : Runnable {
+        lateinit var delivery: Delivery
+        lateinit var channel: Channel
+        lateinit var method: Method
+        lateinit var clazz: Class<*>
 
-    // Set the URI of RabbitMQ Broker
-    connFactory.setUri(System.getenv("RABBITMQ_AMQP_URI"))
+        @Transactional
+        @ActivateRequestContext
+        override fun run() {
+            try {
+                // Prepare the object mapper
+                val mapper = ObjectMapper(BsonFactory())
 
-    // Create channel
-    val channel = connFactory.newConnection().createChannel()
-    // Set the new Correlation ID
-    val corrId: String = UUID.randomUUID().toString()
+                // Get the instance
+                val instance = CDI.current().select(clazz).get()
 
-    // Declare a Queue to receive the response
-    val replyTo: String = UUID.randomUUID().toString()
+                // Check if exist parameters
+                val result: Any = if (method.parameters.isNotEmpty()) {
+                    // Get the parameter type
+                    val type: Class<*> = method.parameters[0].type
 
-    // Declare a queue with options
-    channel.queueDeclare(replyTo, false, true, true, null)
+                    // Deserialize the data
+                    val entity: Any? = mapper.readValue(delivery.body, type)
 
-    // Set AMQP properties
-    val props: AMQP.BasicProperties = AMQP.BasicProperties().builder()
-        .correlationId(corrId).replyTo(replyTo)
-        .build()
+                    // We try to call the annotated method with deserialized data
+                    method.invoke(instance, entity)
+                } else {
+                    // We try to call the annotated method without serialized data
+                    method.invoke(instance)
+                }
 
-    // Set the bson factory
-    val bsonFactory = BsonFactory()
+                // Prepare the byte buffer stream
+                val output = ByteArrayOutputStream()
 
-    // Set the output array
-    val output = ByteArrayOutputStream()
+                // Serialize the response
+                mapper.writeValue(output, result)
 
-    // Prepare the object mapper with bson encoding
-    val mapper = ObjectMapper(bsonFactory)
+                // Prepare the properties of the response.
+                val replyProps: AMQP.BasicProperties = AMQP.BasicProperties.Builder().correlationId(delivery.properties.correlationId).build()
 
-    // Map the passed object
-    mapper.writeTree(bsonFactory.createGenerator(output), obj)
-
-    // Get the routing key
-    val routing: Array<String> = topicRedirect.split(".").toTypedArray()
-
-    // Publish the RPC message to the topic
-    channel.basicPublish(routing[0], routing[1], props, output.toByteArray())
-
-    // Get a Blocking Queue with the response
-    val response: BlockingQueue<JsonNode> = ArrayBlockingQueue(1)
-
-    // Generate a nothing callback
-    val nothing = CancelCallback { }
-
-    // Generate a response callback
-    val callback = DeliverCallback { _, delivery ->
-        if (delivery.properties.correlationId == corrId) {
-            response.offer(mapper.readTree(ByteArrayInputStream(delivery.body)))
+                // Publish the response into the private queue and sets the acknowledge.
+                channel.basicPublish("", delivery.properties.replyTo, replyProps, output.toByteArray())
+                channel.basicAck(delivery.envelope.deliveryTag, true)
+            } catch (e: InvocationTargetException) {
+                e.printStackTrace()
+            }
         }
     }
 
-    // Wait to the server response
-    channel.basicConsume(replyTo, true, callback, nothing)
+    companion object {
+        /**
+         * Method for send RPC Messages throw the network without schema
+         * @param topicRedirect The routing key
+         * @param obj The Json Node Obj
+         * @return The network response or null if nothing is passed
+         */
+        fun sendMessage(topicRedirect: String, obj: JsonNode): JsonNode? {
+            // Instance a connection factory
+            val connFactory = ConnectionFactory()
 
-    // Set a timeout for the response and wait
-    return response.poll(1, TimeUnit.SECONDS)
-}
+            // Set the URI of RabbitMQ Broker
+            connFactory.setUri(System.getenv("RABBITMQ_AMQP_URI"))
 
-/**
- * Method for instance the callback instructions when receive a RPC Message
- * @param it Channel used for the rpc message
- * @param method Method instance used for process the message
- * @param clazz Class where is the method
- */
-private fun instanceCallback(it: Channel, method: Method, clazz: Class<*>): DeliverCallback {
-    return DeliverCallback { _: String?, delivery: Delivery ->
-        try {
-            // Prepare the object mapper
-            val mapper = ObjectMapper(BsonFactory())
+            // Create channel
+            val channel = connFactory.newConnection().createChannel()
+            // Set the new Correlation ID
+            val corrId: String = UUID.randomUUID().toString()
 
-            // Get the instance
-            val instance = CDI.current().select(clazz).get()
+            // Declare a Queue to receive the response
+            val replyTo: String = UUID.randomUUID().toString()
 
-            // Check if exist parameters
-            val result: Any = if (method.parameters.isNotEmpty()) {
-                // Get the parameter type
-                val type: Class<*> = method.parameters[0].type
+            // Declare a queue with options
+            channel.queueDeclare(replyTo, false, true, true, null)
 
-                // Deserialize the data
-                val entity: Any? = mapper.readValue(delivery.body, type)
+            // Set AMQP properties
+            val props: AMQP.BasicProperties = AMQP.BasicProperties().builder()
+                .correlationId(corrId).replyTo(replyTo)
+                .build()
 
-                // We try to call the annotated method with deserialized data
-                method.invoke(instance, entity)
-            } else {
-                // We try to call the annotated method without serialized data
-                method.invoke(instance)
-            }
+            // Set the bson factory
+            val bsonFactory = BsonFactory()
 
-            // Prepare the byte buffer stream
+            // Set the output array
             val output = ByteArrayOutputStream()
 
-            // Serialize the response
-            mapper.writeValue(output, result)
+            // Prepare the object mapper with bson encoding
+            val mapper = ObjectMapper(bsonFactory)
 
-            // Prepare the properties of the response.
-            val replyProps: AMQP.BasicProperties = AMQP.BasicProperties.Builder().correlationId(delivery.properties.correlationId).build()
+            // Map the passed object
+            mapper.writeTree(bsonFactory.createGenerator(output), obj)
 
-            // Publish the response into the private queue and sets the acknowledge.
-            it.basicPublish("", delivery.properties.replyTo, replyProps, output.toByteArray())
-            it.basicAck(delivery.envelope.deliveryTag, false)
-        } catch (e: InvocationTargetException) {
-            e.printStackTrace()
+            // Get the routing key
+            val routing: Array<String> = topicRedirect.split(".").toTypedArray()
+
+            // Publish the RPC message to the topic
+            channel.basicPublish(routing[0], routing[1], props, output.toByteArray())
+
+            // Get a Blocking Queue with the response
+            val response: BlockingQueue<JsonNode> = ArrayBlockingQueue(1)
+
+            // Generate a nothing callback
+            val nothing = CancelCallback { }
+
+            // Generate a response callback
+            val callback = DeliverCallback { _, delivery ->
+                if (delivery.properties.correlationId == corrId) {
+                    response.offer(mapper.readTree(ByteArrayInputStream(delivery.body)))
+                }
+            }
+
+            // Wait to the server response
+            channel.basicConsume(replyTo, true, callback, nothing)
+
+            // Set a timeout for the response and wait
+            return response.poll(1, TimeUnit.SECONDS)
         }
     }
 }

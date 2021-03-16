@@ -34,10 +34,7 @@ import io.neirth.nestedapi.authentication.domain.RefreshToken
 import io.neirth.nestedapi.authentication.exception.LoginException
 import io.neirth.nestedapi.authentication.repository.CredentialsRepo
 import io.neirth.nestedapi.authentication.repository.RefreshTokenRepo
-import io.neirth.nestedapi.authentication.util.processJwtToken
-import io.neirth.nestedapi.authentication.util.sendEmail
-import io.neirth.nestedapi.authentication.util.sendMessage
-import io.neirth.nestedapi.authentication.util.signingKey
+import io.neirth.nestedapi.authentication.util.*
 import java.net.MalformedURLException
 import java.sql.Timestamp
 import java.util.*
@@ -45,7 +42,7 @@ import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class AuthService(private val connRefresh: RefreshTokenRepo, private val connCredential: CredentialsRepo) {
-    private val expirationTime: Long = System.getenv("EXPIRATION_TIME").toLong()
+    private val expirationTimeNumber: Long = System.getenv("EXPIRATION_TIME").toLong()
 
     fun tokenGrantPasswd(requestVars: Map<String, String>): AuthSuccess {
         // Retreive the username and password
@@ -58,18 +55,18 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
             val credential = connCredential.findByUsername(username)
 
             // Check if the password is the same
-            if (credential.password == password) {
+            if (credential.password.trim() == password.trim()) {
                 // Generate a random UUID key
                 val refreshToken: String = UUID.randomUUID().toString()
 
                 // Determinate the actual time and the expiration time
                 val actualTime: Long = System.currentTimeMillis()
-                val expirationTime: Long = System.currentTimeMillis() * expirationTime
+                val expirationTime: Long = System.currentTimeMillis() * expirationTimeNumber
 
                 // Obtain the user info from users
                 val objectMapper = ObjectMapper()
                 val jsonRequest: JsonParser = objectMapper.createParser("{ \"id\": " + credential.userId + " }")
-                val user: JsonNode? = sendMessage("users.login", objectMapper.readTree(jsonRequest))
+                val user: JsonNode? = RpcUtils.sendMessage("users.login", objectMapper.readTree(jsonRequest))
 
                 // Check if the user isn't null
                 if (user != null) {
@@ -91,14 +88,14 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                     )
 
                     // return the AuthSuccess object to the http call
-                    return AuthSuccess(accessToken, "bearer", expirationTime, refreshToken)
+                    return AuthSuccess(accessToken, "bearer", expirationTimeNumber, refreshToken)
                 } else {
                     // If the user in the users database is null, return no validate operation
-                    throw LoginException("The username or the password is not validated")
+                    throw LoginException("The username or the password is not validated 1")
                 }
             } else {
                 // If the password is not the same, return no validate operation
-                throw LoginException("The username or the password is not validated")
+                throw LoginException("The username or the password is not validated 2")
             }
         } else {
             // If the body is bad formed, return malformed url exception
@@ -118,13 +115,13 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
             // Generate a network petition to find the user information
             val objectMapper = ObjectMapper()
             val jsonRequest: JsonParser = objectMapper.createParser("{ \"id\": " + refreshTokenObj.userId + " }")
-            val user: JsonNode? = sendMessage("users.login", objectMapper.readTree(jsonRequest))
+            val user: JsonNode? = RpcUtils.sendMessage("users.login", objectMapper.readTree(jsonRequest))
 
             // If the user information isn't null, generate a new access token
             if (user != null) {
                 // Determinate the actual time and the expiration time
                 val actualTime = System.currentTimeMillis()
-                val expirationTime = System.currentTimeMillis() * expirationTime
+                val expirationTime = System.currentTimeMillis() * expirationTimeNumber
 
                 // Get the access token
                 val accessToken: String = Jwts.builder().setId(user["id"].asText()).setSubject(user["email"].asText())
@@ -132,7 +129,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                     .signWith(signingKey, SignatureAlgorithm.HS512).compact()
 
                 // return the AuthSuccess object to the http call
-                return AuthSuccess(accessToken, "bearer", expirationTime, refreshToken)
+                return AuthSuccess(accessToken, "bearer", expirationTimeNumber, refreshToken)
             } else {
                 // Return no validate operation if no find the user
                 throw LoginException("No couldn't validated the user")
@@ -148,12 +145,12 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
         val jsonRequest: JsonParser = objectMapper.createParser(body)
 
         val jsonNode: JsonNode = objectMapper.readTree(jsonRequest)
-        val jsonResult: JsonNode = sendMessage("users.register", jsonNode) ?: throw MalformedURLException("The body is malformed")
+        val jsonResult: JsonNode = RpcUtils.sendMessage("users.register", jsonNode) ?: throw MalformedURLException("The body is malformed")
 
         connCredential.insert(
             Credential(
                 jsonResult["id"].asLong(),
-                jsonResult["user"].asText(),
+                jsonResult["email"].asText(),
                 jsonNode["password"].asText()
             )
         )
@@ -167,7 +164,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
     }
 
     fun logoutUser(jwtToken: String) {
-        connRefresh.remove(connRefresh.findById(processJwtToken(jwtToken)["sub"] as Long))
+        connRefresh.remove(connRefresh.findById(processJwtToken(jwtToken)["jti"].toString().toLong()))
     }
 
     fun removeCredentials(credential: Credential): Credential {

@@ -26,15 +26,18 @@ package io.neirth.nestedapi.authentication.repository
 import io.neirth.nestedapi.authentication.domain.Credential
 import javax.enterprise.context.RequestScoped
 import javax.persistence.EntityManager
+import javax.transaction.Transactional
 
 @RequestScoped
 class CredentialsRepo(private val entityManager: EntityManager): RepositoryDao<Credential> {
+    @Transactional
     override fun insert(entity: Credential): Credential {
         entityManager.persist(entity)
 
         return entity
     }
 
+    @Transactional
     override fun update(entity: Credential): Credential {
         val entityAux : Credential = entityManager.find(Credential::class.java, entity.userId)
 
@@ -48,21 +51,22 @@ class CredentialsRepo(private val entityManager: EntityManager): RepositoryDao<C
         return entityAux
     }
 
+    @Transactional
     override fun remove(entity: Credential) {
         entityManager.remove(entity)
     }
 
     override fun findAll(): List<Credential> {
-        return entityManager.createQuery("from Credentials").resultList.filterIsInstance<Credential>()
+        return entityManager.createQuery("from Credential", Credential::class.java).resultList.filterIsInstance<Credential>()
     }
 
     override fun findById(idEntity: Long): Credential {
-        return entityManager.createQuery("from Credentials where userId = :idEntity")
+        return entityManager.createQuery("from Credential where userId = :idEntity", Credential::class.java)
                             .setParameter("idEntity", idEntity).resultList[0] as Credential
     }
 
     fun findByUsername(idEntity: String): Credential {
-        return entityManager.createQuery("from Credentials where username = :idEntity")
+        return entityManager.createQuery("from Credential where username = :idEntity", Credential::class.java)
                             .setParameter("idEntity", idEntity).resultList[0] as Credential
     }
 
