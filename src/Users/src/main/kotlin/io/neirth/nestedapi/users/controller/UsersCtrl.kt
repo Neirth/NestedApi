@@ -55,7 +55,7 @@ class UsersCtrl(private val usersService: UsersService) {
     }
 
     @RpcMessage(topic = "users", queue = "login")
-    fun getUserInfo(user: User): User {
+    fun getUserInfo(user: User): User? {
         return usersService.findUserById(user.id)
     }
 }

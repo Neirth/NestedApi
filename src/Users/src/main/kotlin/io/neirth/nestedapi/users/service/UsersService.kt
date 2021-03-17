@@ -36,7 +36,7 @@ class UsersService(private val conn: UsersRepo) {
         return conn.insert(user)
     }
 
-    fun findUserById(id: Long): User {
+    fun findUserById(id: Long): User? {
        return conn.findById(id)
     }
 
@@ -49,11 +49,12 @@ class UsersService(private val conn: UsersRepo) {
     }
 
     fun deleteUserById(id: Long) {
-        conn.remove(conn.findById(id))
+        conn.findById(id)?.let {
+            conn.remove(it)
+            val objectMapper = ObjectMapper()
+            val jsonRequest: JsonParser = objectMapper.createParser("{ \"userId\" : $id }")
 
-        val objectMapper = ObjectMapper()
-        val jsonRequest: JsonParser = objectMapper.createParser("{ \"userId\" : $id }")
-
-        RpcUtils.sendMessage("auths.remove", objectMapper.readTree(jsonRequest)) ?: throw RuntimeException("No couldn't delete a user credentials")
+            RpcUtils.sendMessage("auths.remove", objectMapper.readTree(jsonRequest)) ?: throw RuntimeException("No couldn't delete a user credentials")
+        }
     }
 }

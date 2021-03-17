@@ -25,16 +25,20 @@ package io.neirth.nestedapi.users.repository
 
 import javax.persistence.EntityManager
 import io.neirth.nestedapi.users.domain.User
+import java.sql.SQLDataException
 import javax.enterprise.context.RequestScoped
 import javax.persistence.PersistenceContext
+import javax.transaction.Transactional
 
 @RequestScoped
-class UsersRepo(@PersistenceContext private val entityManager: EntityManager): RepositoryDao<User> {
+class UsersRepo(private val entityManager: EntityManager): RepositoryDao<User> {
+    @Transactional
     override fun insert(entity: User): User {
         entityManager.persist(entity)
         return entity
     }
 
+    @Transactional
     override fun update(entity: User): User {
         val entityAux : User = entityManager.find(User::class.java, entity.id)
 
@@ -55,17 +59,24 @@ class UsersRepo(@PersistenceContext private val entityManager: EntityManager): R
         return entityAux
     }
 
+    @Transactional
     override fun remove(entity: User) {
-        entityManager.remove(entity)
+        entityManager.remove(if (entityManager.contains(entity)) entity else entityManager.merge(entity))
     }
 
     override fun findAll(): List<User> {
        return entityManager.createQuery("from User", User::class.java).resultList.filterIsInstance<User>()
     }
 
-    override fun findById(idEntity: Long): User {
-        return entityManager.createQuery("from User where id = :idEntity", User::class.java)
-                            .setParameter("idEntity", idEntity).resultList[0] as User
+    override fun findById(idEntity: Long): User? {
+        val result: List<User> = entityManager.createQuery("from User where id = :idEntity", User::class.java)
+                                              .setParameter("idEntity", idEntity).resultList
+
+        if (!result.isEmpty()) {
+            return result[0]
+        } else {
+            return null
+        }
     }
 
     override fun close() {

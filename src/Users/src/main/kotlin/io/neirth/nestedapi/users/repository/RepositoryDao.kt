@@ -31,5 +31,5 @@ interface RepositoryDao<T> : Closeable {
     fun remove(entity: T)
 
     fun findAll() : List<T>
-    fun findById(idEntity: Long) : T
+    fun findById(idEntity: Long) : T?
 }
