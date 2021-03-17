@@ -53,21 +53,33 @@ class CredentialsRepo(private val entityManager: EntityManager): RepositoryDao<C
 
     @Transactional
     override fun remove(entity: Credential) {
-        entityManager.remove(entity)
+        entityManager.remove(if (entityManager.contains(entity)) entity else entityManager.merge(entity))
     }
 
     override fun findAll(): List<Credential> {
         return entityManager.createQuery("from Credential", Credential::class.java).resultList.filterIsInstance<Credential>()
     }
 
-    override fun findById(idEntity: Long): Credential {
-        return entityManager.createQuery("from Credential where userId = :idEntity", Credential::class.java)
-                            .setParameter("idEntity", idEntity).resultList[0] as Credential
+    fun findByUserId(idEntity: Long): Credential? {
+        val result: List<Credential> = entityManager.createQuery("from Credential where userId = :idEntity", Credential::class.java)
+                                                    .setParameter("idEntity", idEntity).resultList
+
+        return if (result.isNotEmpty()) {
+            result[0]
+        } else {
+            null
+        }
     }
 
-    fun findByUsername(idEntity: String): Credential {
-        return entityManager.createQuery("from Credential where username = :idEntity", Credential::class.java)
-                            .setParameter("idEntity", idEntity).resultList[0] as Credential
+    fun findByUsername(idEntity: String): Credential? {
+        val result: List<Credential> = entityManager.createQuery("from Credential where username = :idEntity", Credential::class.java)
+                                                    .setParameter("idEntity", idEntity).resultList
+
+        return if (result.isNotEmpty()) {
+            result[0]
+        } else {
+            null
+        }
     }
 
     override fun close() {

@@ -24,6 +24,7 @@
 package io.neirth.nestedapi.authentication.repository
 
 import io.neirth.nestedapi.authentication.domain.RefreshToken
+import java.sql.SQLDataException
 import javax.enterprise.context.RequestScoped
 import javax.persistence.EntityManager
 import javax.transaction.Transactional
@@ -54,21 +55,33 @@ class RefreshTokenRepo(private val entityManager: EntityManager) : RepositoryDao
 
     @Transactional
     override fun remove(entity: RefreshToken) {
-        entityManager.remove(entity)
+        entityManager.remove(if (entityManager.contains(entity)) entity else entityManager.merge(entity))
     }
 
     override fun findAll(): List<RefreshToken> {
         return entityManager.createQuery("from RefreshToken", RefreshToken::class.java).resultList.filterIsInstance<RefreshToken>()
     }
 
-    override fun findById(idEntity: Long): RefreshToken {
-        return entityManager.createQuery("from RefreshToken where userId = :idEntity", RefreshToken::class.java)
-                            .setParameter("idEntity", idEntity).resultList[0] as RefreshToken
+    fun findByUserId(idEntity: Long): List<RefreshToken>? {
+        val result: List<RefreshToken> = entityManager.createQuery("from RefreshToken where userId = :idEntity", RefreshToken::class.java)
+                                                      .setParameter("idEntity", idEntity).resultList
+
+        return if (result.isNotEmpty()) {
+            result
+        } else {
+            null
+        }
     }
 
-    fun findByRefreshToken(idEntity: String): RefreshToken {
-        return entityManager.createQuery("from RefreshToken where refreshToken = :idEntity", RefreshToken::class.java)
-                            .setParameter("idEntity", idEntity).resultList[0] as RefreshToken
+    fun findByRefreshToken(idEntity: String): RefreshToken? {
+        val result: List<RefreshToken> = entityManager.createQuery("from RefreshToken where refreshToken = :idEntity", RefreshToken::class.java)
+                                                      .setParameter("idEntity", idEntity).resultList
+
+        return if (result.isNotEmpty()) {
+            result[0]
+        } else {
+            null
+        }
     }
 
     override fun close() {

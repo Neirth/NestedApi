@@ -29,12 +29,16 @@ import javax.persistence.*
 @Entity
 data class RefreshToken(
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id : Long?,
+
+    @Column(unique = false)
     var userId: Long,
 
     @Column(unique = true)
     var refreshToken: String,
 
-    @Column(unique = true)
+    @Column(unique = false)
     var validFrom: Timestamp
 )
 

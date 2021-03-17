@@ -28,11 +28,15 @@ import javax.persistence.*
 @Entity
 data class Credential(
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id : Long?,
+
+    @Column(unique = true)
     var userId: Long,
 
     @Column(unique = true)
     var username: String,
 
-    @Column(unique = true)
+    @Column(unique = false)
     var password: String
 )

@@ -55,7 +55,7 @@ class RpcUtils(var executor: ManagedExecutor) {
     /**
      * Method for init the RPC Queues
      */
-    fun onStart(@Observes ev: StartupEvent) {
+    internal fun onStart(@Observes ev: StartupEvent) {
         loggerSystem.log(Level.INFO, "Starting RPC Queues...")
 
         try {
@@ -90,7 +90,7 @@ class RpcUtils(var executor: ManagedExecutor) {
     /**
      * Method for process all classes annotated with @RpcMessage
      */
-    private fun processClasses(connFactory: ConnectionFactory, clazzArr: ArrayList<Class<*>>) {
+    internal fun processClasses(connFactory: ConnectionFactory, clazzArr: ArrayList<Class<*>>) {
         for (clazz in clazzArr) {
             for (method in clazz.methods) {
                 if (method.isAnnotationPresent(RpcMessage::class.java)) {
@@ -146,7 +146,7 @@ class RpcUtils(var executor: ManagedExecutor) {
      */
     @Dependent
     @Unremovable
-    class DeliveryCallback : Runnable {
+    internal class DeliveryCallback : Runnable {
         lateinit var delivery: Delivery
         lateinit var channel: Channel
         lateinit var method: Method

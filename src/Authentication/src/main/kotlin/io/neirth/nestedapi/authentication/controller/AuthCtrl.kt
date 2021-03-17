@@ -76,7 +76,7 @@ class AuthCtrl(private val authService: AuthService) {
      */
     @POST
     @Path("logout")
-    fun logoutUser(@HeaderParam("authorization") jwtToken: String) {
+    fun logoutUser(@HeaderParam("Authorization") jwtToken: String) {
         authService.logoutUser(jwtToken)
     }
 

@@ -34,7 +34,9 @@ import io.neirth.nestedapi.authentication.domain.RefreshToken
 import io.neirth.nestedapi.authentication.exception.LoginException
 import io.neirth.nestedapi.authentication.repository.CredentialsRepo
 import io.neirth.nestedapi.authentication.repository.RefreshTokenRepo
-import io.neirth.nestedapi.authentication.util.*
+import io.neirth.nestedapi.authentication.util.RpcUtils
+import io.neirth.nestedapi.authentication.util.sendEmail
+import io.neirth.nestedapi.authentication.util.signingKey
 import java.net.MalformedURLException
 import java.sql.Timestamp
 import java.util.*
@@ -55,13 +57,13 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
             val credential = connCredential.findByUsername(username)
 
             // Check if the password is the same
-            if (credential.password.trim() == password.trim()) {
+            if (credential!!.password.trim() == password.trim()) {
                 // Generate a random UUID key
                 val refreshToken: String = UUID.randomUUID().toString()
 
                 // Determinate the actual time and the expiration time
                 val actualTime: Long = System.currentTimeMillis()
-                val expirationTime: Long = System.currentTimeMillis() * expirationTimeNumber
+                val expirationTime: Long = System.currentTimeMillis() + expirationTimeNumber
 
                 // Obtain the user info from users
                 val objectMapper = ObjectMapper()
@@ -71,7 +73,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                 // Check if the user isn't null
                 if (user != null) {
                     // Save the new refresh token
-                    connRefresh.insert(RefreshToken(credential.userId, refreshToken, Timestamp(actualTime)))
+                    connRefresh.insert(RefreshToken(null, credential.userId, refreshToken, Timestamp(actualTime)))
 
                     // Get the access token
                     val accessToken: String =
@@ -91,11 +93,11 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                     return AuthSuccess(accessToken, "bearer", expirationTimeNumber, refreshToken)
                 } else {
                     // If the user in the users database is null, return no validate operation
-                    throw LoginException("The username or the password is not validated 1")
+                    throw LoginException("The username or the password is not validated")
                 }
             } else {
                 // If the password is not the same, return no validate operation
-                throw LoginException("The username or the password is not validated 2")
+                throw LoginException("The username or the password is not validated")
             }
         } else {
             // If the body is bad formed, return malformed url exception
@@ -110,26 +112,31 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
         // Check if the refresh token isn't null
         if (refreshToken != null) {
             // Find the refresh token in the database
-            val refreshTokenObj: RefreshToken = connRefresh.findByRefreshToken(refreshToken)
+            val refreshTokenObj: RefreshToken? = connRefresh.findByRefreshToken(refreshToken)
 
-            // Generate a network petition to find the user information
-            val objectMapper = ObjectMapper()
-            val jsonRequest: JsonParser = objectMapper.createParser("{ \"id\": " + refreshTokenObj.userId + " }")
-            val user: JsonNode? = RpcUtils.sendMessage("users.login", objectMapper.readTree(jsonRequest))
+            if (refreshTokenObj != null) {
+                // Generate a network petition to find the user information
+                val objectMapper = ObjectMapper()
+                val jsonRequest: JsonParser = objectMapper.createParser("{ \"id\": " + refreshTokenObj.userId + " }")
+                val user: JsonNode? = RpcUtils.sendMessage("users.login", objectMapper.readTree(jsonRequest))
 
-            // If the user information isn't null, generate a new access token
-            if (user != null) {
-                // Determinate the actual time and the expiration time
-                val actualTime = System.currentTimeMillis()
-                val expirationTime = System.currentTimeMillis() * expirationTimeNumber
+                // If the user information isn't null, generate a new access token
+                if (user != null) {
+                    // Determinate the actual time and the expiration time
+                    val actualTime = System.currentTimeMillis()
+                    val expirationTime = System.currentTimeMillis() + expirationTimeNumber
 
-                // Get the access token
-                val accessToken: String = Jwts.builder().setId(user["id"].asText()).setSubject(user["email"].asText())
-                    .setExpiration(Date(expirationTime)).setIssuedAt(Date(actualTime))
-                    .signWith(signingKey, SignatureAlgorithm.HS512).compact()
+                    // Get the access token
+                    val accessToken: String = Jwts.builder().setId(user["id"].asText()).setSubject(user["email"].asText())
+                        .setExpiration(Date(expirationTime)).setIssuedAt(Date(actualTime))
+                        .signWith(signingKey, SignatureAlgorithm.HS512).compact()
 
-                // return the AuthSuccess object to the http call
-                return AuthSuccess(accessToken, "bearer", expirationTimeNumber, refreshToken)
+                    // return the AuthSuccess object to the http call
+                    return AuthSuccess(accessToken, "bearer", expirationTimeNumber, refreshToken)
+                } else {
+                    // Return no validate operation if no find the user
+                    throw LoginException("No couldn't validated the user")
+                }
             } else {
                 // Return no validate operation if no find the user
                 throw LoginException("No couldn't validated the user")
@@ -149,6 +156,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
 
         connCredential.insert(
             Credential(
+                null,
                 jsonResult["id"].asLong(),
                 jsonResult["email"].asText(),
                 jsonNode["password"].asText()
@@ -163,13 +171,20 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
         )
     }
 
-    fun logoutUser(jwtToken: String) {
-        connRefresh.remove(connRefresh.findById(processJwtToken(jwtToken)["jti"].toString().toLong()))
+    fun logoutUser(authenticationHeader: String) {
+        connRefresh.findByRefreshToken(authenticationHeader.substring(7))?.let {
+            connRefresh.remove(it)
+        }
     }
 
     fun removeCredentials(credential: Credential): Credential {
-        connCredential.remove(credential)
-        connRefresh.remove(connRefresh.findById(credential.userId))
+        connRefresh.findByUserId(credential.userId)?.forEach {
+            connRefresh.remove(it)
+        }
+
+        connCredential.findByUserId(credential.userId)?.let {
+            connCredential.remove(it)
+        }
 
         return credential
     }
