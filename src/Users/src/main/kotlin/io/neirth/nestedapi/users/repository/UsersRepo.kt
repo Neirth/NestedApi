@@ -72,7 +72,7 @@ class UsersRepo(private val entityManager: EntityManager): RepositoryDao<User> {
         val result: List<User> = entityManager.createQuery("from User where id = :idEntity", User::class.java)
                                               .setParameter("idEntity", idEntity).resultList
 
-        if (!result.isEmpty()) {
+        if (result.isNotEmpty()) {
             return result[0]
         } else {
             return null
