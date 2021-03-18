@@ -23,7 +23,7 @@
  */
 package io.neirth.nestedapi.authentication.controller
 
-import io.neirth.nestedapi.authentication.domain.AuthSuccess
+import io.neirth.nestedapi.authentication.domain.response.AuthSuccess
 import io.neirth.nestedapi.authentication.domain.Credential
 import io.neirth.nestedapi.authentication.service.AuthService
 import io.neirth.nestedapi.authentication.util.*
@@ -36,7 +36,7 @@ import javax.ws.rs.Path
 @Path("/auth")
 class AuthCtrl(private val authService: AuthService) {
     /**
-     * Method to process all related with the token and their lifecycle
+     * Http Method to process all related with the token and their lifecycle
      */
     @POST
     @Path("token")
@@ -63,7 +63,7 @@ class AuthCtrl(private val authService: AuthService) {
     }
 
     /**
-     * Method for register the users in respective service
+     * Http Method for register the users in respective service
      */
     @POST
     @Path("register")
@@ -72,7 +72,7 @@ class AuthCtrl(private val authService: AuthService) {
     }
 
     /**
-     * Method for logout the users
+     * Http Method for logout the users
      */
     @POST
     @Path("logout")

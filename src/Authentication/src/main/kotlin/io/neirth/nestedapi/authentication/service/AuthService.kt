@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
-import io.neirth.nestedapi.authentication.domain.AuthSuccess
+import io.neirth.nestedapi.authentication.domain.response.AuthSuccess
 import io.neirth.nestedapi.authentication.domain.Credential
 import io.neirth.nestedapi.authentication.domain.RefreshToken
 import io.neirth.nestedapi.authentication.exception.LoginException
@@ -44,10 +44,10 @@ import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class AuthService(private val connRefresh: RefreshTokenRepo, private val connCredential: CredentialsRepo) {
-    private val expirationTimeNumber: Long = System.getenv("EXPIRATION_TIME").toLong()
+    private val expirationTimeNumber: Long = System.getenv("EXPIRATION_TIME").toLong() * 60
 
     fun tokenGrantPasswd(requestVars: Map<String, String>): AuthSuccess {
-        // Retreive the username and password
+        // Retrieve the username and password
         val username: String? = requestVars["username"]
         val password: String? = requestVars["password"]
 
@@ -106,7 +106,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
     }
 
     fun tokenGrantRefresh(requestVars: Map<String, String>): AuthSuccess {
-        // Retreive the refresh token
+        // Retrieve the refresh token
         val refreshToken: String? = requestVars["refresh_token"]
 
         // Check if the refresh token isn't null
@@ -149,9 +149,8 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
 
     fun registerUser(body: String) {
         val objectMapper = ObjectMapper()
-        val jsonRequest: JsonParser = objectMapper.createParser(body)
 
-        val jsonNode: JsonNode = objectMapper.readTree(jsonRequest)
+        val jsonNode: JsonNode = objectMapper.readTree(objectMapper.createParser(body))
         val jsonResult: JsonNode = RpcUtils.sendMessage("users.register", jsonNode) ?: throw MalformedURLException("The body is malformed")
 
         connCredential.insert(
