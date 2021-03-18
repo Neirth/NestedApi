@@ -30,40 +30,77 @@ import javax.transaction.Transactional
 
 @RequestScoped
 class CredentialsRepo(private val entityManager: EntityManager): RepositoryDao<Credential> {
+    /**
+     * Method to insert persist data into the database
+     *
+     * @param entity Entity to persist
+     * @return The entity persisted
+     */
     @Transactional
     override fun insert(entity: Credential): Credential {
+        // Call to persist data function
         entityManager.persist(entity)
 
+        // Return the persisted data
         return entity
     }
 
+    /**
+     * Method to update data into the database
+     *
+     * @param entity Entity to persist
+     * @return The entity persisted
+     */
     @Transactional
     override fun update(entity: Credential): Credential {
+        // Find the entity instance inside in database
         val entityAux : Credential = entityManager.find(Credential::class.java, entity.userId)
 
+        // Start a transaction for avoid partial updates
         entityManager.transaction.begin()
 
+        // Set the new values
         entityAux.userId = entity.userId
         entityAux.password = entity.password
 
+        // Commit changes from the entity
         entityManager.transaction.commit()
 
+        // Return the changed object
         return entityAux
     }
 
+    /**
+     * Method for remove entities from database
+     *
+     * @param entity The entity to remove
+     */
     @Transactional
     override fun remove(entity: Credential) {
         entityManager.remove(if (entityManager.contains(entity)) entity else entityManager.merge(entity))
     }
 
+    /**
+     * Method for dump all records from database
+     *
+     * @return List of entities
+     */
     override fun findAll(): List<Credential> {
         return entityManager.createQuery("from Credential", Credential::class.java).resultList.filterIsInstance<Credential>()
     }
 
+    /**
+     * Method for find the entity by user id in database
+     *
+     * @param idEntity The entity id searched
+     * @return List of entities
+     */
     fun findByUserId(idEntity: Long): Credential? {
+        // We create the query and run it
         val result: List<Credential> = entityManager.createQuery("from Credential where userId = :idEntity", Credential::class.java)
                                                     .setParameter("idEntity", idEntity).resultList
 
+        // Check the result and send null if is empty
         return if (result.isNotEmpty()) {
             result[0]
         } else {
@@ -71,10 +108,18 @@ class CredentialsRepo(private val entityManager: EntityManager): RepositoryDao<C
         }
     }
 
+    /**
+     * Method for find the entity by username in database
+     *
+     * @param idEntity The entity id searched
+     * @return List of entities
+     */
     fun findByUsername(idEntity: String): Credential? {
+        // We create the query and run it
         val result: List<Credential> = entityManager.createQuery("from Credential where username = :idEntity", Credential::class.java)
                                                     .setParameter("idEntity", idEntity).resultList
 
+        // Check the result and send null if is empty
         return if (result.isNotEmpty()) {
             result[0]
         } else {
@@ -82,6 +127,9 @@ class CredentialsRepo(private val entityManager: EntityManager): RepositoryDao<C
         }
     }
 
+    /**
+     * Method for close the connection
+     */
     override fun close() {
         entityManager.close()
     }

@@ -37,6 +37,7 @@ import io.neirth.nestedapi.authentication.repository.RefreshTokenRepo
 import io.neirth.nestedapi.authentication.util.RpcUtils
 import io.neirth.nestedapi.authentication.util.sendEmail
 import io.neirth.nestedapi.authentication.util.signingKey
+import org.hibernate.exception.DataException
 import java.net.MalformedURLException
 import java.sql.Timestamp
 import java.util.*
@@ -46,6 +47,12 @@ import javax.enterprise.context.ApplicationScoped
 class AuthService(private val connRefresh: RefreshTokenRepo, private val connCredential: CredentialsRepo) {
     private val expirationTimeNumber: Long = System.getenv("EXPIRATION_TIME").toLong() * 60
 
+    /**
+     * Method for obtain the refresh token and the access token
+     *
+     * @param requestVars The request values
+     * @return The encapsulated response
+     */
     fun tokenGrantPasswd(requestVars: Map<String, String>): AuthSuccess {
         // Retrieve the username and password
         val username: String? = requestVars["username"]
@@ -56,47 +63,53 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
             // Find the username in the database
             val credential = connCredential.findByUsername(username)
 
-            // Check if the password is the same
-            if (credential!!.password.trim() == password.trim()) {
-                // Generate a random UUID key
-                val refreshToken: String = UUID.randomUUID().toString()
+            // Check if the credential is found
+            if (credential != null) {
+                // Check if the password is the same
+                if (credential.password.trim() == password.trim()) {
+                    // Generate a random UUID key
+                    val refreshToken: String = UUID.randomUUID().toString()
 
-                // Determinate the actual time and the expiration time
-                val actualTime: Long = System.currentTimeMillis()
-                val expirationTime: Long = System.currentTimeMillis() + expirationTimeNumber
+                    // Determinate the actual time and the expiration time
+                    val actualTime: Long = System.currentTimeMillis()
+                    val expirationTime: Long = System.currentTimeMillis() + expirationTimeNumber
 
-                // Obtain the user info from users
-                val objectMapper = ObjectMapper()
-                val jsonRequest: JsonParser = objectMapper.createParser("{ \"id\": " + credential.userId + " }")
-                val user: JsonNode? = RpcUtils.sendMessage("users.login", objectMapper.readTree(jsonRequest))
+                    // Obtain the user info from users
+                    val objectMapper = ObjectMapper()
+                    val jsonRequest: JsonParser = objectMapper.createParser("{ \"id\": " + credential.userId + " }")
+                    val user: JsonNode? = RpcUtils.sendMessage("users.login", objectMapper.readTree(jsonRequest))
 
-                // Check if the user isn't null
-                if (user != null) {
-                    // Save the new refresh token
-                    connRefresh.insert(RefreshToken(null, credential.userId, refreshToken, Timestamp(actualTime)))
+                    // Check if the user isn't null
+                    if (user != null) {
+                        // Save the new refresh token
+                        connRefresh.insert(RefreshToken(null, credential.userId, refreshToken, Timestamp(actualTime)))
 
-                    // Get the access token
-                    val accessToken: String =
-                        Jwts.builder().setId(user["id"].asText()).setSubject(user["email"].asText())
-                            .setExpiration(Date(expirationTime)).setIssuedAt(Date(actualTime))
-                            .signWith(signingKey, SignatureAlgorithm.HS512).compact()
+                        // Get the access token
+                        val accessToken: String =
+                            Jwts.builder().setId(user["id"].asText()).setSubject(user["email"].asText())
+                                .setExpiration(Date(expirationTime)).setIssuedAt(Date(actualTime))
+                                .signWith(signingKey, SignatureAlgorithm.HS512).compact()
 
-                    // Send the email to the user with the login warning
-                    sendEmail(
-                        user["email"].asText(),
-                        "Login Detected",
-                        "Login Detected",
-                        "The login was detected, please check the login registry"
-                    )
+                        // Send the email to the user with the login warning
+                        sendEmail(
+                            user["email"].asText(),
+                            "Login Detected",
+                            "Login Detected",
+                            "The login was detected, please check the login registry"
+                        )
 
-                    // return the AuthSuccess object to the http call
-                    return AuthSuccess(accessToken, "bearer", expirationTimeNumber, refreshToken)
+                        // return the AuthSuccess object to the http call
+                        return AuthSuccess(accessToken, "bearer", expirationTimeNumber, refreshToken)
+                    } else {
+                        // If the user in the users database is null, return no validate operation
+                        throw LoginException("The username or the password is not validated")
+                    }
                 } else {
-                    // If the user in the users database is null, return no validate operation
+                    // If the password is not the same, return no validate operation
                     throw LoginException("The username or the password is not validated")
                 }
             } else {
-                // If the password is not the same, return no validate operation
+                // If the credential is no find, return no validate operation
                 throw LoginException("The username or the password is not validated")
             }
         } else {
@@ -105,6 +118,12 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
         }
     }
 
+    /**
+     * Method for obtain a new access token using the refresh token
+     *
+     * @param requestVars The request values
+     * @return The encapsulated response
+     */
     fun tokenGrantRefresh(requestVars: Map<String, String>): AuthSuccess {
         // Retrieve the refresh token
         val refreshToken: String? = requestVars["refresh_token"]
@@ -127,9 +146,10 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                     val expirationTime = System.currentTimeMillis() + expirationTimeNumber
 
                     // Get the access token
-                    val accessToken: String = Jwts.builder().setId(user["id"].asText()).setSubject(user["email"].asText())
-                        .setExpiration(Date(expirationTime)).setIssuedAt(Date(actualTime))
-                        .signWith(signingKey, SignatureAlgorithm.HS512).compact()
+                    val accessToken: String =
+                        Jwts.builder().setId(user["id"].asText()).setSubject(user["email"].asText())
+                            .setExpiration(Date(expirationTime)).setIssuedAt(Date(actualTime))
+                            .signWith(signingKey, SignatureAlgorithm.HS512).compact()
 
                     // return the AuthSuccess object to the http call
                     return AuthSuccess(accessToken, "bearer", expirationTimeNumber, refreshToken)
@@ -143,16 +163,24 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
             }
         } else {
             // If the body is bad formed, return malformed url exception
-            throw MalformedURLException("The body is malformed")
+            throw MalformedURLException("The request body is malformed")
         }
     }
 
+    /**
+     * Method for register users in the database
+     *
+     * @param body request json body
+     */
     fun registerUser(body: String) {
+        // Instance the object mapper
         val objectMapper = ObjectMapper()
 
+        // Parse the body and send the RPC Message to Users Server
         val jsonNode: JsonNode = objectMapper.readTree(objectMapper.createParser(body))
-        val jsonResult: JsonNode = RpcUtils.sendMessage("users.register", jsonNode) ?: throw MalformedURLException("The body is malformed")
+        val jsonResult: JsonNode = RpcUtils.sendMessage("users.register", jsonNode) ?: throw DataException("Error registering the User information into database", null)
 
+        // Insert the credentials into the database
         connCredential.insert(
             Credential(
                 null,
@@ -162,6 +190,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
             )
         )
 
+        // Send a mail warning the register is successful
         sendEmail(
             jsonNode["email"].asText(),
             "Registry successfully",
@@ -170,21 +199,35 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
         )
     }
 
-    fun logoutUser(authenticationHeader: String) {
-        connRefresh.findByRefreshToken(authenticationHeader.substring(7))?.let {
+    /**
+     * Method for logout the user using the request token
+     *
+     * @param refreshTokenStr The user refresh token
+     */
+    fun logoutUser(refreshTokenStr: String) {
+        connRefresh.findByRefreshToken(refreshTokenStr)?.let {
             connRefresh.remove(it)
         }
     }
 
+    /**
+     * Method for remove the user credentials
+     *
+     * @param credential The credential object
+     * @return The deleted credential object
+     */
     fun removeCredentials(credential: Credential): Credential {
+        // Find all refresh tokens and remove it from the database
         connRefresh.findByUserId(credential.userId)?.forEach {
             connRefresh.remove(it)
         }
 
+        // Find the user credentials and remove it from the database
         connCredential.findByUserId(credential.userId)?.let {
             connCredential.remove(it)
         }
 
+        // Return the deleted credential
         return credential
     }
 }

@@ -48,26 +48,48 @@ val signingKey : Key = SecretKeySpec(
 val loggerSystem: Logger = Logger.getLogger("Authentication Module")
 var sessionMail : Session? = null
 
+/**
+ * Static method for transform the www encoded variables into map
+ *
+ * @param formEncoded String encoded with www format
+ * @return Map with converted values
+ */
 fun parseFormEncoded(formEncoded: String): Map<String, String> {
+    // Prepare the hashmap
     val formMap: MutableMap<String, String> = HashMap()
 
+    // For each variable, map it into the hashmap
     for (pair in formEncoded.split("&").toTypedArray()) {
+        // Obtain the index of key
         val index = pair.indexOf("=")
 
+        // Obtain the key and the value
         val key: String = URLDecoder.decode(pair.substring(0, index), StandardCharsets.UTF_8)
         val value: String = URLDecoder.decode(pair.substring(index + 1, pair.length), StandardCharsets.UTF_8)
 
+        // Set these values into the hashmap
         formMap[key] = value
     }
 
+    // Return the hashmap
     return formMap
 }
 
+/**
+ * Method for simplify the process to send emails through the Internet
+ *
+ * @param to Who was receive the email
+ * @param subject The email subject
+ * @param title The html template title
+ * @param message The html template message
+ */
 fun sendEmail(to: String, subject: String, title: String, message: String) {
     if (false) {
         if (sessionMail == null) {
+            // Instantiate a Properties object
             val properties = Properties()
 
+            // Map the environment variables into properties
             properties["mail.smtp.host"] = System.getenv("MAIL_SMTP_HOST")
             properties["mail.smtp.starttls.enable"] = System.getenv("MAIL_SMTP_STARTTLS_ENABLE").toBoolean()
             properties["mail.smtp.port"] = System.getenv("MAIL_SMTP_PORT").toInt()
@@ -75,18 +97,25 @@ fun sendEmail(to: String, subject: String, title: String, message: String) {
             properties["mail.smtp.user"] = System.getenv("MAIL_SMTP_USER")
             properties["mail.smtp.auth"] = System.getenv("MAIL_SMTP_AUTH").toBoolean()
 
+            // Instatiate the Session Mail with Properties
             sessionMail = Session.getDefaultInstance(properties)
         }
 
         if (sessionMail != null) {
+            // Prepare the email object
             val mail = MimeMessage(sessionMail)
 
+            // Set from & to properties
             mail.setFrom(InternetAddress(sessionMail?.getProperty("mail.smtp.mail.sender")))
             mail.addRecipient(Message.RecipientType.TO, InternetAddress(to))
 
+            // Set the subject
             mail.subject = subject
+
+            // Set the email content
             mail.setText(String.format(Files.readString(Path.of("Templates/mail.html")), title, message))
 
+            // Send email through the Internet
             sessionMail!!.getTransport("smtp").use {
                 it.connect(sessionMail?.getProperty("mail.smtp.user"), sessionMail?.getProperty("mail.smtp.password"))
                 it.sendMessage(mail, mail.allRecipients)

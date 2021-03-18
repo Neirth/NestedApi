@@ -37,6 +37,9 @@ import javax.ws.rs.Path
 class AuthCtrl(private val authService: AuthService) {
     /**
      * Http Method to process all related with the token and their lifecycle
+     *
+     * @param body The body content with www form encoded
+     * @return The authentication successful
      */
     @POST
     @Path("token")
@@ -64,6 +67,8 @@ class AuthCtrl(private val authService: AuthService) {
 
     /**
      * Http Method for register the users in respective service
+     *
+     * @param body The body encoded JSON user
      */
     @POST
     @Path("register")
@@ -73,15 +78,20 @@ class AuthCtrl(private val authService: AuthService) {
 
     /**
      * Http Method for logout the users
+     *
+     * @param refreshTokenStr User refresh token
      */
     @POST
     @Path("logout")
-    fun logoutUser(@HeaderParam("Authorization") jwtToken: String) {
-        authService.logoutUser(jwtToken)
+    fun logoutUser(@HeaderParam("Authorization") refreshTokenStr: String) {
+        authService.logoutUser(refreshTokenStr.substring(7))
     }
 
     /**
      * RPC Method for remove the users credentials
+     *
+     * @param credential The credential encapsulated
+     * @return The deleted credential
      */
     @RpcMessage(topic = "auths", queue = "remove")
     fun deleteCredentials(credential: Credential): Credential {

@@ -98,9 +98,9 @@
 
         <!-- Java Mail Dependency -->
         <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>javax.mail-api</artifactId>
-            <version>1.6.2</version>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+            <version>1.6.6</version>
         </dependency>
     </dependencies>
     <build>

@@ -24,48 +24,84 @@
 package io.neirth.nestedapi.authentication.repository
 
 import io.neirth.nestedapi.authentication.domain.RefreshToken
-import java.sql.SQLDataException
 import javax.enterprise.context.RequestScoped
 import javax.persistence.EntityManager
 import javax.transaction.Transactional
 
 @RequestScoped
 class RefreshTokenRepo(private val entityManager: EntityManager) : RepositoryDao<RefreshToken> {
+    /**
+     * Method to insert persist data into the database
+     *
+     * @param entity Entity to persist
+     * @return The entity persisted
+     */
     @Transactional
     override fun insert(entity: RefreshToken): RefreshToken {
+        // Call to persist data function
         entityManager.persist(entity)
 
+        // Return the persisted data
         return entity
     }
 
+    /**
+     * Method to update data into the database
+     *
+     * @param entity Entity to persist
+     * @return The entity persisted
+     */
     @Transactional
     override fun update(entity: RefreshToken): RefreshToken {
+        // Find the entity instance inside in database
         val entityAux: RefreshToken = entityManager.find(RefreshToken::class.java, entity.userId)
 
+        // Start a transaction for avoid partial updates
         entityManager.transaction.begin()
 
+        // Set the new values
         entityAux.refreshToken = entity.refreshToken
         entityAux.userId = entity.userId
         entityAux.validFrom = entity.validFrom
 
+        // Commit changes from the entity
         entityManager.transaction.commit()
 
+        // Return the changed object
         return entityAux
     }
 
+    /**
+     * Method for remove entities from database
+     *
+     * @param entity The entity to remove
+     */
     @Transactional
     override fun remove(entity: RefreshToken) {
         entityManager.remove(if (entityManager.contains(entity)) entity else entityManager.merge(entity))
     }
 
+    /**
+     * Method for dump all records from database
+     *
+     * @return List of entities
+     */
     override fun findAll(): List<RefreshToken> {
         return entityManager.createQuery("from RefreshToken", RefreshToken::class.java).resultList.filterIsInstance<RefreshToken>()
     }
 
+    /**
+     * Method for find the entity by user id in database
+     *
+     * @param idEntity The entity id searched
+     * @return List of entities
+     */
     fun findByUserId(idEntity: Long): List<RefreshToken>? {
+        // We create the query and run it
         val result: List<RefreshToken> = entityManager.createQuery("from RefreshToken where userId = :idEntity", RefreshToken::class.java)
                                                       .setParameter("idEntity", idEntity).resultList
 
+        // Check the result and send null if is empty
         return if (result.isNotEmpty()) {
             result
         } else {
@@ -73,10 +109,18 @@ class RefreshTokenRepo(private val entityManager: EntityManager) : RepositoryDao
         }
     }
 
+    /**
+     * Method for find the entity by refresh token in database
+     *
+     * @param idEntity The entity id searched
+     * @return List of entities
+     */
     fun findByRefreshToken(idEntity: String): RefreshToken? {
+        // We create the query and run it
         val result: List<RefreshToken> = entityManager.createQuery("from RefreshToken where refreshToken = :idEntity", RefreshToken::class.java)
                                                       .setParameter("idEntity", idEntity).resultList
 
+        // Check the result and send null if is empty
         return if (result.isNotEmpty()) {
             result[0]
         } else {
@@ -84,6 +128,9 @@ class RefreshTokenRepo(private val entityManager: EntityManager) : RepositoryDao
         }
     }
 
+    /**
+     * Method for close the connection
+     */
     override fun close() {
         entityManager.close()
     }
