@@ -32,12 +32,24 @@ import javax.transaction.Transactional
 
 @RequestScoped
 class UsersRepo(private val entityManager: EntityManager): RepositoryDao<User> {
+    /**
+     * Method to insert persist data into the database
+     *
+     * @param entity Entity to persist
+     * @return The entity persisted
+     */
     @Transactional
     override fun insert(entity: User): User {
         entityManager.persist(entity)
         return entity
     }
 
+    /**
+     * Method to update data into the database
+     *
+     * @param entity Entity to persist
+     * @return The entity persisted
+     */
     @Transactional
     override fun update(entity: User): User {
         val entityAux : User = entityManager.find(User::class.java, entity.id)
@@ -59,15 +71,31 @@ class UsersRepo(private val entityManager: EntityManager): RepositoryDao<User> {
         return entityAux
     }
 
+    /**
+     * Method for remove entities from database
+     *
+     * @param entity The entity to remove
+     */
     @Transactional
     override fun remove(entity: User) {
         entityManager.remove(if (entityManager.contains(entity)) entity else entityManager.merge(entity))
     }
 
+    /**
+     * Method for dump all records from database
+     *
+     * @return List of entities
+     */
     override fun findAll(): List<User> {
        return entityManager.createQuery("from User", User::class.java).resultList.filterIsInstance<User>()
     }
 
+    /**
+     * Method for find the entity by user id in database
+     *
+     * @param idEntity The entity id searched
+     * @return Entity found
+     */
     override fun findById(idEntity: Long): User? {
         val result: List<User> = entityManager.createQuery("from User where id = :idEntity", User::class.java)
                                               .setParameter("idEntity", idEntity).resultList
@@ -79,6 +107,9 @@ class UsersRepo(private val entityManager: EntityManager): RepositoryDao<User> {
         }
     }
 
+    /**
+     * Method for close the connection
+     */
     override fun close() {
         entityManager.close()
     }

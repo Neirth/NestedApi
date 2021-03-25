@@ -31,17 +31,36 @@ import javax.ws.rs.*
 
 @Path("/users")
 class UsersCtrl(private val usersService: UsersService) {
+    /**
+     * HTTP Method to get the user information
+     *
+     * @param jwtToken JWT Token
+     * @return A User information
+     */
     @GET
     @Path("me")
     fun getUserInfo(@HeaderParam("authorization") jwtToken: String?): User? {
         return usersService.findUserById(processJwtToken(jwtToken)["jti"].toString().toLong())
     }
 
+    /**
+     * HTTP Method to put the new user information
+     *
+     * @param jwtToken JWT Token
+     * @param user The new user object
+     * @return A user information updated
+     */
     @PUT
     @Path("me")
     fun updateUserInfo(@HeaderParam("authorization") jwtToken: String?, user: User): User? {
         return usersService.updateUserById(processJwtToken(jwtToken)["jti"].toString().toLong(), user)
     }
+
+    /**
+     * HTTP Method to delete the user account
+     *
+     * @param jwtToken JWT Token
+     */
 
     @DELETE
     @Path("me")
@@ -49,11 +68,23 @@ class UsersCtrl(private val usersService: UsersService) {
         return usersService.deleteUserById(processJwtToken(jwtToken)["jti"].toString().toLong())
     }
 
+    /**
+     * RPC Method to add new users in the database
+     *
+     * @param user The user encapsulated
+     * @return A user information
+     */
     @RpcMessage(topic = "users", queue = "register")
     fun addUserInfo(user: User): User {
         return usersService.insertUserByObj(user)
     }
 
+    /**
+     * RPC Method to get a user information
+     *
+     * @param user The id encapsulated in user object
+     * @return A possible user found
+     */
     @RpcMessage(topic = "users", queue = "login")
     fun getUserInfo(user: User): User? {
         return usersService.findUserById(user.id)

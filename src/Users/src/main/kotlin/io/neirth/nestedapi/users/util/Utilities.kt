@@ -41,6 +41,12 @@ val signingKey : Key = SecretKeySpec(
 
 val loggerSystem: Logger = Logger.getLogger("Users Module")
 
+/**
+ * Static method for obtain all claims from Jwt token and check their healthy
+ *
+ * @param jwtToken The JWT String
+ * @return Map with the jwt claims
+ */
 fun processJwtToken(jwtToken : String?) : Map<String, Any?> {
     try {
         if (jwtToken != null) {

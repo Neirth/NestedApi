@@ -32,14 +32,33 @@ import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class UsersService(private val conn: UsersRepo) {
+    /**
+     * Method for insert users using the entity object
+     *
+     * @param user The user entity
+     * @return The entity with database values
+     */
     fun insertUserByObj(user: User): User {
         return conn.insert(user)
     }
 
+    /**
+     * Method for find users using the id
+     *
+     * @param id The id used by the user
+     * @return The user entity
+     */
     fun findUserById(id: Long): User? {
        return conn.findById(id)
     }
 
+    /**
+     * Method for update users using the id
+     *
+     * @param id The user id
+     * @param user The user entity
+     * @return The user entity with database values
+     */
     fun updateUserById(id: Long, user: User): User {
         if (user.id == id) {
             return conn.update(user)
@@ -48,6 +67,11 @@ class UsersService(private val conn: UsersRepo) {
         }
     }
 
+    /**
+     * Method for delete users using the id
+     *
+     * @param id The user id
+     */
     fun deleteUserById(id: Long) {
         conn.findById(id)?.let {
             conn.remove(it)
