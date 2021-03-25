@@ -27,6 +27,7 @@ import io.neirth.nestedapi.authentication.domain.Credential
 import javax.enterprise.context.RequestScoped
 import javax.persistence.EntityManager
 import javax.transaction.Transactional
+import javax.transaction.UserTransaction
 
 @RequestScoped
 class CredentialsRepo(private val entityManager: EntityManager): RepositoryDao<Credential> {
@@ -56,15 +57,9 @@ class CredentialsRepo(private val entityManager: EntityManager): RepositoryDao<C
         // Find the entity instance inside in database
         val entityAux : Credential = entityManager.find(Credential::class.java, entity.userId)
 
-        // Start a transaction for avoid partial updates
-        entityManager.transaction.begin()
-
         // Set the new values
         entityAux.userId = entity.userId
         entityAux.password = entity.password
-
-        // Commit changes from the entity
-        entityManager.transaction.commit()
 
         // Return the changed object
         return entityAux

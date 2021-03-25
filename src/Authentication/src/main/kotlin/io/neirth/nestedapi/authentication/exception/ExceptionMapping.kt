@@ -23,8 +23,10 @@
  */
 package io.neirth.nestedapi.authentication.exception
 
+import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import java.lang.IllegalArgumentException
 import java.net.MalformedURLException
 import java.util.NoSuchElementException
 import javax.validation.ConstraintViolationException
@@ -45,7 +47,8 @@ class ExceptionMapping : ExceptionMapper<Exception> {
             is SecurityException -> Response.status(Response.Status.FORBIDDEN.statusCode).entity(generateJsonResponse("access_denied", p0.message)).build()
             is LoginException -> Response.status(Response.Status.UNAUTHORIZED.statusCode).entity(generateJsonResponse("access_denied", p0.message)).build()
             is MalformedURLException -> Response.status(Response.Status.BAD_REQUEST.statusCode).entity(generateJsonResponse("invalid_request", p0.message)).build()
-            is ConstraintViolationException -> Response.status(Response.Status.BAD_REQUEST.statusCode).entity(generateJsonResponse("invalid_request", p0.message)).build()
+            is IllegalArgumentException -> Response.status(Response.Status.BAD_REQUEST.statusCode).entity(generateJsonResponse("invalid_request", p0.message)).build()
+            is JsonMappingException -> Response.status(Response.Status.BAD_REQUEST.statusCode).entity(generateJsonResponse("invalid_request", "Error deserializing the body document, check the document before try again...")).build()
             is NoSuchElementException -> Response.status(Response.Status.NOT_FOUND.statusCode).entity(generateJsonResponse("resource_not_found", p0.message)).build()
             else -> {
                 p0.printStackTrace()

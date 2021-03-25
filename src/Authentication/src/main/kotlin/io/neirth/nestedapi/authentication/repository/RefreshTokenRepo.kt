@@ -27,6 +27,7 @@ import io.neirth.nestedapi.authentication.domain.RefreshToken
 import javax.enterprise.context.RequestScoped
 import javax.persistence.EntityManager
 import javax.transaction.Transactional
+import javax.transaction.UserTransaction
 
 @RequestScoped
 class RefreshTokenRepo(private val entityManager: EntityManager) : RepositoryDao<RefreshToken> {
@@ -56,16 +57,10 @@ class RefreshTokenRepo(private val entityManager: EntityManager) : RepositoryDao
         // Find the entity instance inside in database
         val entityAux: RefreshToken = entityManager.find(RefreshToken::class.java, entity.userId)
 
-        // Start a transaction for avoid partial updates
-        entityManager.transaction.begin()
-
         // Set the new values
         entityAux.refreshToken = entity.refreshToken
         entityAux.userId = entity.userId
         entityAux.validFrom = entity.validFrom
-
-        // Commit changes from the entity
-        entityManager.transaction.commit()
 
         // Return the changed object
         return entityAux

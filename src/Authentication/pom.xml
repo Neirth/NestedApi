@@ -69,6 +69,13 @@
             <artifactId>quarkus-resteasy-jackson</artifactId>
         </dependency>
 
+        <!-- Java Mail Dependency -->
+        <dependency>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+            <version>1.6.6</version>
+        </dependency>
+
         <!-- JWT Dependencies -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -98,13 +105,6 @@
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
             <version>5.11.0</version>
-        </dependency>
-
-        <!-- Java Mail Dependency -->
-        <dependency>
-            <groupId>jakarta.mail</groupId>
-            <artifactId>jakarta.mail-api</artifactId>
-            <version>1.6.6</version>
         </dependency>
     </dependencies>
     <build>

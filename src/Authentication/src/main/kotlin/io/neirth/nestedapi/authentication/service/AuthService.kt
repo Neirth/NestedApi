@@ -26,6 +26,7 @@ package io.neirth.nestedapi.authentication.service
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.neirth.nestedapi.authentication.domain.response.AuthSuccess
@@ -176,8 +177,14 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
         // Instance the object mapper
         val objectMapper = ObjectMapper()
 
-        // Parse the body and send the RPC Message to Users Server
+        // Parse the body
         val jsonNode: JsonNode = objectMapper.readTree(objectMapper.createParser(body))
+
+        // Remove the password field from petition
+        val password : String = jsonNode["password"].asText()
+        (jsonNode as ObjectNode).remove("password")
+
+        // Send the RPC Message to Users Server
         val jsonResult: JsonNode = RpcUtils.sendMessage("users.register", jsonNode) ?: throw DataException("Error registering the User information into database", null)
 
         // Insert the credentials into the database
@@ -186,7 +193,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                 null,
                 jsonResult["id"].asLong(),
                 jsonResult["email"].asText(),
-                jsonNode["password"].asText()
+                password
             )
         )
 
