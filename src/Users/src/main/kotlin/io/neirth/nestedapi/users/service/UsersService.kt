@@ -28,9 +28,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.neirth.nestedapi.users.domain.User
 import io.neirth.nestedapi.users.repository.UsersRepo
 import io.neirth.nestedapi.users.util.RpcUtils
+import java.lang.IllegalArgumentException
+import java.util.*
 import javax.enterprise.context.ApplicationScoped
 import javax.validation.ConstraintViolation
 import javax.validation.ConstraintViolationException
+import javax.validation.Valid
 import javax.validation.Validator
 
 @ApplicationScoped
@@ -78,7 +81,7 @@ class UsersService(private val conn: UsersRepo, private val validator: Validator
                 throw SecurityException("Attempt to manipulate a different user")
             }
         } else {
-            throw ConstraintViolationException(violations)
+            throw IllegalArgumentException(violations.iterator().next().message)
         }
     }
 

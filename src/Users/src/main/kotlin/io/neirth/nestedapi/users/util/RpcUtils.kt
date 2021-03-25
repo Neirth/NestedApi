@@ -260,7 +260,7 @@ class RpcUtils(var executor: ManagedExecutor) {
             channel.basicConsume(replyTo, true, callback, nothing)
 
             // Set a timeout for the response and wait
-            return response.poll(1, TimeUnit.SECONDS)
+            return response.poll(5, TimeUnit.SECONDS)
         }
     }
 }

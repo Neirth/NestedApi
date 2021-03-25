@@ -25,9 +25,7 @@ package io.neirth.nestedapi.users.repository
 
 import javax.persistence.EntityManager
 import io.neirth.nestedapi.users.domain.User
-import java.sql.SQLDataException
 import javax.enterprise.context.RequestScoped
-import javax.persistence.PersistenceContext
 import javax.transaction.Transactional
 
 @RequestScoped
@@ -54,8 +52,6 @@ class UsersRepo(private val entityManager: EntityManager): RepositoryDao<User> {
     override fun update(entity: User): User {
         val entityAux : User = entityManager.find(User::class.java, entity.id)
 
-        entityManager.transaction.begin()
-
         entityAux.address = entity.address
         entityAux.addressInformation = entity.addressInformation
         entityAux.birthday = entity.birthday
@@ -65,8 +61,6 @@ class UsersRepo(private val entityManager: EntityManager): RepositoryDao<User> {
         entityAux.name = entity.name
         entityAux.surname = entity.surname
         entityAux.telephone = entity.telephone
-
-        entityManager.transaction.commit()
 
         return entityAux
     }
@@ -100,10 +94,10 @@ class UsersRepo(private val entityManager: EntityManager): RepositoryDao<User> {
         val result: List<User> = entityManager.createQuery("from User where id = :idEntity", User::class.java)
                                               .setParameter("idEntity", idEntity).resultList
 
-        if (result.isNotEmpty()) {
-            return result[0]
+        return if (result.isNotEmpty()) {
+            result[0]
         } else {
-            return null
+            null
         }
     }
 
