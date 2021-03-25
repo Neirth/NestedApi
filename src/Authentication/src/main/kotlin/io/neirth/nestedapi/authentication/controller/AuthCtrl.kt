@@ -61,7 +61,7 @@ class AuthCtrl(private val authService: AuthService) {
             /*
              * Indicate the operation type isn't supported in this moment
              */
-            else -> throw MalformedURLException("The grant_type option isn't supported")
+            else -> throw MalformedURLException("The grant_type option is not supported")
         }
     }
 

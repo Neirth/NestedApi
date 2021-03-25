@@ -45,7 +45,7 @@ import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class AuthService(private val connRefresh: RefreshTokenRepo, private val connCredential: CredentialsRepo) {
-    private val expirationTimeNumber: Long = System.getenv("EXPIRATION_TIME").toLong() * 60
+    private val expirationTimeNumber: Long = System.getenv("EXPIRATION_TIME").toLong()
 
     /**
      * Method for obtain the refresh token and the access token
@@ -72,7 +72,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
 
                     // Determinate the actual time and the expiration time
                     val actualTime: Long = System.currentTimeMillis()
-                    val expirationTime: Long = System.currentTimeMillis() + expirationTimeNumber
+                    val expirationTime: Long = System.currentTimeMillis() + (expirationTimeNumber * 60)
 
                     // Obtain the user info from users
                     val objectMapper = ObjectMapper()
