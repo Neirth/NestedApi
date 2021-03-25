@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.jsonwebtoken.MalformedJwtException
 import java.sql.SQLDataException
+import javax.validation.ConstraintViolationException
 import javax.ws.rs.core.Response
 import javax.ws.rs.ext.ExceptionMapper
 import javax.ws.rs.ext.Provider
@@ -43,6 +44,7 @@ class ExceptionMapping : ExceptionMapper<Exception> {
         return when (p0) {
             is SecurityException -> Response.status(Response.Status.FORBIDDEN.statusCode).entity(generateJsonResponse("access_denied", p0.message)).build()
             is MalformedJwtException -> Response.status(Response.Status.BAD_REQUEST.statusCode).entity(generateJsonResponse("invalid_request", p0.message)).build()
+            is ConstraintViolationException -> Response.status(Response.Status.BAD_REQUEST.statusCode).entity(generateJsonResponse("invalid_request", p0.message)).build()
             is LoginException -> Response.status(Response.Status.UNAUTHORIZED.statusCode).entity(generateJsonResponse("access_denied", p0.message)).build()
             is NoSuchElementException -> Response.status(Response.Status.NOT_FOUND.statusCode).entity(generateJsonResponse("resource_not_found", p0.message)).build()
             else -> {

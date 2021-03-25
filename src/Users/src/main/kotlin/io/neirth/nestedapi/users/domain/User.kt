@@ -26,6 +26,8 @@ package io.neirth.nestedapi.users.domain
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.sql.Timestamp
 import javax.persistence.*
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
 
 @Entity
 data class User(
@@ -33,25 +35,39 @@ data class User(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long,
 
+    @NotNull(message = "The field \"name\" cannot be null")
+    @NotEmpty(message = "The field \"name\" cannot be empty")
     var name: String,
 
+    @NotNull(message = "The field \"surname\" cannot be null")
+    @NotEmpty(message = "The field \"surname\" cannot be empty")
     var surname: String,
 
     @Column(unique = true)
+    @NotNull(message = "The field \"email\" cannot be null")
+    @NotEmpty(message = "The field \"email\" cannot be empty")
     var email: String,
 
     @Column(unique = true)
+    @NotNull(message = "The field \"telephone\" cannot be null")
+    @NotEmpty(message = "The field \"telephone\" cannot be empty")
     var telephone: String,
 
+    @NotNull(message = "The field \"birthday\" cannot be null")
+    @NotEmpty(message = "The field \"birthday\" cannot be empty")
     var birthday: Timestamp,
 
+    @NotNull(message = "The field \"country\" cannot be null")
+    @NotEmpty(message = "The field \"country\" cannot be empty")
     var country: Country,
+
+    @JsonIgnore
+    @NotNull(message = "The field \"password\" cannot be null")
+    @NotEmpty(message = "The field \"password\" cannot be empty")
+    var password: String,
 
     var address: String,
 
-    var addressInformation: String,
-
-    @JsonIgnore
-    var password: String
+    var addressInformation: String
 )
 

@@ -29,9 +29,12 @@ import io.neirth.nestedapi.users.domain.User
 import io.neirth.nestedapi.users.repository.UsersRepo
 import io.neirth.nestedapi.users.util.RpcUtils
 import javax.enterprise.context.ApplicationScoped
+import javax.validation.ConstraintViolation
+import javax.validation.ConstraintViolationException
+import javax.validation.Validator
 
 @ApplicationScoped
-class UsersService(private val conn: UsersRepo) {
+class UsersService(private val conn: UsersRepo, private val validator: Validator) {
     /**
      * Method for insert users using the entity object
      *
@@ -39,7 +42,13 @@ class UsersService(private val conn: UsersRepo) {
      * @return The entity with database values
      */
     fun insertUserByObj(user: User): User {
-        return conn.insert(user)
+        val violations: Set<ConstraintViolation<User>> = validator.validate(user)
+
+        if (violations.isEmpty()) {
+            return conn.insert(user)
+        } else {
+            throw ConstraintViolationException(violations)
+        }
     }
 
     /**
@@ -60,10 +69,16 @@ class UsersService(private val conn: UsersRepo) {
      * @return The user entity with database values
      */
     fun updateUserById(id: Long, user: User): User {
-        if (user.id == id) {
-            return conn.update(user)
+        val violations: Set<ConstraintViolation<User>> = validator.validate(user)
+
+        if (violations.isEmpty()) {
+            if (user.id == id) {
+                return conn.update(user)
+            } else {
+                throw SecurityException("Attempt to manipulate a different user")
+            }
         } else {
-            throw SecurityException("Attempt to manipulate a different user")
+            throw ConstraintViolationException(violations)
         }
     }
 
