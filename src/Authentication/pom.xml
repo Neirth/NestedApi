@@ -237,6 +237,7 @@
                 <quarkus.datasource.username>${env.DATASOURCE_USERNAME}</quarkus.datasource.username>
                 <quarkus.datasource.password>${env.DATASOURCE_PASSWORD}</quarkus.datasource.password>
                 <quarkus.datasource.jdbc.driver>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</quarkus.datasource.jdbc.driver>
+				<quarkus.native.additional-build-args>--initialize-at-run-time=io.neirth.nestedapi.authentication.util.UtilitiesKt</quarkus.native.additional-build-args>
             </properties>
         </profile>
     </profiles>
