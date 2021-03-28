@@ -47,8 +47,8 @@ import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class AuthService(private val connRefresh: RefreshTokenRepo, private val connCredential: CredentialsRepo) {
-    @ConfigProperty(name = "nested.expiration.time")
-    private lateinit var expirationTimeNumber: String
+    @ConfigProperty(name = "nestedapi.expiration.time")
+    internal lateinit var expirationTimeNumber: String
 
     /**
      * Method for obtain the refresh token and the access token

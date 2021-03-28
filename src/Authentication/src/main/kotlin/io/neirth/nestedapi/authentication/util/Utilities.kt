@@ -42,7 +42,7 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
 val signingKey : Key = SecretKeySpec(
-    DatatypeConverter.parseBase64Binary(ConfigProvider.getConfig().getValue("nested.login.key", String::class.java)),
+    DatatypeConverter.parseBase64Binary(ConfigProvider.getConfig().getValue("nestedapi.login.key", String::class.java)),
     SignatureAlgorithm.HS512.jcaName
 )
 
@@ -91,12 +91,12 @@ fun sendEmail(to: String, subject: String, title: String, message: String) {
             val properties = Properties()
 
             // Map the environment variables into properties
-            properties["mail.smtp.host"] = ConfigProvider.getConfig().getOptionalValue("mail.smtp.host", String::class.java).get()
-            properties["mail.smtp.starttls.enable"] = ConfigProvider.getConfig().getOptionalValue("mail.smtp.starttls.enable", Boolean::class.java).get()
-            properties["mail.smtp.port"] = ConfigProvider.getConfig().getOptionalValue("mail.smtp.port", Int::class.java).get()
-            properties["mail.smtp.mail.sender"] = ConfigProvider.getConfig().getOptionalValue("mail.smtp.mail.sender", String::class.java).get()
-            properties["mail.smtp.user"] = ConfigProvider.getConfig().getOptionalValue("mail.smtp.user", String::class.java).get()
-            properties["mail.smtp.auth"] = ConfigProvider.getConfig().getOptionalValue("mail.smtp.auth", Boolean::class.java).get()
+            properties["mail.smtp.host"] = ConfigProvider.getConfig().getValue("mail.smtp.host", String::class.java)
+            properties["mail.smtp.starttls.enable"] = ConfigProvider.getConfig().getValue("mail.smtp.starttls.enable", Boolean::class.java)
+            properties["mail.smtp.port"] = ConfigProvider.getConfig().getValue("mail.smtp.port", Int::class.java)
+            properties["mail.smtp.mail.sender"] = ConfigProvider.getConfig().getValue("mail.smtp.mail.sender", String::class.java)
+            properties["mail.smtp.user"] = ConfigProvider.getConfig().getValue("mail.smtp.user", String::class.java)
+            properties["mail.smtp.auth"] = ConfigProvider.getConfig().getValue("mail.smtp.auth", Boolean::class.java)
 
             // Instantiate the Session Mail with Properties
             sessionMail = Session.getDefaultInstance(properties)
