@@ -30,6 +30,7 @@ import de.undercouch.bson4jackson.BsonFactory
 import io.neirth.nestedapi.authentication.util.annotation.RpcMessage
 import io.quarkus.arc.Unremovable
 import io.quarkus.runtime.StartupEvent
+import org.eclipse.microprofile.config.ConfigProvider
 import org.eclipse.microprofile.context.ManagedExecutor
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -75,7 +76,7 @@ class RpcUtils(var executor: ManagedExecutor) {
             val connFactory = ConnectionFactory()
 
             // Set the URI for attach to broker
-            connFactory.setUri(System.getenv("RABBITMQ_AMQP_URI"))
+            connFactory.setUri(brokerUri)
 
             // Initialize all classes
             processClasses(connFactory, clazzArr)
@@ -193,6 +194,8 @@ class RpcUtils(var executor: ManagedExecutor) {
     }
 
     companion object {
+        private val brokerUri : String = ConfigProvider.getConfig().getValue("rabbitmq.amqp.uri", String::class.java)
+
         /**
          * Method for send RPC Messages throw the network without schema
          * @param topicRedirect The routing key
@@ -204,7 +207,7 @@ class RpcUtils(var executor: ManagedExecutor) {
             val connFactory = ConnectionFactory()
 
             // Set the URI of RabbitMQ Broker
-            connFactory.setUri(System.getenv("RABBITMQ_AMQP_URI"))
+            connFactory.setUri(brokerUri)
 
             // Create channel
             val channel = connFactory.newConnection().createChannel()

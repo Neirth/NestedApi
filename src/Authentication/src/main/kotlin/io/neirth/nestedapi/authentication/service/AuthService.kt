@@ -38,6 +38,7 @@ import io.neirth.nestedapi.authentication.repository.RefreshTokenRepo
 import io.neirth.nestedapi.authentication.util.RpcUtils
 import io.neirth.nestedapi.authentication.util.sendEmail
 import io.neirth.nestedapi.authentication.util.signingKey
+import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.hibernate.exception.DataException
 import java.net.MalformedURLException
 import java.sql.Timestamp
@@ -46,7 +47,8 @@ import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class AuthService(private val connRefresh: RefreshTokenRepo, private val connCredential: CredentialsRepo) {
-    private val expirationTimeNumber: Long = System.getenv("EXPIRATION_TIME").toLong()
+    @ConfigProperty(name = "nested.expiration.time")
+    private lateinit var expirationTimeNumber: String
 
     /**
      * Method for obtain the refresh token and the access token
@@ -73,7 +75,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
 
                     // Determinate the actual time and the expiration time
                     val actualTime: Long = System.currentTimeMillis()
-                    val expirationTime: Long = System.currentTimeMillis() + (expirationTimeNumber * 60)
+                    val expirationTime: Long = System.currentTimeMillis() + (expirationTimeNumber.toLong() * 60)
 
                     // Obtain the user info from users
                     val objectMapper = ObjectMapper()
@@ -100,7 +102,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                         )
 
                         // return the AuthSuccess object to the http call
-                        return AuthSuccess(accessToken, "bearer", expirationTimeNumber, refreshToken)
+                        return AuthSuccess(accessToken, "bearer", expirationTimeNumber.toLong(), refreshToken)
                     } else {
                         // If the user in the users database is null, return no validate operation
                         throw LoginException("The username or the password is not validated")
@@ -144,7 +146,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                 if (user != null) {
                     // Determinate the actual time and the expiration time
                     val actualTime = System.currentTimeMillis()
-                    val expirationTime = System.currentTimeMillis() + expirationTimeNumber
+                    val expirationTime = System.currentTimeMillis() + (expirationTimeNumber.toLong() * 60)
 
                     // Get the access token
                     val accessToken: String =
@@ -153,7 +155,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                             .signWith(signingKey, SignatureAlgorithm.HS512).compact()
 
                     // return the AuthSuccess object to the http call
-                    return AuthSuccess(accessToken, "bearer", expirationTimeNumber, refreshToken)
+                    return AuthSuccess(accessToken, "bearer", expirationTimeNumber.toLong(), refreshToken)
                 } else {
                     // Return no validate operation if no find the user
                     throw LoginException("No couldn't validated the user")
