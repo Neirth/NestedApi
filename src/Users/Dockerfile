@@ -1,15 +1,11 @@
 ## Stage 1 : build with maven builder image with native capabilities
 FROM ghcr.io/graalvm/graalvm-ce:21.0.0 AS build
 
-RUN mkdir -p /usr/src/app
-
 COPY . /usr/src/app
-
 WORKDIR /usr/src/app
 
-RUN ./mvnw -f /usr/src/app/pom.xml clean && \
-    ./mvnw -f /usr/src/app/pom.xml compile -P prod && \
-    ./mvnw -f /usr/src/app/pom.xml package -P prod
+RUN gu install native-image
+RUN ./mvnw -f /usr/src/app/pom.xml clean compile package -P prod
 
 ## Stage 2 : create the docker base image
 FROM registry.access.redhat.com/ubi8/ubi AS ubi-micro-build
