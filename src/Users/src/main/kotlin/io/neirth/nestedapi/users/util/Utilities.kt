@@ -33,9 +33,10 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.SignatureException
 import io.neirth.nestedapi.users.exception.LoginException
+import org.eclipse.microprofile.config.ConfigProvider
 
 val signingKey : Key = SecretKeySpec(
-    DatatypeConverter.parseBase64Binary(System.getenv("LOGIN_KEY")),
+    DatatypeConverter.parseBase64Binary(ConfigProvider.getConfig().getValue("nested.login.key", String::class.java)),
     SignatureAlgorithm.HS512.jcaName
 )
 
