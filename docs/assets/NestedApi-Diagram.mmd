@@ -1,24 +1,25 @@
 graph LR
-	A((Client Device)) <--> | HTTP/HTTPS Request | B(API Gateway)
+A((Client Device)) <--> | HTTP/HTTPS Request | B(API Gateway)
 
-	K(Message Broker) --- C
-  K(Message Broker) --- E
-  K(Message Broker) --- G
-	K(Message Broker) --- I
+K(Message Broker) --- C
+K(Message Broker) --- E
+K(Message Broker) --- G
 
-  subgraph "Endpoint Containers"
-	B --> C(/auth)
-  B --> E(/users)
-  B --> G(/invoices)
-  B --> I(/payments)
-	end
+subgraph "Endpoint Containers"
+    B --> C(/auth)
+    B --> E(/users)
+    B --> G(/invoices)
+end
 
-  subgraph "Per-service Databases"
-  E <--> F([Specific Database])
-  G <--> H([Specific Database])
-  end 
+subgraph "Per-service Databases"
+    C <--> F([Specific Database])
+    E <--> H([Specific Database])
+end 
 
-	L(Cache Service) --- C
-  L(Cache Service) --- E
-  L(Cache Service) --- G
-  L(Cache Service) --- I
+subgraph "XML-RPC Channel"
+    G <--> T([ERP Database])
+end 
+
+L(Cache Service) --- C
+L(Cache Service) --- E
+L(Cache Service) --- G

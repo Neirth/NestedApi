@@ -1,14 +1,12 @@
-<p align="center">
-  <img src="./docs/assets/NestedApi-logo.svg?raw=true">
-</p>
+<img src="./docs/assets/NestedApi-logo.svg?raw=true" alt="NestedApi Logo" align="center" />
 
 Microservices based framework to create a backend services for the real world. (Under Heavy Development)
 
 ## Deployment 
-This project is a Github Template, is to say, you can use this project for create a real backend service, only you need write the modules that you need. The modules they can use other programming language than Java, as long as it is compatible with the technologies that use the modules already available. Consult the documentation for more information.
+This project is a Github Template, is to say, you can use this project for create a real backend service, only you need write the modules that you need. The modules they can use other programming language than Java & Kotlin, as long as it is compatible with the technologies that use the modules already available. Consult the documentation for more information.
 
 ## Why is project?
-This project aims to facilitate the times throughout the development cycle, allowing you to focus on the components that you really need to develop with your team. For this, despite the fact that this project is part of its modules written in Java 8, there is complete freedom to write your own modules in the programming language you want, as well as using your own components per module. We will focus on improving our modules so that they fulfill their objective correctly.
+This project aims to facilitate the times throughout the development cycle, allowing you to focus on the components that you really need to develop with your team. For this, despite the fact that this project is part of its modules written in Kotlin, there is complete freedom to write your own modules in the programming language you want, as well as using your own components per module. We will focus on improving our modules so that they fulfill their objective correctly.
 
 ## How works this project?
 This project converts the endpoints of a RESTful API into components dedicated to a single purpose, thus allowing us to scale the components of our service to support large workloads.
@@ -28,19 +26,20 @@ These instructions will get you a copy of the project up and running on your loc
 You need a host with Linux and Docker support, also need the utility docker-compose to deploy all containers of the project.
 
 ### Installing
-Only you need deploy with docker compose:
+Only you need deploy with Docker compose:
 > ``
 operator@nested-host: ~$ docker-compose -f docker-compose.yml up -d
 ``
 
 ## Built with
-* Apache Avro - For serialize RPC petitions in a binary format.
-* RabbitMQ - For made a internal bus for RPC petitions between services.
+* BSON Encoding - For serialize RPC petitions in a binary format.
+* RabbitMQ - For made an internal bus for RPC petitions between services.
+* Docker - For package the project and the dependencies inside an OCI container.
+* JWT Parser - Used for generate and validate an Stateless User Tokens.
+* H2 Database - Testing Entities operations inside an Embedded SQL Database.
+* Microsoft SQL - Used for provide a high-performance database for all modules.
+* Hibernate & JPA - Used for persist the Entities to the database, with no hardcoded SQL Statements.
 * Quarkus Framework - Used for run the code from the module project, and gets the native build.
-* Docker - For package the project and the dependencies inside a OCI contanier.
-* Ambassador - For centralize all microservice endpoints into single API URL using API Gateway Concept.
-* PostgreSQL - Used for provide a high-performance database for users module.
-* MongoDB - Used for provide a high-performance database for invoices module.
 
 ## Contributing 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
