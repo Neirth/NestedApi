@@ -84,7 +84,7 @@ fun parseFormEncoded(formEncoded: String): Map<String, String> {
  * @param message The html template message
  */
 fun sendEmail(to: String, subject: String, title: String, message: String) {
-    if (false) {
+    if (System.getenv("ENABLE_MAIL_SUPPORT").toBoolean()) {
         if (sessionMail == null) {
             // Instantiate a Properties object
             val properties = Properties()
@@ -97,7 +97,7 @@ fun sendEmail(to: String, subject: String, title: String, message: String) {
             properties["mail.smtp.user"] = System.getenv("MAIL_SMTP_USER")
             properties["mail.smtp.auth"] = System.getenv("MAIL_SMTP_AUTH").toBoolean()
 
-            // Instatiate the Session Mail with Properties
+            // Instantiate the Session Mail with Properties
             sessionMail = Session.getDefaultInstance(properties)
         }
 
@@ -122,5 +122,4 @@ fun sendEmail(to: String, subject: String, title: String, message: String) {
             }
         }
     }
-
 }
