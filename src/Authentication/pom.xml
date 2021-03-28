@@ -6,7 +6,7 @@
     <artifactId>authentication</artifactId>
     <version>1.1.0</version>
     <properties>
-        <kotlin.version>1.4.31</kotlin.version>
+        <kotlin.version>1.4.32</kotlin.version>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
 
         <maven.compiler.source>11</maven.compiler.source>
@@ -159,7 +159,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.jetbrains.kotlin</groupId>
-                        <artifactId>kotlin-noarg</artifactId>
+                        <artifactId>kotlin-maven-noarg</artifactId>
                         <version>${kotlin.version}</version>
                     </dependency>
                     <dependency>
