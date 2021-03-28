@@ -36,7 +36,7 @@ import io.neirth.nestedapi.users.exception.LoginException
 import org.eclipse.microprofile.config.ConfigProvider
 
 val signingKey : Key = SecretKeySpec(
-    DatatypeConverter.parseBase64Binary(ConfigProvider.getConfig().getValue("nested.login.key", String::class.java)),
+    DatatypeConverter.parseBase64Binary(ConfigProvider.getConfig().getValue("nestedapi.login.key", String::class.java)),
     SignatureAlgorithm.HS512.jcaName
 )
 

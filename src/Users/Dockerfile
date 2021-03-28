@@ -12,10 +12,7 @@ FROM registry.access.redhat.com/ubi8/ubi AS ubi-micro-build
 
 RUN mkdir -p /mnt/rootfs
 RUN yum install --installroot /mnt/rootfs --releasever 8 --setopt install_weak_deps=false --nodocs -y \
-    coreutils-single \
-    glibc-minimal-langpack \
-    libstdc++ \
-    zlib
+    coreutils-single glibc-minimal-langpack libstdc++ zlib
     
 RUN rm -rf /mnt/rootfs/var/cache/*
 RUN rm -rf /mnt/rootfs/var/lib/rpm
