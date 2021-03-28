@@ -101,25 +101,23 @@ fun sendEmail(to: String, subject: String, title: String, message: String) {
             sessionMail = Session.getDefaultInstance(properties)
         }
 
-        if (sessionMail != null) {
-            // Prepare the email object
-            val mail = MimeMessage(sessionMail)
+        // Prepare the email object
+        val mail = MimeMessage(sessionMail)
 
-            // Set from & to properties
-            mail.setFrom(InternetAddress(sessionMail?.getProperty("mail.smtp.mail.sender")))
-            mail.addRecipient(Message.RecipientType.TO, InternetAddress(to))
+        // Set from & to properties
+        mail.setFrom(InternetAddress(sessionMail?.getProperty("mail.smtp.mail.sender")))
+        mail.addRecipient(Message.RecipientType.TO, InternetAddress(to))
 
-            // Set the subject
-            mail.subject = subject
+        // Set the subject
+        mail.subject = subject
 
-            // Set the email content
-            mail.setText(String.format(Files.readString(Path.of("Templates/mail.html")), title, message))
+        // Set the email content
+        mail.setText(String.format(Files.readString(Path.of("Templates/mail.html")), title, message))
 
-            // Send email through the Internet
-            sessionMail!!.getTransport("smtp").use {
-                it.connect(sessionMail?.getProperty("mail.smtp.user"), sessionMail?.getProperty("mail.smtp.password"))
-                it.sendMessage(mail, mail.allRecipients)
-            }
+        // Send email through the Internet
+        sessionMail!!.getTransport("smtp").use {
+            it.connect(sessionMail?.getProperty("mail.smtp.user"), sessionMail?.getProperty("mail.smtp.password"))
+            it.sendMessage(mail, mail.allRecipients)
         }
     }
 }
