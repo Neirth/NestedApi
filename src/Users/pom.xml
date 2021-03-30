@@ -62,13 +62,13 @@
             <artifactId>quarkus-resteasy-jackson</artifactId>
         </dependency>
 
-		<!-- Jakarta EE Dependencies -->
-		<dependency>
-			<groupId>jakarta.security.jacc</groupId>
-			<artifactId>jakarta.security.jacc-api</artifactId>
-			<version>1.6.1</version>
-		</dependency>
-		
+        <!-- Jakarta EE Dependencies -->
+        <dependency>
+            <groupId>jakarta.security.jacc</groupId>
+            <artifactId>jakarta.security.jacc-api</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+
         <!-- JWT Dependencies -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -131,7 +131,8 @@
                 <configuration>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+                        <native.image.path>${project.build.directory}/${project.build.finalName}-runner
+                        </native.image.path>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -232,8 +233,11 @@
                 <quarkus.package.type>native</quarkus.package.type>
                 <quarkus.datasource.db-kind>mssql</quarkus.datasource.db-kind>
                 <quarkus.datasource.jdbc.driver>
-					com.microsoft.sqlserver.jdbc.SQLServerXADataSource
-				</quarkus.datasource.jdbc.driver>
+                    com.microsoft.sqlserver.jdbc.SQLServerXADataSource
+                </quarkus.datasource.jdbc.driver>
+                <quarkus.native.additional-build-args>
+                    --initialize-at-run-time=io.neirth.nestedapi.users.util.UtilitiesKt
+                </quarkus.native.additional-build-args>
                 <!--suppress UnresolvedMavenProperty -->
                 <quarkus.datasource.jdbc.url>${DATASOURCE_JDBC_URL}</quarkus.datasource.jdbc.url>
                 <!--suppress UnresolvedMavenProperty -->
