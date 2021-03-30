@@ -5,7 +5,8 @@ COPY . /usr/src/app
 WORKDIR /usr/src/app
 
 RUN gu install native-image
-RUN ./mvnw -f /usr/src/app/pom.xml clean compile package -P prod
+
+RUN chmod +x ./mvnw && ./mvnw -f /usr/src/app/pom.xml clean compile package -P prod
 
 ## Stage 2 : create the docker base image
 FROM registry.access.redhat.com/ubi8/ubi AS ubi-micro-build

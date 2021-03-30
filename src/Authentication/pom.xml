@@ -62,13 +62,18 @@
             <artifactId>quarkus-resteasy-jackson</artifactId>
         </dependency>
 
-        <!-- Java Mail Dependency -->
+		<!-- Jakarta EE Dependencies -->
         <dependency>
             <groupId>jakarta.mail</groupId>
             <artifactId>jakarta.mail-api</artifactId>
             <version>1.6.6</version>
         </dependency>
-
+		<dependency>
+			<groupId>jakarta.security.jacc</groupId>
+			<artifactId>jakarta.security.jacc-api</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+		
         <!-- JWT Dependencies -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -234,7 +239,9 @@
                 <quarkus.package.type>native</quarkus.package.type>
                 <quarkus.datasource.db-kind>mssql</quarkus.datasource.db-kind>
                 <quarkus.datasource.jdbc.driver>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</quarkus.datasource.jdbc.driver>
-				<quarkus.native.additional-build-args>--initialize-at-run-time=io.neirth.nestedapi.authentication.util.UtilitiesKt</quarkus.native.additional-build-args>
+				<quarkus.native.additional-build-args>
+					--initialize-at-run-time=javax.mail.internet.MimeMessage
+                </quarkus.native.additional-build-args>
                 <!--suppress UnresolvedMavenProperty -->
                 <quarkus.datasource.jdbc.url>${DATASOURCE_JDBC_URL}</quarkus.datasource.jdbc.url>
                 <!--suppress UnresolvedMavenProperty -->

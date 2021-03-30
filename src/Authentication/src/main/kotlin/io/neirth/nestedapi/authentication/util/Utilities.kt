@@ -42,7 +42,7 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
 val signingKey : Key = SecretKeySpec(
-    DatatypeConverter.parseBase64Binary(ConfigProvider.getConfig().getValue("nestedapi.login.key", String::class.java)),
+    DatatypeConverter.parseBase64Binary(System.getenv("LOGIN_KEY")),
     SignatureAlgorithm.HS512.jcaName
 )
 
