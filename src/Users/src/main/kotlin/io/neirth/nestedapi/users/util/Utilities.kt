@@ -35,7 +35,7 @@ import io.jsonwebtoken.security.SignatureException
 import io.neirth.nestedapi.users.exception.LoginException
 
 val signingKey : Key = SecretKeySpec(
-    DatatypeConverter.parseBase64Binary(System.getenv("LOGIN_KEY")),
+    DatatypeConverter.parseBase64Binary(System.getenv("LOGIN_KEY") ?: ""),
     SignatureAlgorithm.HS512.jcaName
 )
 
