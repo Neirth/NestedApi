@@ -198,7 +198,7 @@ class RpcUtils(var executor: ManagedExecutor) {
     }
 
     companion object {
-        private val brokerUri : String = ConfigProvider.getConfig().getValue("rabbitmq.amqp.uri", String::class.java)
+        private val brokerUri : String = System.getenv("RABBITMQ_AMQP_URI")
 
         /**
          * Method for send RPC Messages throw the network without schema
