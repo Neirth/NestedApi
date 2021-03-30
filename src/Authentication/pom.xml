@@ -239,8 +239,10 @@
                 <quarkus.package.type>native</quarkus.package.type>
                 <quarkus.datasource.db-kind>mssql</quarkus.datasource.db-kind>
                 <quarkus.datasource.jdbc.driver>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</quarkus.datasource.jdbc.driver>
-				<quarkus.native.additional-build-args>
-					--initialize-at-run-time=javax.mail.internet.MimeMessage
+                <quarkus.native.additional-build-args>
+                    --initialize-at-run-time=io.neirth.nestedapi.authentication.util.UtilitiesKt,
+                    --initialize-at-run-time=javax.mail.internet.MimeMessage,
+                    --allow-incomplete-classpath
                 </quarkus.native.additional-build-args>
                 <!--suppress UnresolvedMavenProperty -->
                 <quarkus.datasource.jdbc.url>${DATASOURCE_JDBC_URL}</quarkus.datasource.jdbc.url>
