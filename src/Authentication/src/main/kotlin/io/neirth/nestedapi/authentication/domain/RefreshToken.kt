@@ -28,6 +28,7 @@ import javax.persistence.*
 import javax.validation.constraints.NotEmpty
 
 @Entity
+@Table(name = "RefreshTokens")
 data class RefreshToken(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -27,6 +27,7 @@ import javax.persistence.*
 import javax.validation.constraints.NotEmpty
 
 @Entity
+@Table(name = "Credentials")
 data class Credential(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
