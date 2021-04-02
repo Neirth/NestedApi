@@ -208,10 +208,6 @@
             <properties>
                 <quarkus.package.type>uber-jar</quarkus.package.type>
                 <quarkus.datasource.db-kind>h2</quarkus.datasource.db-kind>
-                <quarkus.datasource.jdbc.url>jdbc:h2:mem:</quarkus.datasource.jdbc.url>
-                <quarkus.datasource.username>sa</quarkus.datasource.username>
-                <quarkus.datasource.password></quarkus.datasource.password>
-                <quarkus.datasource.jdbc.driver>org.h2.jdbcx.JdbcDataSource</quarkus.datasource.jdbc.driver>
             </properties>
         </profile>
 
@@ -232,9 +228,6 @@
             <properties>
                 <quarkus.package.type>native</quarkus.package.type>
                 <quarkus.datasource.db-kind>mssql</quarkus.datasource.db-kind>
-                <quarkus.datasource.jdbc.driver>
-                    com.microsoft.sqlserver.jdbc.SQLServerXADataSource
-                </quarkus.datasource.jdbc.driver>
                 <quarkus.native.additional-build-args>
                     --initialize-at-run-time=io.neirth.nestedapi.users.util.UtilitiesKt
                 </quarkus.native.additional-build-args>
