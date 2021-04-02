@@ -231,12 +231,6 @@
                 <quarkus.native.additional-build-args>
                     --initialize-at-run-time=io.neirth.nestedapi.users.util.UtilitiesKt
                 </quarkus.native.additional-build-args>
-                <!--suppress UnresolvedMavenProperty -->
-                <quarkus.datasource.jdbc.url>${DATASOURCE_JDBC_URL}</quarkus.datasource.jdbc.url>
-                <!--suppress UnresolvedMavenProperty -->
-                <quarkus.datasource.username>${DATASOURCE_USERNAME}</quarkus.datasource.username>
-                <!--suppress UnresolvedMavenProperty -->
-                <quarkus.datasource.password>${DATASOURCE_PASSWORD}</quarkus.datasource.password>
             </properties>
         </profile>
     </profiles>
