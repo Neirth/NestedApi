@@ -77,7 +77,7 @@ class RpcUtils(var executor: ManagedExecutor) {
             val connFactory = ConnectionFactory()
 
             // Set the URI for attach to broker
-            connFactory.setUri(brokerUri)
+            connFactory.setUri(System.getenv("RABBITMQ_AMQP_URI"))
 
             // Initialize all classes
             processClasses(connFactory, clazzArr)
@@ -198,8 +198,6 @@ class RpcUtils(var executor: ManagedExecutor) {
     }
 
     companion object {
-        private val brokerUri : String = System.getenv("RABBITMQ_AMQP_URI") ?: ""
-
         /**
          * Method for send RPC Messages throw the network without schema
          * @param topicRedirect The routing key
@@ -211,7 +209,7 @@ class RpcUtils(var executor: ManagedExecutor) {
             val connFactory = ConnectionFactory()
 
             // Set the URI of RabbitMQ Broker
-            connFactory.setUri(brokerUri)
+            connFactory.setUri(System.getenv("RABBITMQ_AMQP_URI"))
 
             // Create channel
             val channel = connFactory.newConnection().createChannel()
