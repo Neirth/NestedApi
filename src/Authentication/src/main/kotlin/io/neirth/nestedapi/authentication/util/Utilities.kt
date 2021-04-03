@@ -113,7 +113,7 @@ fun sendEmail(to: String, subject: String, title: String, message: String) {
         mail.subject = subject
 
         // Set the email content
-        mail.setText(String.format(Files.readString(Path.of("Templates/mail.html")), title, message))
+        mail.setText(String.format(Files.readString(Path.of("META-INF/resources/Templates/mail.html")), title, message))
 
         // Send email through the Internet
         sessionMail!!.getTransport("smtp").use {

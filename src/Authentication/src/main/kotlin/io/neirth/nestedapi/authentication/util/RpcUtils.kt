@@ -30,7 +30,6 @@ import de.undercouch.bson4jackson.BsonFactory
 import io.neirth.nestedapi.authentication.util.annotation.RpcMessage
 import io.quarkus.arc.Unremovable
 import io.quarkus.runtime.StartupEvent
-import org.eclipse.microprofile.config.ConfigProvider
 import org.eclipse.microprofile.context.ManagedExecutor
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -62,7 +61,7 @@ class RpcUtils(var executor: ManagedExecutor) {
         try {
             // Load Properties from XML
             val props = Properties()
-            props.loadFromXML(ClassLoader.getSystemResourceAsStream("META-INF/rpc-classes.xml"))
+            props.loadFromXML(ClassLoader.getSystemResourceAsStream("META-INF/resources/rpc-classes.xml"))
 
             // Prepare the arraylist
             val clazzArr: ArrayList<Class<*>> = ArrayList()
