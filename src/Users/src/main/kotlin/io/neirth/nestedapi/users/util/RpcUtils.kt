@@ -63,7 +63,7 @@ class RpcUtils(var executor: ManagedExecutor) {
         try {
             // Load Properties from XML
             val props = Properties()
-            props.loadFromXML(ClassLoader.getSystemResourceAsStream("META-INF/rpc-classes.xml"))
+            props.loadFromXML(ClassLoader.getSystemResourceAsStream("META-INF/resources/rpc-classes.xml"))
 
             // Prepare the arraylist
             val clazzArr: ArrayList<Class<*>> = ArrayList()
