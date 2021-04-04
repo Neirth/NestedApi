@@ -29,7 +29,7 @@ import io.neirth.nestedapi.users.util.annotation.RpcMessage
 import io.neirth.nestedapi.users.util.processJwtToken
 import javax.ws.rs.*
 
-@Path("/users")
+@Path("me")
 class UsersCtrl(private val usersService: UsersService) {
     /**
      * HTTP Method to get the user information
@@ -38,7 +38,6 @@ class UsersCtrl(private val usersService: UsersService) {
      * @return A User information
      */
     @GET
-    @Path("me")
     fun getUserInfo(@HeaderParam("authorization") jwtToken: String?): User? {
         return usersService.findUserById(processJwtToken(jwtToken)["jti"].toString().toLong())
     }
@@ -51,7 +50,6 @@ class UsersCtrl(private val usersService: UsersService) {
      * @return A user information updated
      */
     @PUT
-    @Path("me")
     fun updateUserInfo(@HeaderParam("authorization") jwtToken: String?, user: User): User? {
         return usersService.updateUserById(processJwtToken(jwtToken)["jti"].toString().toLong(), user)
     }
@@ -61,9 +59,7 @@ class UsersCtrl(private val usersService: UsersService) {
      *
      * @param jwtToken JWT Token
      */
-
     @DELETE
-    @Path("me")
     fun deleteUserInfo(@HeaderParam("authorization") jwtToken: String?) {
         return usersService.deleteUserById(processJwtToken(jwtToken)["jti"].toString().toLong())
     }
