@@ -1,79 +1,54 @@
 #
-# For only testing propouses:
+# MIT License
 #
-# Before running this docker, you need to compile the Authentication (nested authentication) and Users (nested users) images,
-# you can find this Dockerfiles inside project folders.
+# Copyright (c) 2021 NestedApi Project
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 #
 version: "3"
-services:
+services:     
+  # Azure SQL Database container
   azuresqledge:
     cap_add:
       - SYS_PTRACE
-    command:
-      - '/bin/sh -c /opt/mssql/bin/launchpadd -usens=false -enableOutboundAccess=true
-        -usesameuser=true -sqlGroup root -- -reparentOrphanedDescendants=true -useDefaultLaunchers=false
-        & /app/asdepackage/AsdePackage & /opt/mssql/bin/sqlservr'
     container_name: azuresqledge
-    entrypoint:
-      - /opt/mssql/bin/permissions_check.sh
+    restart: always
     environment:
       - ACCEPT_EULA=1
       - MSSQL_SA_PASSWORD=YnZekurEp4SZW0rd     
-      - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      - MSSQL_RPC_PORT=135
-      - CONFIG_EDGE_BUILD=1
-      - PAL_BOOT_WITH_MINIMAL_CONFIG=1
-      - PAL_ENABLE_PAGE_ALIGNED_PE_FILE_CREATION=1
-      - LD_LIBRARY_PATH=/opt/mssql/lib
-    hostname: dfd9392b5d6d
     image: mcr.microsoft.com/azure-sql-edge
-    ipc: private
-    labels:
-      com.azure.dev.image.build.sourceversion: 90d5047f04636f6a164a3fae2b38147648d0b35b
-      com.azure.dev.image.system.teamfoundationcollectionuri: https://dev.azure.com/tigerdid/
-      com.microsoft.product: 'Microsoft SQL Server'
-      com.microsoft.version: 15.0.2000.155444
-      vendor: Microsoft
-    logging:
-      driver: journald
-      options: {}
-    mac_address: 02:42:ac:11:00:02
     networks:
-      - bridge
+      - internal-network
     ports:
       - 1433:1433/tcp
-    ulimits:
-      - Hard: 1024
-        Name: nofile
-        Soft: 1024
     user: mssql
+    
+  # Bus Message Service
   rabbitmq:
     command:
       - rabbitmq-server
     container_name: rabbitmq
-    entrypoint:
-      - docker-entrypoint.sh
+    restart: always
     environment:
       - RABBITMQ_DEFAULT_USER=root
       - RABBITMQ_DEFAULT_PASS=YnZekurEp4SZW0rd
       - RABBITMQ_DEFAULT_VHOST=nested
-      - PATH=/opt/rabbitmq/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      - OPENSSL_VERSION=1.1.1k
-      - OPENSSL_SOURCE_SHA256=892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c327df33fbaee5
-      - 'OPENSSL_PGP_KEY_IDS=0x8657ABB260F056B1E5190839D9C4D26D0E604491 0x5B2545DAB21995F4088CEFAA36CEE4DEB00CFE33
-        0xED230BEC4D4F2518B9D7DF41F0DB4D21C1D35231 0xC1F33DD8CE1D4CC613AF14DA9195C48241FBF7DD
-        0x7953AC1FBC3DC8B3B292393ED5E9E43F7DF9EE8C 0xE5E52560DD91C556DDBDA5D02064C53641C25E5D'
-      - OTP_VERSION=23.3.1
-      - OTP_SOURCE_SHA256=559a1d91f4b898e522597031ff0458879ce98a9fd16d1481b0e1231d1e8760ed
-      - RABBITMQ_DATA_DIR=/var/lib/rabbitmq
-      - RABBITMQ_VERSION=3.8.14
-      - RABBITMQ_PGP_KEY_ID=0x0A9AF2115F4687BD29803A206B73A36E6026DFCA
-      - RABBITMQ_HOME=/opt/rabbitmq
-      - RABBITMQ_LOGS=-
-      - HOME=/var/lib/rabbitmq
-      - LANG=C.UTF-8
-      - LANGUAGE=C.UTF-8
-      - LC_ALL=C.UTF-8
     expose:
       - 15691/tcp
       - 15692/tcp
@@ -81,75 +56,49 @@ services:
       - 4369/tcp
       - 5671/tcp
       - 5672/tcp
-    hostname: 857616e82ff0
     image: rabbitmq:alpine
-    ipc: private
-    logging:
-      driver: journald
-      options: {}
-    mac_address: 02:42:ac:11:00:03
     networks:
-      - bridge
-    ulimits:
-      - Hard: 1024
-        Name: nofile
-        Soft: 1024
-  authenticationnested:
-    command:
-      - '/bin/sh -c /app/worker -Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=$PORT'
-    container_name: authenticationnested
-    environment:
-      - QUARKUS_DATASOURCE_USERNAME=sa
-      - QUARKUS_DATASOURCE_PASSWORD=YnZekurEp4SZW0rd
-      - RABBITMQ_AMQP_URI=amqp://root:YnZekurEp4SZW0rd@172.17.0.3:5672/nested
-      - LOGIN_KEY=9HJYtLJTc7QEQ1ucAa84+GEIBzyyCkjj01L7l+UZ6QYPvhT3QF3MIcE43EXm6gOvZanU/mLGmEm4NIzwN+jq82AVAXQ5RsSYhnmMaQlOyyYSk9H+2UZldzlusR/2OutUnBuI4vBME/6eRMriLZYYio+1TXkDjvQdWwECEU99UYTZ/1gQCYckGEINMj0LnP65uwIPlKKt4XCmJijBAmVtgH1W876ypLxgIzDmHA==
-      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:sqlserver://172.17.0.2:1433;databaseName=tempdb
-      - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      - PORT=8080
-    hostname: 16b3f1030d8e
-    image: authentication-nested
-    ipc: private
-    logging:
-      driver: journald
-      options: {}
-    mac_address: 02:42:ac:11:00:06
-    networks:
-      - bridge
-    ports:
-      - 8082:8080/tcp
-    ulimits:
-      - Hard: 1024
-        Name: nofile
-        Soft: 1024
-    user: daemon
-  usersnested:
-    command:
-      - '/bin/sh -c /app/worker -Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=$PORT'
-    container_name: usersnested
+      - internal-network
+
+  # Specific Module Service - Users
+  users-service:
+    container_name: users-service
+    restart: always
     environment:
       - LOGIN_KEY=9HJYtLJTc7QEQ1ucAa84+GEIBzyyCkjj01L7l+UZ6QYPvhT3QF3MIcE43EXm6gOvZanU/mLGmEm4NIzwN+jq82AVAXQ5RsSYhnmMaQlOyyYSk9H+2UZldzlusR/2OutUnBuI4vBME/6eRMriLZYYio+1TXkDjvQdWwECEU99UYTZ/1gQCYckGEINMj0LnP65uwIPlKKt4XCmJijBAmVtgH1W876ypLxgIzDmHA==
-      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:sqlserver://172.17.0.2:1433;databaseName=tempdb
+      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:sqlserver://azuresqledge:1433;databaseName=tempdb
       - QUARKUS_DATASOURCE_USERNAME=sa
       - QUARKUS_DATASOURCE_PASSWORD=YnZekurEp4SZW0rd
-      - RABBITMQ_AMQP_URI=amqp://root:YnZekurEp4SZW0rd@172.17.0.3:5672/nested
-      - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      - PORT=8080
-    hostname: ea17af191542
-    image: users-nested
-    ipc: private
-    logging:
-      driver: journald
-      options: {}
-    mac_address: 02:42:ac:11:00:05
+      - RABBITMQ_AMQP_URI=amqp://root:YnZekurEp4SZW0rd@rabbitmq:5672/nested
+    build: ./src/Users
     networks:
-      - bridge
+      internal-network:
+        aliases:
+          - rabbitmq
+          - azuresqledge
     ports:
       - 8081:8080/tcp
-    ulimits:
-      - Hard: 1024
-        Name: nofile
-        Soft: 1024
+    user: daemon
+    
+  # Specific Module Service - Authentication
+  auth-service:
+    container_name: auth-service
+    restart: always
+    environment:
+      - QUARKUS_DATASOURCE_USERNAME=sa
+      - QUARKUS_DATASOURCE_PASSWORD=YnZekurEp4SZW0rd
+      - RABBITMQ_AMQP_URI=amqp://root:YnZekurEp4SZW0rd@rabbitmq:5672/nested
+      - LOGIN_KEY=9HJYtLJTc7QEQ1ucAa84+GEIBzyyCkjj01L7l+UZ6QYPvhT3QF3MIcE43EXm6gOvZanU/mLGmEm4NIzwN+jq82AVAXQ5RsSYhnmMaQlOyyYSk9H+2UZldzlusR/2OutUnBuI4vBME/6eRMriLZYYio+1TXkDjvQdWwECEU99UYTZ/1gQCYckGEINMj0LnP65uwIPlKKt4XCmJijBAmVtgH1W876ypLxgIzDmHA==
+      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:sqlserver://azuresqledge:1433;databaseName=tempdb
+    build: ./src/Authentication
+    networks:
+      internal-network:
+        aliases:
+          - rabbitmq
+          - azuresqledge
+    ports:
+      - 8082:8080/tcp
     user: daemon
 networks:
-  bridge:
-    external: true
+  internal-network:
+    external: false
