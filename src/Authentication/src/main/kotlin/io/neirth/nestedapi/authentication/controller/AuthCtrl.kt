@@ -33,7 +33,6 @@ import javax.ws.rs.HeaderParam
 import javax.ws.rs.POST
 import javax.ws.rs.Path
 
-@Path("/auth")
 class AuthCtrl(private val authService: AuthService) {
     /**
      * Http Method to process all related with the token and their lifecycle
