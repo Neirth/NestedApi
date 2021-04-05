@@ -204,6 +204,7 @@
                 <property>
                     <name>dev</name>
                 </property>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <dependencies>
                 <dependency>
