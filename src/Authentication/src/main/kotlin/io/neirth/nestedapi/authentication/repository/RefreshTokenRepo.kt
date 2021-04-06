@@ -27,7 +27,6 @@ import io.neirth.nestedapi.authentication.domain.RefreshToken
 import javax.enterprise.context.RequestScoped
 import javax.persistence.EntityManager
 import javax.transaction.Transactional
-import javax.transaction.UserTransaction
 
 @RequestScoped
 class RefreshTokenRepo(private val entityManager: EntityManager) : RepositoryDao<RefreshToken> {

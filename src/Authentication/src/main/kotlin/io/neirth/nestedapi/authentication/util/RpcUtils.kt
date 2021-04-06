@@ -51,7 +51,7 @@ import kotlin.collections.ArrayList
 import kotlin.system.exitProcess
 
 @ApplicationScoped
-class RpcUtils(var executor: ManagedExecutor) {
+class RpcUtils(private var executor: ManagedExecutor) {
     /**
      * Method for init the RPC Queues
      */
@@ -140,6 +140,9 @@ class RpcUtils(var executor: ManagedExecutor) {
 
     /**
      * Method for instance the callback instructions when receive a RPC Message
+     * @param it Channel used for the rpc message
+     * @param method Method instance used for process the message
+     * @param clazz Class where is the method
      */
     @Dependent
     @Unremovable

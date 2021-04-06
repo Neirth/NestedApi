@@ -23,7 +23,7 @@
  */
 package io.neirth.nestedapi.authentication.domain
 
-import java.sql.Timestamp
+import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotEmpty
 
@@ -32,7 +32,7 @@ import javax.validation.constraints.NotEmpty
 data class RefreshToken(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id : Long?,
+    var id: Long?,
 
     var userId: Long,
 
@@ -40,6 +40,6 @@ data class RefreshToken(
     @field:NotEmpty(message = "The field 'refreshToken' cannot be empty")
     var refreshToken: String,
 
-    var validFrom: Timestamp
+    var validFrom: Date
 )
 

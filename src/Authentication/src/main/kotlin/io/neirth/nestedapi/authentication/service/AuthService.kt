@@ -85,7 +85,7 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                     // Check if the user isn't null
                     if (user != null) {
                         // Save the new refresh token
-                        connRefresh.insert(RefreshToken(null, credential.userId, refreshToken, Timestamp(actualTime)))
+                        connRefresh.insert(RefreshToken(null, credential.userId, refreshToken, Date(actualTime)))
 
                         // Get the access token
                         val accessToken: String =

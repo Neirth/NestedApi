@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import java.lang.IllegalArgumentException
 import java.net.MalformedURLException
 import java.util.NoSuchElementException
-import javax.validation.ConstraintViolationException
 import javax.ws.rs.core.Response
 import javax.ws.rs.ext.ExceptionMapper
 import javax.ws.rs.ext.Provider
