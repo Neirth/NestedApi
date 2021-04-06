@@ -1,0 +1,18 @@
+{
+  "resources":{
+  "includes":[
+    {"pattern":"\\QMETA-INF/resources/rpc-classes.xml\\E"}, 
+    {"pattern":"\\QMETA-INF/services/io.smallrye.config.ConfigSourceFactory\\E"}, 
+    {"pattern":"\\QMETA-INF/services/io.smallrye.config.SmallRyeConfigFactory\\E"}, 
+    {"pattern":"\\QMETA-INF/services/io.vertx.core.spi.FutureFactory\\E"}, 
+    {"pattern":"\\QMETA-INF/services/java.sql.Driver\\E"}, 
+    {"pattern":"\\QMETA-INF/services/org.eclipse.microprofile.config.spi.ConfigSource\\E"}, 
+    {"pattern":"\\QMETA-INF/services/org.eclipse.microprofile.config.spi.Converter\\E"}, 
+    {"pattern":"\\Qapplication.properties\\E"}, 
+    {"pattern":"\\Qjbossts-properties.xml\\E"}, 
+    {"pattern":"\\Qorg/jboss/threads/Version.properties\\E"}, 
+    {"pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"}, 
+    {"pattern":"\\Qrabbitmq-amqp-client.properties\\E"}
+  ]},
+  "bundles":[{"name":"com.microsoft.sqlserver.jdbc.SQLServerResource"}]
+}
