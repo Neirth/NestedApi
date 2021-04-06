@@ -23,7 +23,7 @@
  */
 package io.neirth.nestedapi.users.domain
 
-import java.sql.Timestamp
+import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotEmpty
@@ -50,7 +50,7 @@ data class User(
     @field:NotEmpty(message = "The field 'telephone' cannot be empty")
     var telephone: String,
 
-    var birthday: Timestamp,
+    var birthday: Date,
 
     var country: Country,
 

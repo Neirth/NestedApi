@@ -53,7 +53,7 @@ import kotlin.collections.ArrayList
 import kotlin.system.exitProcess
 
 @ApplicationScoped
-class RpcUtils(var executor: ManagedExecutor) {
+class RpcUtils(private var executor: ManagedExecutor) {
     /**
      * Method for init the RPC Queues
      */
