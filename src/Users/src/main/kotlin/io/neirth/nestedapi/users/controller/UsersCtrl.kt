@@ -26,11 +26,17 @@ package io.neirth.nestedapi.users.controller
 import io.neirth.nestedapi.users.domain.User
 import io.neirth.nestedapi.users.service.UsersService
 import io.neirth.nestedapi.users.util.annotation.RpcMessage
-import io.neirth.nestedapi.users.util.processJwtToken
+import org.eclipse.microprofile.jwt.JsonWebToken
+import javax.annotation.security.RolesAllowed
+import javax.enterprise.context.ApplicationScoped
 import javax.ws.rs.*
 
 @Path("me")
-class UsersCtrl(private val usersService: UsersService) {
+@ApplicationScoped
+class UsersCtrl(
+    private val jwt: JsonWebToken,
+    private val usersService: UsersService
+) {
     /**
      * HTTP Method to get the user information
      *
@@ -38,8 +44,9 @@ class UsersCtrl(private val usersService: UsersService) {
      * @return A User information
      */
     @GET
+    @RolesAllowed("users")
     fun getUserInfo(@HeaderParam("authorization") jwtToken: String?): User? {
-        return usersService.findUserById(processJwtToken(jwtToken)["jti"].toString().toLong())
+        return usersService.findUserById(jwt.subject.toLong())
     }
 
     /**
@@ -50,8 +57,9 @@ class UsersCtrl(private val usersService: UsersService) {
      * @return A user information updated
      */
     @PUT
+    @RolesAllowed("users")
     fun updateUserInfo(@HeaderParam("authorization") jwtToken: String?, user: User): User? {
-        return usersService.updateUserById(processJwtToken(jwtToken)["jti"].toString().toLong(), user)
+        return usersService.updateUserById(jwt.subject.toLong(), user)
     }
 
     /**
@@ -60,8 +68,9 @@ class UsersCtrl(private val usersService: UsersService) {
      * @param jwtToken JWT Token
      */
     @DELETE
+    @RolesAllowed("users")
     fun deleteUserInfo(@HeaderParam("authorization") jwtToken: String?) {
-        return usersService.deleteUserById(processJwtToken(jwtToken)["jti"].toString().toLong())
+        return usersService.deleteUserById(jwt.subject.toLong())
     }
 
     /**

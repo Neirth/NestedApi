@@ -23,40 +23,7 @@
  */
 package io.neirth.nestedapi.users.util
 
-import java.security.Key
 import java.util.logging.Logger
-import javax.crypto.spec.SecretKeySpec
-import javax.xml.bind.DatatypeConverter
-
-import io.jsonwebtoken.ExpiredJwtException
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
-import io.jsonwebtoken.security.SignatureException
-import io.neirth.nestedapi.users.exception.LoginException
-
-val signingKey : Key = SecretKeySpec(
-    DatatypeConverter.parseBase64Binary(System.getenv("LOGIN_KEY") ?: ""),
-    SignatureAlgorithm.HS512.jcaName
-)
 
 val loggerSystem: Logger = Logger.getLogger("Users Module")
 
-/**
- * Static method for obtain all claims from Jwt token and check their healthy
- *
- * @param jwtToken The JWT String
- * @return Map with the jwt claims
- */
-fun processJwtToken(jwtToken : String?) : Map<String, Any?> {
-    try {
-        if (jwtToken != null) {
-            return Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(jwtToken.substring(7)).body
-        } else {
-            throw LoginException("The authorization key is not present")
-        }
-    } catch (e: ExpiredJwtException) {
-        throw LoginException("The token has expired, please renew it before submitting another request")
-    } catch (e: SignatureException) {
-        throw SecurityException("The token has been tampered, please get a new valid token")
-    }
-}

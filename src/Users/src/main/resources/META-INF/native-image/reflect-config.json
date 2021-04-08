@@ -874,12 +874,6 @@
     "name": "io.agroal.pool.ConnectionHandler[]"
   },
   {
-    "name": "io.jsonwebtoken.impl.DefaultJwtBuilder",
-    "allDeclaredFields": true,
-    "allPublicMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
     "name": "io.neirth.nestedapi.users.controller.UsersCtrl",
     "allPublicMethods": true
   },
