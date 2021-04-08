@@ -23,6 +23,7 @@
  */
 package io.neirth.nestedapi.authentication.util
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.smallrye.jwt.algorithm.SignatureAlgorithm
 import org.eclipse.microprofile.config.ConfigProvider
 import java.util.logging.Logger
@@ -66,6 +67,16 @@ fun parseFormEncoded(formEncoded: String): Map<String, String> {
 
     // Return the hashmap
     return formMap
+}
+
+/**
+ * Static method for transform json array into map
+ *
+ * @param jsonString String encoded with json format
+ * @return Map with converted values
+ */
+fun parseJsonString(jsonString: String?): Map<*, *> {
+    return ObjectMapper().createParser(jsonString).readValueAs(HashMap::class.java)
 }
 
 /**

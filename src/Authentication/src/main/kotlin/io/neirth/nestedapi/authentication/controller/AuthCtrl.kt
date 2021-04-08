@@ -23,18 +23,19 @@
  */
 package io.neirth.nestedapi.authentication.controller
 
-import io.neirth.nestedapi.authentication.domain.response.AuthSuccess
 import io.neirth.nestedapi.authentication.domain.Credential
+import io.neirth.nestedapi.authentication.domain.response.AuthSuccess
 import io.neirth.nestedapi.authentication.service.AuthService
 import io.neirth.nestedapi.authentication.util.*
 import io.neirth.nestedapi.authentication.util.annotation.RpcMessage
 import java.net.MalformedURLException
-import javax.ws.rs.HeaderParam
 import javax.ws.rs.POST
 import javax.ws.rs.Path
 
 @Path("/")
-class AuthCtrl(private val authService: AuthService) {
+class AuthCtrl(
+    private val authService: AuthService
+) {
     /**
      * Http Method to process all related with the token and their lifecycle
      *
@@ -83,8 +84,8 @@ class AuthCtrl(private val authService: AuthService) {
      */
     @POST
     @Path("logout")
-    fun logoutUser(@HeaderParam("Authorization") refreshTokenStr: String) {
-        authService.logoutUser(refreshTokenStr.substring(7))
+    fun logoutUser(refreshTokenJson: String) {
+        authService.logoutUser(parseJsonString(refreshTokenJson)["refresh_token"].toString())
     }
 
     /**
