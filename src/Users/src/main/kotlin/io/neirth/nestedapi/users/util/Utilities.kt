@@ -26,4 +26,3 @@ package io.neirth.nestedapi.users.util
 import java.util.logging.Logger
 
 val loggerSystem: Logger = Logger.getLogger("Users Module")
-

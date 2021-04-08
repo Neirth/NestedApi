@@ -40,36 +40,32 @@ class UsersCtrl(
     /**
      * HTTP Method to get the user information
      *
-     * @param jwtToken JWT Token
      * @return A User information
      */
     @GET
     @RolesAllowed("users")
-    fun getUserInfo(@HeaderParam("authorization") jwtToken: String?): User? {
+    fun getUserInfo(): User? {
         return usersService.findUserById(jwt.subject.toLong())
     }
 
     /**
      * HTTP Method to put the new user information
      *
-     * @param jwtToken JWT Token
      * @param user The new user object
      * @return A user information updated
      */
     @PUT
     @RolesAllowed("users")
-    fun updateUserInfo(@HeaderParam("authorization") jwtToken: String?, user: User): User? {
+    fun updateUserInfo(user: User): User? {
         return usersService.updateUserById(jwt.subject.toLong(), user)
     }
 
     /**
      * HTTP Method to delete the user account
-     *
-     * @param jwtToken JWT Token
      */
     @DELETE
     @RolesAllowed("users")
-    fun deleteUserInfo(@HeaderParam("authorization") jwtToken: String?) {
+    fun deleteUserInfo() {
         return usersService.deleteUserById(jwt.subject.toLong())
     }
 
