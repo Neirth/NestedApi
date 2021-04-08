@@ -23,12 +23,9 @@
  */
 package io.neirth.nestedapi.authentication.util
 
-import io.jsonwebtoken.SignatureAlgorithm
+import io.smallrye.jwt.algorithm.SignatureAlgorithm
 import org.eclipse.microprofile.config.ConfigProvider
-import java.security.Key
 import java.util.logging.Logger
-import javax.crypto.spec.SecretKeySpec
-import javax.xml.bind.DatatypeConverter
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -40,11 +37,6 @@ import javax.mail.Session
 import javax.mail.internet.InternetAddress
 
 import javax.mail.internet.MimeMessage
-
-val signingKey : Key = SecretKeySpec(
-    DatatypeConverter.parseBase64Binary(System.getenv("LOGIN_KEY") ?: ""),
-    SignatureAlgorithm.HS512.jcaName
-)
 
 val loggerSystem: Logger = Logger.getLogger("Authentication Module")
 var sessionMail : Session? = null

@@ -27,21 +27,18 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
-import io.neirth.nestedapi.authentication.domain.response.AuthSuccess
 import io.neirth.nestedapi.authentication.domain.Credential
 import io.neirth.nestedapi.authentication.domain.RefreshToken
+import io.neirth.nestedapi.authentication.domain.response.AuthSuccess
 import io.neirth.nestedapi.authentication.exception.LoginException
 import io.neirth.nestedapi.authentication.repository.CredentialsRepo
 import io.neirth.nestedapi.authentication.repository.RefreshTokenRepo
 import io.neirth.nestedapi.authentication.util.RpcUtils
 import io.neirth.nestedapi.authentication.util.sendEmail
-import io.neirth.nestedapi.authentication.util.signingKey
+import io.smallrye.jwt.build.Jwt
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.hibernate.exception.DataException
 import java.net.MalformedURLException
-import java.sql.Timestamp
 import java.util.*
 import javax.enterprise.context.ApplicationScoped
 
@@ -88,10 +85,8 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                         connRefresh.insert(RefreshToken(null, credential.userId, refreshToken, Date(actualTime)))
 
                         // Get the access token
-                        val accessToken: String =
-                            Jwts.builder().setId(user["id"].asText()).setSubject(user["email"].asText())
-                                .setExpiration(Date(expirationTime)).setIssuedAt(Date(actualTime))
-                                .signWith(signingKey, SignatureAlgorithm.HS512).compact()
+                        val accessToken: String = Jwt.claims().issuedAt(actualTime).expiresAt(expirationTime)
+                            .subject(user["id"].asText()).groups("users").upn(user["email"].asText()).jws().sign()
 
                         // Send the email to the user with the login warning
                         sendEmail(
@@ -149,10 +144,8 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
                     val expirationTime = System.currentTimeMillis() + (expirationTimeNumber.toLong() * 60)
 
                     // Get the access token
-                    val accessToken: String =
-                        Jwts.builder().setId(user["id"].asText()).setSubject(user["email"].asText())
-                            .setExpiration(Date(expirationTime)).setIssuedAt(Date(actualTime))
-                            .signWith(signingKey, SignatureAlgorithm.HS512).compact()
+                    val accessToken: String = Jwt.claims().issuedAt(actualTime).expiresAt(expirationTime)
+                        .subject(user["id"].asText()).groups("users").upn(user["email"].asText()).jws().sign()
 
                     // return the AuthSuccess object to the http call
                     return AuthSuccess(accessToken, "bearer", expirationTimeNumber.toLong(), refreshToken)
@@ -183,11 +176,12 @@ class AuthService(private val connRefresh: RefreshTokenRepo, private val connCre
         val jsonNode: JsonNode = objectMapper.readTree(objectMapper.createParser(body))
 
         // Remove the password field from petition
-        val password : String = jsonNode["password"].asText()
+        val password: String = jsonNode["password"].asText()
         (jsonNode as ObjectNode).remove("password")
 
         // Send the RPC Message to Users Server
-        val jsonResult: JsonNode = RpcUtils.sendMessage("users.register", jsonNode) ?: throw DataException("Error registering the User information into database", null)
+        val jsonResult: JsonNode = RpcUtils.sendMessage("users.register", jsonNode)
+            ?: throw DataException("Error registering the User information into database", null)
 
         // Insert the credentials into the database
         connCredential.insert(
