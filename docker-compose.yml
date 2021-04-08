@@ -21,8 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-version: "3"
-services:     
+version: "3.6"
+services:
   # Azure SQL Database container
   azuresqledge:
     cap_add:
@@ -31,14 +31,14 @@ services:
     restart: always
     environment:
       - ACCEPT_EULA=1
-      - MSSQL_SA_PASSWORD=YnZekurEp4SZW0rd     
+      - MSSQL_SA_PASSWORD=YnZekurEp4SZW0rd
     image: mcr.microsoft.com/azure-sql-edge
     networks:
       - internal-network
     ports:
       - 1433:1433/tcp
     user: mssql
-    
+
   # Bus Message Service
   rabbitmq:
     command:
@@ -49,13 +49,6 @@ services:
       - RABBITMQ_DEFAULT_USER=root
       - RABBITMQ_DEFAULT_PASS=YnZekurEp4SZW0rd
       - RABBITMQ_DEFAULT_VHOST=nested
-    expose:
-      - 15691/tcp
-      - 15692/tcp
-      - 25672/tcp
-      - 4369/tcp
-      - 5671/tcp
-      - 5672/tcp
     image: rabbitmq:alpine
     networks:
       - internal-network
@@ -76,10 +69,8 @@ services:
         aliases:
           - rabbitmq
           - azuresqledge
-    ports:
-      - 8081:8080/tcp
     user: daemon
-    
+
   # Specific Module Service - Authentication
   auth-service:
     container_name: auth-service
@@ -96,9 +87,31 @@ services:
         aliases:
           - rabbitmq
           - azuresqledge
-    ports:
-      - 8082:8080/tcp
     user: daemon
+
+  # NGINX Server as a API Gateway
+  api-gateway:
+    container_name: api-gateway
+    restart: always
+    image: nginx:stable-alpine
+    environment:
+      - NGINX_PORT=80
+    volumes:
+      - type: bind
+        source: ./config/nginx/api-containers.conf
+        target: /etc/nginx/conf.d/api-containers.conf
+        read_only: true
+      - type: bind
+        source: ./config/nginx/api-endpoints.conf
+        target: /etc/nginx/conf.d/api-endpoints.conf
+        read_only: true
+    networks:
+      internal-network:
+        aliases:
+          - users-service
+          - auth-service
+    ports:
+      - 8080:8080/tcp
 networks:
   internal-network:
     external: false
