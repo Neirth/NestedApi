@@ -63,7 +63,7 @@ services:
     environment:
       - NGINX_PORT=8000
     volumes:
-      - ./config/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./config/nginx/default.conf:/etc/nginx/conf.d/default.conf:Z
     networks:
       - internal-network
     ports:
@@ -74,7 +74,6 @@ services:
     container_name: users-service
     restart: always
     environment:
-      - LOGIN_KEY=9HJYtLJTc7QEQ1ucAa84+GEIBzyyCkjj01L7l+UZ6QYPvhT3QF3MIcE43EXm6gOvZanU/mLGmEm4NIzwN+jq82AVAXQ5RsSYhnmMaQlOyyYSk9H+2UZldzlusR/2OutUnBuI4vBME/6eRMriLZYYio+1TXkDjvQdWwECEU99UYTZ/1gQCYckGEINMj0LnP65uwIPlKKt4XCmJijBAmVtgH1W876ypLxgIzDmHA==
       - QUARKUS_DATASOURCE_JDBC_URL=jdbc:sqlserver://azuresqledge:1433;databaseName=tempdb
       - QUARKUS_DATASOURCE_USERNAME=sa
       - QUARKUS_DATASOURCE_PASSWORD=YnZekurEp4SZW0rd
@@ -94,7 +93,6 @@ services:
       - QUARKUS_DATASOURCE_USERNAME=sa
       - QUARKUS_DATASOURCE_PASSWORD=YnZekurEp4SZW0rd
       - RABBITMQ_AMQP_URI=amqp://root:YnZekurEp4SZW0rd@rabbitmq:5672/nested
-      - LOGIN_KEY=9HJYtLJTc7QEQ1ucAa84+GEIBzyyCkjj01L7l+UZ6QYPvhT3QF3MIcE43EXm6gOvZanU/mLGmEm4NIzwN+jq82AVAXQ5RsSYhnmMaQlOyyYSk9H+2UZldzlusR/2OutUnBuI4vBME/6eRMriLZYYio+1TXkDjvQdWwECEU99UYTZ/1gQCYckGEINMj0LnP65uwIPlKKt4XCmJijBAmVtgH1W876ypLxgIzDmHA==
       - QUARKUS_DATASOURCE_JDBC_URL=jdbc:sqlserver://azuresqledge:1433;databaseName=tempdb
     build: ./src/Authentication
     networks:
