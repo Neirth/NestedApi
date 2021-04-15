@@ -1,0 +1,68 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Project Metadata. -->
+	<groupId>io.neirth</groupId>
+	<artifactId>nestedapi</artifactId>
+	<version>1.1.0</version>
+	<packaging>pom</packaging>
+
+	<!-- Project Name & Url. -->
+	<name>NestedAPI</name>
+	<url>https://neirth.github.io/NestedAPI</url>
+
+	<!-- Project properties. -->
+	<properties>
+		<maven.compiler.parameters>true</maven.compiler.parameters>
+		<surefire-plugin.version>2.22.1</surefire-plugin.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
+	</properties>
+
+	<!-- Project submodules. -->
+	<modules>
+		<module>src/Authentication</module>
+		<module>src/Users</module>
+	</modules>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>3.1.0</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.0.2</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.0</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+
+	<profiles>
+		<profile>
+			<id>dev</id>
+			<activation>
+				<property>
+					<name>dev</name>
+				</property>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+		<profile>
+			<id>prod</id>
+			<activation>
+				<property>
+					<name>prod</name>
+				</property>
+			</activation>
+		</profile>
+	</profiles>
+</project>
