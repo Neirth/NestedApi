@@ -1,0 +1,11 @@
+[
+  [
+    "java.sql.Connection"
+  ],
+  [
+    "java.sql.ResultSet"
+  ],
+  [
+    "java.sql.Statement"
+  ]
+]
