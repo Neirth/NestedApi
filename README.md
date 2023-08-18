@@ -2,7 +2,7 @@
   <img src="./docs/assets/NestedApi-logo.svg?raw=true">
 </p>
 
-Microservices based framework to create a backend services for the real world. (Under Heavy Development)
+Microservices based framework to create a backend services for the real world. (Experiment Sandbox Project)
 
 ## Deployment 
 This project is a Github Template, is to say, you can use this project for create a real backend service, only you need write the modules that you need. The modules they can use other programming language than Java & Kotlin, as long as it is compatible with the technologies that use the modules already available. Consult the documentation for more information.
@@ -45,14 +45,6 @@ operator@nested-host: ~$ docker-compose -f docker-compose.yml up -d
 
 ## Contributing 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Join us into the community!
-This project not only stays in this repository, but also that there is a community behind willing to support it. Join and enjoy a good time with us!
-
-[![Discord](https://img.shields.io/discord/726426880823001248?label=Community&logo=discord&logoColor=ffffff&color=grey&labelColor=6A7EC2&style=for-the-badge)](https://discord.gg/t5D7PHz)
-
-## Sponsor the project 
-If the project has helped you deploy your service, you could leave a donation as a token of appreciation. Well, doing this job only an arduous task.
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
