@@ -2,8 +2,6 @@
   <img src="./docs/assets/NestedApi-logo.svg?raw=true">
 </p>
 
-# NestedAPI: My Experimental Backend Sandbox Project
-
 ## About the Project
 NestedAPI is a microservices-based framework designed for creating backend services that cater to real-world needs. Please note that this project is purely experimental and meant for personal exploration. It is not intended for commercial or production use. For production use, please, use [Hasura](https://hasura.io/) project.
 
