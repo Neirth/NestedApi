@@ -2,49 +2,47 @@
   <img src="./docs/assets/NestedApi-logo.svg?raw=true">
 </p>
 
-Microservices based framework to create a backend services for the real world. (Experiment Sandbox Project)
+NestedAPI: My Experimental Backend Sandbox Project
 
-## Deployment 
-This project is a Github Template, is to say, you can use this project for create a real backend service, only you need write the modules that you need. The modules they can use other programming language than Java & Kotlin, as long as it is compatible with the technologies that use the modules already available. Consult the documentation for more information.
+## About the Project
+NestedAPI is a microservices-based framework designed for creating backend services that cater to real-world needs. Please note that this project is purely experimental and meant for personal exploration. It is not intended for commercial or production use. 
 
-## Why is project?
-This project aims to facilitate the times throughout the development cycle, allowing you to focus on the components that you really need to develop with your team. For this, despite the fact that this project is part of its modules written in Kotlin, there is complete freedom to write your own modules in the programming language you want, as well as using your own components per module. We will focus on improving our modules so that they fulfill their objective correctly.
+## Why I Started This Project
+I embarked on this journey to streamline the development cycle and enhance collaboration within my team. The goal is to focus solely on essential components during development. While the core of this project is built using Kotlin, I encourage the freedom to introduce modules in different programming languages as long as they integrate seamlessly with existing technologies. I'm committed to refining these modules to ensure they fulfill their respective purposes effectively.
 
-## How works this project?
-This project converts the endpoints of a RESTful API into components dedicated to a single purpose, thus allowing us to scale the components of our service to support large workloads.
-
-Next, we will explain graphically how this project is composed:
+## How the Project Operates
+NestedAPI transforms RESTful API endpoints into specialized components, enabling scalable architecture to handle substantial workloads. Let me illustrate the project's composition:
 
 ![NestedApiDiagram](./docs/assets/NestedApi-Diagram.svg?raw=true)
 
-In the diagram we can see how the services would be structured. Each service can have replicas and work with each other in a coordinated way. This is due to our api gateway, which also acts as a load balancer and the messaging service, which is based on RabbitMQ and the pub/sub model. Each module will be in charge of a particular task, in case another module needs to access the information of the original module, it will produce a message that will be later consumed by the module that provides that service. 
+The diagram showcases the service structure. Each service can have replicas that collaborate harmoniously. This synergy is facilitated by the API gateway, serving as both a load balancer and a messaging service that relies on RabbitMQ's pub/sub model. Modules are dedicated to specific tasks, and if one module requires access to another's information, it produces a message consumed by the relevant service.
 
-Regarding the database, each module will be responsible for loading only the tables it needs to operate, and mustn't access the information managed by other modules. With this we guarantee that the information is only manipulated by the module in charge of processing said information.
+As for the database, each module only interacts with the tables pertinent to its tasks, maintaining data isolation. This ensures that information is solely managed by the responsible module.
 
 ## Getting Started
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+If you're interested in exploring and experimenting with this project on your local machine, follow these steps. Remember, this project is not intended for deployment in live systems.
 
 ### Prerequisites
-You need a host with Linux and Docker support, also need the utility docker-compose to deploy all containers of the project.
+You'll need a Linux host with Docker support, along with the docker-compose utility to deploy project containers.
 
-### Installing
-Only you need deploy with Docker compose:
-> ``
-operator@nested-host: ~$ docker-compose -f docker-compose.yml up -d
-``
+### Installation
+Deploy the project using Docker Compose:
+> ```
+> operator@nested-host: ~$ docker-compose -f docker-compose.yml up -d
+> ```
 
-## Built with
-* BSON Encoding - For serialize RPC petitions in a binary format.
-* RabbitMQ - For made an internal bus for RPC petitions between services.
-* Docker - For package the project and the dependencies inside an OCI container.
-* JWT Parser - Used for generate and validate an Stateless User Tokens.
-* H2 Database - Testing Entities operations inside an Embedded SQL Database.
-* Microsoft SQL - Used for provide a high-performance database for all modules.
-* Hibernate & JPA - Used for persist the Entities to the database, with no hardcoded SQL Statements.
-* Quarkus Framework - Used for run the code from the module project, and gets the native build.
+## Technologies Utilized
+* BSON Encoding - Serialization of RPC requests in binary format.
+* RabbitMQ - Internal bus for RPC communication between services.
+* Docker - Containerization of project and dependencies.
+* JWT Parser - Generation and validation of stateless user tokens.
+* H2 Database - Embedded SQL database for testing entity operations.
+* Microsoft SQL - High-performance database supporting all modules.
+* Hibernate & JPA - Persistence of entities in the database without hardcoded SQL.
+* Quarkus Framework - Execution of code and native builds for module projects.
 
-## Contributing 
-Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+## Contributions
+For details on our code of conduct and the process of submitting pull requests, please refer to [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License. For more information, view the [LICENSE](./LICENSE) file.
