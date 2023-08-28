@@ -51,7 +51,7 @@ You'll need a Linux host with Docker support, along with the docker-compose util
 ### Installation
 Deploy the project using Docker Compose:
 > ```
-> operator@nested-host: ~$ docker-compose -f docker-compose.yml up -d
+> [dummy@dummy-world NestedApi]$ docker-compose -f docker-compose.yml up -d
 > ```
 
 ## Technologies Utilized
