@@ -22,8 +22,8 @@
 
 	<!-- Project submodules. -->
 	<modules>
-		<module>src/Authentication</module>
-		<module>src/Users</module>
+		<module>packages/authentication</module>
+		<module>packages/users</module>
 	</modules>
 
 	<build>

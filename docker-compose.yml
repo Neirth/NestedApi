@@ -78,7 +78,7 @@ services:
       - QUARKUS_DATASOURCE_USERNAME=sa
       - QUARKUS_DATASOURCE_PASSWORD=YnZekurEp4SZW0rd
       - RABBITMQ_AMQP_URI=amqp://root:YnZekurEp4SZW0rd@rabbitmq:5672/nested
-    build: ./src/Users
+    build: ./packages/users
     networks:
       - internal-network
     expose:
@@ -94,7 +94,7 @@ services:
       - QUARKUS_DATASOURCE_PASSWORD=YnZekurEp4SZW0rd
       - RABBITMQ_AMQP_URI=amqp://root:YnZekurEp4SZW0rd@rabbitmq:5672/nested
       - QUARKUS_DATASOURCE_JDBC_URL=jdbc:sqlserver://azuresqledge:1433;databaseName=tempdb
-    build: ./src/Authentication
+    build: ./packages/authentication
     networks:
       - internal-network
     expose:
