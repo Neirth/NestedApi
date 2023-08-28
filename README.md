@@ -13,7 +13,30 @@ I embarked on this journey to streamline the development cycle and enhance colla
 ## How the Project Operates
 NestedAPI transforms RESTful API endpoints into specialized components, enabling scalable architecture to handle substantial workloads. Let me illustrate the project's composition:
 
-![NestedApiDiagram](./docs/assets/NestedApi-Diagram.svg?raw=true)
+```mermaid
+graph LR
+A((Client Device)) <--> | HTTP/HTTPS Request | B(API Gateway)
+
+K(Message Broker) --- C
+K(Message Broker) --- E
+K(Message Broker) --- G
+
+subgraph "Endpoint Containers"
+    B --> C(/auth)
+    B --> E(/users)
+    B --> G(/invoices)
+end
+
+subgraph "Per-service Databases"
+    C <--> F([Auth Database])
+    E <--> H([Users Database])
+    G <--> T([Store Database])
+end 
+
+L(Cache Service) --- C
+L(Cache Service) --- E
+L(Cache Service) --- G
+```
 
 The diagram showcases the service structure. Each service can have replicas that collaborate harmoniously. This synergy is facilitated by the API gateway, serving as both a load balancer and a messaging service that relies on RabbitMQ's pub/sub model. Modules are dedicated to specific tasks, and if one module requires access to another's information, it produces a message consumed by the relevant service.
 
